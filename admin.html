@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Club - Painel de Gestão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { 
+                        brand: { 
+                            dark: '#0a0a0a', 
+                            active: '#d4af37', /* Dourado */
+                            bg: '#f4f6f8', 
+                            blue: '#4c8ee8', 
+                            red: '#ef4444', 
+                            green: '#10b981', 
+                            lightGold: '#fef3c7', 
+                            darkGold: '#b45309' 
+                        } 
+                    } 
+                } 
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .cal-grid { display: grid; grid-template-columns: 50px repeat(6, 1fr); border-top: 1px solid #e5e7eb; border-left: 1px solid #e5e7eb; }
+        @media(min-width: 768px) { .cal-grid { grid-template-columns: 60px repeat(6, 1fr); } }
+        .cal-cell { border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; height: 70px; position: relative; }
+        @media(min-width: 768px) { .cal-cell { height: 80px; } }
+        .cal-header { background-color: #ffffff; text-align: center; padding: 8px 0; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+        .cal-time { font-size: 0.70rem; color: #9ca3af; text-align: center; transform: translateY(-50%); display: block; }
+        .event-pill { position: absolute; left: 2px; right: 2px; top: 4px; bottom: 4px; border-radius: 6px; padding: 4px; color: white; font-size: 0.70rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.15); z-index: 10; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; }
+        @media(min-width: 768px) { .event-pill { left: 4px; right: 4px; padding: 6px 8px; font-size: 0.75rem; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
+        
+        /* Estilos para o Modal de Addons no Admin */
+        .addon-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+        .addon-item:last-child { border-bottom: none; padding-bottom: 5px; }
+        .addon-info { display: flex; flex-direction: column; gap: 2px; }
+        .addon-name { font-weight: 600; font-size: 13px; color: #1f2937; max-width: 220px; line-height: 1.3; }
+        .addon-price { color: #b45309; font-weight: 700; font-size: 13px; }
+        .addon-ctrl { display: flex; align-items: center; gap: 8px; }
+        .addon-chk { width: 20px; height: 20px; accent-color: #d4af37; cursor: pointer; }
+        
+        .bg-brand-gray { background-color: #374151; }
+    </style>
+</head>
+<body class="bg-brand-bg text-gray-800 font-sans h-screen flex overflow-hidden">
+    <!-- Ecrã de Login -->
+    <div id="login-screen" class="fixed inset-0 bg-brand-dark flex flex-col items-center justify-center z-[100]">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-11/12 max-w-sm border border-gray-800">
+            <div class="w-16 h-16 bg-black text-brand-active rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-active">
+                <i data-lucide="scissors" class="w-8 h-8"></i>
+            </div>
+            <h2 class="text-brand-dark font-bold text-2xl mb-2">Acesso Restrito</h2>
+            <p class="text-xs text-gray-500 mb-5">Painel de Gestão Prime Club</p>
+            <form id="loginForm">
+                <input type="password" id="adminPwd" placeholder="Palavra-passe" required class="w-full p-4 rounded-xl border border-gray-200 mb-5 text-center text-lg outline-none focus:border-brand-active focus:ring-2 focus:ring-brand-lightGold transition">
+                <button type="submit" id="btnLogin" class="w-full bg-brand-active text-black font-bold p-4 rounded-xl hover:bg-brand-darkGold hover:text-white transition shadow-lg shadow-brand-active/30">Entrar no Painel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Barra Lateral de Navegação -->
+    <aside id="sidebar" class="w-64 bg-brand-dark text-gray-300 flex-col hidden md:flex z-[200] shadow-2xl fixed md:relative h-full inset-y-0 left-0 transition-all border-r border-gray-800">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-800 bg-black">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-lg bg-black border border-brand-active text-brand-active flex flex-col items-center justify-center font-bold text-lg mr-3 shadow-lg">
+                    <span class="text-[8px] leading-none mt-0.5">PRIME</span>
+                </div>
+                <div><h1 class="text-white font-semibold text-sm">Painel de Gestão</h1><span class="text-xs text-brand-active">Prime Club</span></div>
+            </div>
+            <button onclick="toggleMenu()" class="md:hidden text-gray-400 hover:text-white p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <button onclick="switchTab('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-brand-active text-black transition text-sm font-bold shadow-md shadow-brand-active/20"><i data-lucide="calendar-days" class="w-5 h-5"></i> Agendamentos</button>
+            <button onclick="switchTab('contactos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="users" class="w-5 h-5"></i> Lista de Clientes</button>
+            <button onclick="switchTab('financeiro', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="dollar-sign" class="w-5 h-5"></i> Financeiro</button>
+            <button onclick="switchTab('ferias', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="calendar-off" class="w-5 h-5"></i> Bloquear Datas</button>
+        </nav>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <header class="h-16 bg-white flex items-center justify-between px-4 lg:px-8 border-b border-gray-200 z-10 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMenu()" class="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                <h2 class="text-xl font-bold text-gray-800 hidden sm:block">Dashboard</h2>
+                <div id="sync-status" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">Sincronizado</div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="openAdminBookingModal()" class="bg-brand-dark hover:bg-black text-brand-active font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-black/20 flex items-center gap-1.5">
+                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                    <span>Novo Agendamento</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-brand-bg">
+            <!-- TAB: DASHBOARD / AGENDAMENTOS -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <div class="xl:col-span-8 flex flex-col gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-5">
+                            <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
+                                <h3 id="calendar-month-title" class="text-lg lg:text-xl font-bold text-gray-800">Mês...</h3>
+                                <button onclick="fetchData()" class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <div class="min-w-[500px] md:min-w-[600px]">
+                                    <div class="cal-grid bg-gray-50 rounded-t-lg" id="cal-headers"></div>
+                                    <div class="cal-grid" id="cal-body"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 flex-1 flex flex-col">
+                            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">Lista Completa</h3>
+                            <div id="lista-agendamentos" class="space-y-3 overflow-y-auto max-h-[400px] pr-2"></div>
+                        </div>
+                    </div>
+                    <div class="xl:col-span-4 flex flex-col gap-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-5">
+                                <span class="text-xs font-semibold text-gray-500">Total Marcações</span>
+                                <strong id="stat-agendamentos" class="block text-2xl lg:text-3xl font-black mt-1 text-brand-dark">0</strong>
+                            </div>
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-5">
+                                <span class="text-xs font-semibold text-gray-500">Receita Prevista</span>
+                                <strong id="stat-receita" class="block text-xl font-black mt-1 text-brand-darkGold">R$ 0,00</strong>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-6 flex-1">
+                            <h3 class="font-bold text-gray-800 mb-5 border-b border-gray-100 pb-3">Clientes Ativos</h3>
+                            <div id="lista-clientes" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: LISTA DE CONTACTOS -->
+            <div id="tab-contactos" class="tab-content">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Histórico de Clientes</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Contactos guardados automaticamente a partir dos agendamentos.</p>
+                        </div>
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="searchContact" oninput="filterContacts()" placeholder="Pesquisar cliente..." class="w-full p-2.5 pl-9 text-sm border border-gray-200 rounded-xl outline-none focus:border-brand-active transition">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3">Cliente</th>
+                                    <th class="px-6 py-3">Telemóvel</th>
+                                    <th class="px-6 py-3 text-center">Cortes Confirmados</th>
+                                    <th class="px-6 py-3 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contacts-table-body" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB: FINANCEIRO -->
+            <div id="tab-financeiro" class="tab-content">
+                <div class="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold mb-6">Registo Financeiro</h3>
+                    <form id="financeForm" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <input type="date" id="finDate" required class="p-3 border rounded-xl"><select id="finCat" required class="p-3 border rounded-xl"><option value="Entrada">Entrada (Caixa)</option><option value="Saida">Saída (Despesas)</option></select><input type="number" id="finValue" placeholder="Valor" required step="0.01" class="p-3 border rounded-xl"><input type="text" id="finDesc" placeholder="Descrição" required class="p-3 border rounded-xl md:col-span-2"><button type="submit" id="btnFin" class="md:col-span-5 bg-brand-dark text-brand-active font-bold p-3 rounded-xl hover:bg-black transition">Registar Transação</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"><h3 class="font-bold mb-4">Histórico Transacional</h3><div id="lista-financeiro" class="space-y-3"></div></div>
+            </div>
+
+            <!-- TAB: BLOQUEIO DE FERIAS -->
+            <div id="tab-ferias" class="tab-content bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-xl font-bold mb-6">Bloquear Datas (Férias/Folgas)</h3>
+                <form id="blockDateForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-600">Data de Início</label>
+                        <input type="date" id="blockedDateStart" required class="p-3 border rounded-xl">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-600">Data de Fim</label>
+                        <input type="date" id="blockedDateEnd" required class="p-3 border rounded-xl">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" id="btnBlock" class="w-full bg-brand-red text-white font-bold p-3 rounded-xl hover:bg-red-600 transition h-[48px]">Bloquear Período</button>
+                    </div>
+                </form>
+                <h4 class="font-bold text-gray-700 mb-3 border-t pt-4">Lista de Dias Bloqueados</h4>
+                <div id="lista-bloqueios" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: AGENDAMENTO MANUAL POR ADMIN -->
+    <div id="modalAdminBooking" class="fixed inset-0 bg-black/70 z-[300] hidden place-items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl relative animate-slideUp max-h-[95vh] overflow-y-auto">
+            <button onclick="closeAdminBookingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-10 h-10 bg-brand-lightGold text-brand-darkGold rounded-full flex items-center justify-center"><i data-lucide="calendar-plus" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Novo Agendamento</h3>
+                    <p class="text-xs text-gray-500">Registe o cliente na agenda Prime.</p>
+                </div>
+            </div>
+            
+            <form id="adminBookingForm" class="space-y-4">
+                <!-- Captura Inteligente -->
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1 flex items-center gap-1">
+                        <i data-lucide="clipboard-paste" class="w-3.5 h-3.5"></i> Captura Rápida (Cole texto do WhatsApp)
+                    </label>
+                    <input type="text" id="admSmartPaste" oninput="executeSmartPaste(this.value)" placeholder="Cole texto com Nome e Número..." class="w-full p-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-brand-active bg-white">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Cliente</label>
+                        <input type="text" id="admClient" list="clientList" oninput="autoFillPhone()" required placeholder="Ex: João Silva" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                        <datalist id="clientList"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">WhatsApp</label>
+                        <input type="tel" id="admPhone" required placeholder="(11) 99999-9999" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                    </div>
+                </div>
+                
+                <!-- Profissional Prime Club -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Barbeiro / Profissional</label>
+                    <select id="admPro" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                        <option value="Christiano barbosa">Christiano barbosa</option>
+                        <option value="Qualquer um">Qualquer um</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Serviço Principal</label>
+                        <select id="admService" onchange="updateAdminPrice()" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                            <option value="Corte Masculino" data-price="40">Corte Masculino (R$ 40)</option>
+                            <option value="Barba" data-price="25">Barba (R$ 25)</option>
+                            <option value="Corte & barba" data-price="60">Corte & barba (R$ 60)</option>
+                            <option value="Corte, barba & sobrancelha" data-price="65">Corte, barba & sob. (R$ 65)</option>
+                            <option value="Platinado" data-price="120">Platinado (R$ 120)</option>
+                            <option value="Luzes" data-price="100">Luzes (R$ 100)</option>
+                            <option value="Alinhamento capilar" data-price="40">Alinhamento (R$ 40)</option>
+                        </select>
+                        
+                        <!-- BOTÃO DE EXTRAS NO ADMIN -->
+                        <button type="button" onclick="abrirAdminAddons()" class="w-full mt-2 bg-brand-lightGold text-brand-darkGold border border-dashed border-brand-active rounded-lg p-2 text-xs font-bold hover:bg-[#fde68a] transition flex items-center justify-center gap-1">
+                            <i data-lucide="plus-circle" class="w-3 h-3"></i> Adicionar Extras / Outros Serviços
+                        </button>
+                        <div id="admExtrasSummary" class="text-[11px] text-gray-500 mt-1 font-medium leading-tight"></div>
+                    </div>
+                    
+                    <div class="col-span-1">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Total (R$)</label>
+                        <input type="number" id="admPrice" required value="40" step="0.01" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm font-bold text-brand-dark">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Data</label>
+                        <input type="date" id="admDate" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Horário</label>
+                        <select id="admTime" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="19:00">19:00</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Forma de Pagamento</label>
+                        <select id="admPayment" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                            <option value="No local">No local</option>
+                            <option value="PIX">PIX</option>
+                            <option value="Cartão">Cartão</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Observações / Notas</label>
+                        <input type="text" id="admNotes" placeholder="Opcional..." class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                    </div>
+                </div>
+                <button type="submit" id="btnAdmSubmit" class="w-full bg-brand-dark text-brand-active font-bold p-3 rounded-xl mt-4 hover:bg-black transition shadow-lg shadow-black/20">Confirmar Agendamento</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADDONS ADMIN (O "CARRINHO" DO PAINEL) -->
+    <div id="modalAdminAddons" class="fixed inset-0 bg-black/60 z-[400] hidden place-items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto border border-gray-200">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-lg font-bold text-gray-800">Adicionar Serviços & Extras</h2>
+                <button type="button" onclick="fecharAdminAddons()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">Selecione mais serviços para este agendamento.</p>
+            
+            <div id="adminAdditionalServicesGrid" class="mb-4"></div>
+            <hr class="border-t border-dashed border-gray-200 my-4">
+            <div id="adminAddonsGrid"></div>
+            
+            <button type="button" onclick="confirmarAdminAddons()" class="w-full bg-brand-dark text-brand-active font-bold p-3 rounded-xl mt-6 hover:bg-black transition shadow-lg shadow-black/20">Confirmar Seleção</button>
+        </div>
+    </div>
+
+    <!-- MODAL: VISUALIZADOR DE RECIBO -->
+    <div id="modalPDFPreview" class="fixed inset-0 bg-black/80 z-[500] hidden place-items-center p-2 sm:p-4">
+        <div class="bg-gray-100 rounded-2xl w-full max-w-md h-[90vh] shadow-2xl relative flex flex-col overflow-hidden animate-slideUp">
+            
+            <div class="bg-white p-3 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-gray-600"></i>
+                    Recibo
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button id="btnSharePDF" onclick="shareCurrentPDF()" class="bg-brand-dark hover:bg-black text-brand-active font-bold py-2 px-3 sm:px-4 rounded-xl flex items-center gap-2 transition shadow-lg shadow-black/30 text-sm">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Enviar
+                    </button>
+                    <button onclick="closePDFModal()" class="bg-gray-200 hover:bg-red-100 hover:text-red-600 text-gray-600 font-bold p-2 rounded-xl transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex-1 relative overflow-y-auto bg-gray-200 p-4 sm:p-8 flex justify-center items-start w-full">
+                <div id="receiptHTML" class="bg-white shadow-xl w-full max-w-[400px] relative overflow-hidden" style="min-height: 500px;">
+                    <!-- O Recibo HTML é injetado aqui pelo JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BIBLIOTECA PARA GERAR PDF NO FRONTEND CARREGADA NO FIM -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        let allContacts = [];
+        let allBookings = [];
+        let globalBlockedDates = []; 
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
+
+        let currentPdfFilename = "";
+
+        // ==========================================
+        // LÓGICA DE MULTI-SERVIÇOS PARA A PRIME CLUB
+        // ==========================================
+        const baseAdminServices = [
+            { id: "corte-masc", name: "Corte Masculino", price: 40.00 },
+            { id: "barba", name: "Barba", price: 25.00 },
+            { id: "corte-barba", name: "Corte & barba", price: 60.00 },
+            { id: "corte-barba-sob", name: "Corte, barba & sobrancelha", price: 65.00 },
+            { id: "platinado", name: "Platinado", price: 120.00 },
+            { id: "luzes", name: "Luzes", price: 100.00 },
+            { id: "alinhamento", name: "Alinhamento capilar", price: 40.00 }
+        ];
+
+        const adminAddonsList = [
+            { id: "pezinho", name: "Pezinho de cabelo", price: 10.00, type: 'check' },
+            { id: "sobrancelha", name: "Sobrancelha", price: 10.00, type: 'check' },
+            { id: "depil-nariz", name: "Depilação de nariz", price: 20.00, type: 'check' },
+            { id: "depil-orelha", name: "Depilação de orelhas", price: 20.00, type: 'check' },
+            { id: "camuflagem", name: "Camuflagem de fios brancos", price: 30.00, type: 'check' },
+            { id: "limpeza", name: "Limpeza de pele e extração", price: 35.00, type: 'check' }
+        ];
+
+        let adminSelectedExtrasSvc = [];
+        let adminTempExtrasSvc = {};
+
+        let adminSelectedAddons = [];
+        let adminTempAddons = {};
+
+        function abrirAdminAddons() {
+            adminTempAddons = {};
+            adminSelectedAddons.forEach(a => adminTempAddons[a.id] = a.qty || (a.checked ? 1 : 0));
+
+            adminTempExtrasSvc = {};
+            adminSelectedExtrasSvc.forEach(s => adminTempExtrasSvc[s.id] = true);
+
+            const baseSvcName = document.getElementById('admService').value;
+
+            // Renderizar Outros Procedimentos
+            let extraSvcHtml = '<h3 class="font-bold text-sm text-gray-700 mb-2">Adicionar Outro Serviço Principal</h3>';
+            let hasOther = false;
+            
+            baseAdminServices.forEach(s => {
+                if (s.name !== baseSvcName) {
+                    hasOther = true;
+                    let isChecked = adminTempExtrasSvc[s.id] ? 'checked' : '';
+                    extraSvcHtml += `<div class="addon-item">
+                        <div class="addon-info">
+                            <span class="addon-name">${s.name}</span>
+                            <span class="addon-price">+ R$ ${s.price.toFixed(2)}</span>
+                        </div>
+                        <div class="addon-ctrl">
+                            <input type="checkbox" class="addon-chk" ${isChecked} onchange="toggleAdminTempSvc('${s.id}', this.checked)">
+                        </div>
+                    </div>`;
+                }
+            });
+            document.getElementById('adminAdditionalServicesGrid').innerHTML = hasOther ? extraSvcHtml : '';
+
+            // Renderizar Addons (Extras)
+            let htmlAddons = '<h3 class="font-bold text-sm text-gray-700 mb-2">Extras da Barbearia</h3>';
+            adminAddonsList.forEach(a => {
+                let val = adminTempAddons[a.id] || 0;
+                htmlAddons += `<div class="addon-item">
+                    <div class="addon-info">
+                        <span class="addon-name">${a.name}</span>
+                        <span class="addon-price">+ R$ ${a.price.toFixed(2)}</span>
+                    </div>
+                    <div class="addon-ctrl">
+                        <input type="checkbox" class="addon-chk" ${val ? 'checked' : ''} onchange="toggleAdminTempAddon('${a.id}', this.checked)">
+                    </div>
+                </div>`;
+            });
+            document.getElementById('adminAddonsGrid').innerHTML = htmlAddons;
+
+            const modal = document.getElementById('modalAdminAddons');
+            modal.classList.remove('hidden');
+            modal.classList.add('grid');
+        }
+
+        function toggleAdminTempSvc(id, isChecked) { adminTempExtrasSvc[id] = isChecked; }
+        function toggleAdminTempAddon(id, isChecked) { adminTempAddons[id] = isChecked ? 1 : 0; }
+
+        function fecharAdminAddons() {
+            const modal = document.getElementById('modalAdminAddons');
+            modal.classList.remove('grid');
+            modal.classList.add('hidden');
+        }
+
+        function confirmarAdminAddons() {
+            adminSelectedAddons = [];
+            adminAddonsList.forEach(a => {
+                let qty = adminTempAddons[a.id] || 0;
+                if(qty > 0) adminSelectedAddons.push({ ...a, qty: qty });
+            });
+
+            adminSelectedExtrasSvc = [];
+            const baseSvcName = document.getElementById('admService').value;
+            baseAdminServices.forEach(s => {
+                if (adminTempExtrasSvc[s.id] && s.name !== baseSvcName) {
+                    adminSelectedExtrasSvc.push(s);
+                }
+            });
+
+            fecharAdminAddons();
+            updateAdminPrice(); 
+        }
+
+        function updateAdminPrice() {
+            const select = document.getElementById('admService');
+            const basePrice = Number(select.options[select.selectedIndex].getAttribute('data-price'));
+            const baseName = select.value;
+
+            adminSelectedExtrasSvc = adminSelectedExtrasSvc.filter(s => s.name !== baseName);
+
+            let extraSvcTotal = adminSelectedExtrasSvc.reduce((sum, item) => sum + item.price, 0);
+            let addonsTotal = adminSelectedAddons.reduce((sum, item) => sum + item.price, 0);
+
+            const total = basePrice + extraSvcTotal + addonsTotal;
+            document.getElementById('admPrice').value = total.toFixed(2);
+
+            let extraTextArray = [];
+            adminSelectedExtrasSvc.forEach(s => extraTextArray.push(s.name));
+            adminSelectedAddons.forEach(a => extraTextArray.push(a.name));
+
+            const summaryDiv = document.getElementById('admExtrasSummary');
+            if (extraTextArray.length > 0) {
+                summaryDiv.innerHTML = `Com extras: <br><span class="text-brand-darkGold">+ ${extraTextArray.join(', ')}</span>`;
+            } else {
+                summaryDiv.innerHTML = '';
+            }
+        }
+
+        // ==========================================
+        // RESTANTE DO CÓDIGO
+        // ==========================================
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('flex');
+        }
+
+        function openPDFPreview(client, phone, service, date, time, price, payment, notes, professional) {
+            document.getElementById('modalPDFPreview').classList.remove('hidden');
+            document.getElementById('modalPDFPreview').classList.add('flex');
+            
+            let displayDate = date.includes('-') ? date.split('-').reverse().join('/') : date;
+
+            const htmlContent = `
+                <div style="padding: 30px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; background: #fff; position: relative; width: 100%; box-sizing: border-box;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 10px; background: #0a0a0a;"></div>
+                    
+                    <div style="text-align: center; margin-bottom: 25px; margin-top: 15px;">
+                        <h2 style="color: #d4af37; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">PRIME CLUB</h2>
+                        <h3 style="color: #111; margin: 3px 0 0 0; font-size: 11px; letter-spacing: 4px; font-weight: 600;">BARBEARIA</h3>
+                    </div>
+
+                    <div style="background: #fafafa; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #0a0a0a; border-bottom: 1px solid #ddd; padding-bottom: 8px; font-size: 13px; text-transform: uppercase; font-weight: bold;">Detalhes do Agendamento</h4>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <tr><td style="padding: 8px 0; color: #666;">Cliente</td><td style="padding: 8px 0; text-align: right; font-weight: bold; color: #222;">${client}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Profissional</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; color: #222;">${professional}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Serviços</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; font-weight: bold; color: #b45309;">${service}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Data e Hora</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; color: #222;">${displayDate} às ${time}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Pagamento</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; color: #222;">${payment || 'No local'}</td></tr>
+                        </table>
+                    </div>
+
+                    <div style="padding: 15px 20px; background: #0a0a0a; color: #d4af37; border-radius: 12px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="font-size: 14px; font-weight: 500; text-transform: uppercase;">Total</td>
+                                <td style="font-size: 20px; font-weight: bold; text-align: right;">R$ ${Number(price || 0).toFixed(2)}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    ${notes && notes.trim() !== '' && !notes.startsWith('Profissional:') ? `<div style="margin-top: 20px; padding: 12px; border-left: 3px solid #d4af37; background: #fef3c7; font-size: 12px; color: #555;"><strong>Obs:</strong> ${notes}</div>` : ''}
+
+                    <div style="margin-top: 30px; text-align: center; font-size: 11px; color: #888;">
+                        <p style="margin: 0;">Obrigado por escolher a Prime Club!</p>
+                        <p style="margin: 4px 0 0 0;">Pedimos que chegue 5 minutos antes do seu horário.</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('receiptHTML').innerHTML = htmlContent;
+            currentPdfFilename = `Recibo_PrimeClub_${client.replace(/\s+/g, '_')}.pdf`;
+        }
+
+        function closePDFModal() {
+            document.getElementById('modalPDFPreview').classList.remove('flex');
+            document.getElementById('modalPDFPreview').classList.add('hidden');
+        }
+
+        function shareCurrentPDF() {
+            const btn = document.getElementById('btnSharePDF');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Aguarde...`;
+            lucide.createIcons();
+            
+            const elementToConvert = document.getElementById('receiptHTML');
+
+            var opt = { 
+                margin: 0, 
+                filename: currentPdfFilename, 
+                image: { type: 'jpeg', quality: 0.98 }, 
+                html2canvas: { scale: 2 }, 
+                jsPDF: { unit: 'in', format: 'a5', orientation: 'portrait' } 
+            };
+
+            html2pdf().set(opt).from(elementToConvert).outputPdf('blob').then(function(pdfBlob) {
+                btn.innerHTML = originalHTML;
+                lucide.createIcons();
+
+                var file = new File([pdfBlob], currentPdfFilename, { type: 'application/pdf' });
+                var shareData = { title: 'Recibo Prime Club', files: [file] };
+
+                if (navigator.canShare && navigator.canShare(shareData)) {
+                    navigator.share(shareData).catch(function(err) {
+                        forceDownloadPDF(pdfBlob);
+                    });
+                } else {
+                    forceDownloadPDF(pdfBlob);
+                }
+            });
+        }
+
+        function forceDownloadPDF(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentPdfFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert("O seu dispositivo bloqueou a partilha direta. O PDF foi transferido.");
+        }
+
+        function executeSmartPaste(val) {
+            if (!val || val.trim() === "") return;
+            let phoneMatch = val.replace(/\s+/g, '').match(/\+?\d{8,15}/) || val.match(/\d[\d\s\-\(\)]{7,}\d/);
+            let extractedPhone = phoneMatch ? phoneMatch[0].replace(/\D/g, '') : '';
+            let extractedName = val;
+            if (phoneMatch) {
+                extractedName = val.replace(phoneMatch[0], '');
+            }
+            extractedName = extractedName.replace(/[\-\:\,\;\n\r\t\*\_]/g, ' ').replace(/\s+/g, ' ').trim();
+            if (extractedName.length > 1) {
+                document.getElementById('admClient').value = extractedName;
+            }
+            if (extractedPhone.length >= 8) {
+                document.getElementById('admPhone').value = extractedPhone;
+            }
+        }
+
+        function autoFillPhone() {
+            const inputName = document.getElementById('admClient').value;
+            const foundContact = allContacts.find(c => c.name === inputName);
+            if (foundContact) {
+                document.getElementById('admPhone').value = foundContact.phone;
+            }
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try { document.execCommand('copy'); } catch (err) {}
+            document.body.removeChild(textArea);
+        }
+
+        function shareBooking(client, phone, service, date, time) {
+            let displayDate = date;
+            if(date.includes('-')) {
+                const [y, m, d] = date.split('-');
+                displayDate = `${d}/${m}/${y}`;
+            }
+
+            const message = `Fala mestre *${client}*! \nO seu agendamento na *Prime Club Barbearia* está confirmado! ✂️\n\n💈 *Serviço:* ${service}\n📅 *Data:* ${displayDate}\n⏰ *Hora:* ${time}\n\nPedimos que chegue 5 minutinhos antes. Se precisar de desmarcar, dá-nos um toque com antecedência. Tamo junto! 👊`;
+            
+            copyToClipboard(message);
+            
+            let cleanPhone = String(phone).replace(/\D/g, '');
+            if(cleanPhone.length === 9) { cleanPhone = "351" + cleanPhone; } 
+            else if (cleanPhone.length === 11) { cleanPhone = "55" + cleanPhone; }
+
+            const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        async function deleteBooking(dateStr, timeStr) {
+            if(!confirm(`Eliminar permanentemente o agendamento de ${dateStr} às ${timeStr}?`)) return;
+            try {
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'delete_booking', date: dateStr, time: timeStr })
+                });
+                const json = await res.json();
+                if(json.status === "success") {
+                    alert("Agendamento eliminado.");
+                    fetchData();
+                } else {
+                    alert("Erro ao eliminar agendamento.");
+                }
+            } catch(e) {
+                alert("Erro de ligação.");
+            }
+        }
+
+        function openAdminBookingModal(name = '', phone = '') {
+            document.getElementById('admSmartPaste').value = '';
+            document.getElementById('admClient').value = name;
+            document.getElementById('admPhone').value = phone;
+            document.getElementById('admNotes').value = '';
+            document.getElementById('admDate').value = new Date().toISOString().split('T')[0];
+            
+            adminSelectedAddons = [];
+            adminSelectedExtrasSvc = [];
+            document.getElementById('admExtrasSummary').innerHTML = '';
+            
+            updateAdminPrice();
+            
+            const modal = document.getElementById('modalAdminBooking');
+            modal.classList.remove('hidden');
+            modal.classList.add('grid');
+        }
+
+        function closeAdminBookingModal() {
+            const modal = document.getElementById('modalAdminBooking');
+            modal.classList.remove('grid');
+            modal.classList.add('hidden');
+        }
+
+        function buildContactsList(bookings) {
+            if(!bookings) return;
+            const contactsMap = {};
+            bookings.forEach(b => {
+                const phone = String(b['Telefone']).trim();
+                const name = String(b['Cliente']).trim();
+                if(!phone) return;
+                if(!contactsMap[phone]) { contactsMap[phone] = { name: name, phone: phone, visits: 0 }; }
+                if (b['Status'] === 'Confirmado') { contactsMap[phone].visits += 1; }
+            });
+            allContacts = Object.values(contactsMap).sort((a,b) => a.name.localeCompare(b.name));
+            renderContactsTable(allContacts);
+
+            const datalist = document.getElementById('clientList');
+            if (datalist) {
+                datalist.innerHTML = allContacts.map(c => `<option value="${c.name}"></option>`).join('');
+            }
+        }
+
+        function renderContactsTable(contacts) {
+            const tbody = document.getElementById('contacts-table-body');
+            if(contacts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">Nenhum cliente encontrado.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = contacts.map(c => `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-6 py-4 font-bold text-gray-800">${c.name}</td>
+                    <td class="px-6 py-4">${c.phone}</td>
+                    <td class="px-6 py-4 text-center"><span class="bg-gray-100 text-brand-darkGold px-2 py-1 rounded-full text-xs font-black">${c.visits}</span></td>
+                    <td class="px-6 py-4 text-right flex justify-end gap-2">
+                        <button onclick="openAdminBookingModal('${c.name}', '${c.phone}')" class="p-2 text-brand-darkGold hover:bg-gray-100 rounded-lg transition" title="Agendar Novo">
+                            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function filterContacts() {
+            const q = document.getElementById('searchContact').value.toLowerCase();
+            const filtered = allContacts.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+            renderContactsTable(filtered);
+        }
+
+        // SUBMETER NOVO AGENDAMENTO NO ADMIN
+        document.getElementById('adminBookingForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const client = document.getElementById('admClient').value;
+            const phone = document.getElementById('admPhone').value;
+            const serviceSelect = document.getElementById('admService');
+            const pro = document.getElementById('admPro').value;
+            const price = document.getElementById('admPrice').value; 
+            const date = document.getElementById('admDate').value;
+            const time = document.getElementById('admTime').value;
+            const paymentMethod = document.getElementById('admPayment').value;
+            const notesRaw = document.getElementById('admNotes').value;
+            const btn = document.getElementById('btnAdmSubmit');
+
+            btn.disabled = true;
+            btn.innerText = "A guardar...";
+
+            let extraTextArray = [];
+            adminSelectedExtrasSvc.forEach(s => extraTextArray.push(s.name));
+            adminSelectedAddons.forEach(a => extraTextArray.push(a.name));
+
+            const addonsTextStr = extraTextArray.join(', ');
+            const finalServiceString = serviceSelect.value + (addonsTextStr ? ` (+ ${addonsTextStr})` : '');
+            
+            // Juntar o profissional nas notas para manter a estrutura da DB
+            const finalNotes = `Profissional: ${pro}` + (notesRaw ? ` | Obs: ${notesRaw}` : '');
+
+            const payload = {
+                type: 'booking',
+                client,
+                phone,
+                service: finalServiceString,
+                date,
+                time,
+                price: Number(price), 
+                paymentMethod,
+                notes: finalNotes
+            };
+
+            try {
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if(json.status === "error") {
+                    alert("Ops! O horário já está reservado ou bloqueado.");
+                } else {
+                    closeAdminBookingModal();
+                    fetchData(); 
+                    if(confirm("Agendamento guardado! Gerar PDF do recibo?")) {
+                        openPDFPreview(client, phone, finalServiceString, date, time, price, paymentMethod, notesRaw, pro);
+                    } else if(confirm("Enviar WhatsApp de confirmação?")) {
+                        shareBooking(client, phone, finalServiceString, date, time);
+                    }
+                }
+            } catch(err) {
+                alert("Erro ao registar.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Confirmar Agendamento";
+            }
+        };
+
+        document.getElementById('blockDateForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const start = document.getElementById('blockedDateStart').value;
+            const end = document.getElementById('blockedDateEnd').value;
+            const btn = document.getElementById('btnBlock');
+            btn.disabled = true;
+            btn.innerText = "A guardar...";
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'block_range', startDate: start, endDate: end })
+                });
+                document.getElementById('blockedDateStart').value = "";
+                document.getElementById('blockedDateEnd').value = "";
+                fetchData();
+            } catch (err) { alert("Erro ao bloquear período."); }
+            btn.disabled = false;
+            btn.innerText = "Bloquear Período";
+        };
+
+        async function unblockDate(dateStr) {
+            if(!confirm(`Desbloquear o dia ${dateStr}?`)) return;
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'unblock_date', date: dateStr })
+                });
+                fetchData();
+            } catch(e) { alert("Erro ao comunicar."); }
+        }
+
+        // --- LOGIN ---
+        document.getElementById('loginForm').onsubmit = async function(e) {
+            e.preventDefault(); 
+            const pwd = document.getElementById('adminPwd').value; 
+            const btn = document.getElementById('btnLogin');
+            
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>`;
+            lucide.createIcons();
+
+            try {
+                const res = await fetch(WEB_APP_URL + "?action=login&pwd=" + encodeURIComponent(pwd));
+                const json = await res.json();
+                
+                if(json.status === "success") { 
+                    document.getElementById('login-screen').style.display = 'none'; 
+                    try{playLoudNotification();}catch(err){} 
+                    fetchData(); 
+                    setInterval(fetchData, 20000); 
+                } else { 
+                    alert('Palavra-passe incorreta!'); 
+                    btn.innerHTML = originalText; 
+                }
+            } catch (error) {
+                alert('Erro de ligação. Certifique-se de que publicou o script.');
+                btn.innerHTML = originalText;
+            }
+        };
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('bg-brand-active', 'text-black', 'shadow-md'); n.classList.add('hover:bg-gray-800', 'text-gray-300'); });
+            el.classList.remove('hover:bg-gray-800', 'text-gray-300'); el.classList.add('bg-brand-active', 'text-black', 'shadow-md');
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active')); document.getElementById('tab-' + tabId).classList.add('active');
+            
+            if (window.innerWidth < 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (!sidebar.classList.contains('hidden')) {
+                    sidebar.classList.add('hidden');
+                    sidebar.classList.remove('flex');
+                }
+            }
+        }
+
+        const workHours = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "13:00", "13:30", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+        const dayNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        function getWeekDates() {
+            let curr = new Date(); let dayOfWeek = curr.getDay(); let diff = curr.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            let monday = new Date(curr.setDate(diff)); let week = [];
+            for (let i = 0; i < 6; i++) { let nextDay = new Date(monday); nextDay.setDate(monday.getDate() + i); week.push(nextDay); }
+            return week;
+        }
+
+        function toLocalISOString(date) { 
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        
+        function getColorForService(service) { 
+            const s = String(service).toLowerCase(); 
+            if(s.includes("platinado") || s.includes("luzes")) return "bg-gray-800"; 
+            if(s.includes("barba")) return "bg-brand-darkGold"; 
+            return "bg-black"; 
+        }
+
+        function renderDynamicCalendar(bookings) {
+            const weekDates = getWeekDates();
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            document.getElementById('calendar-month-title').innerText = `${monthNames[weekDates[0].getMonth()]} ${weekDates[0].getFullYear()}`;
+            
+            let headersHTML = `<div class="cal-header border-t border-e border-gray-200"></div>`;
+            const todayStr = toLocalISOString(new Date());
+            
+            weekDates.forEach((date, i) => {
+                const dateStr = toLocalISOString(date); 
+                const dayNum = String(date.getDate()).padStart(2, '0');
+                if (dateStr === todayStr) headersHTML += `<div class="cal-header border-t border-gray-200 bg-brand-lightGold"><span class="text-brand-darkGold text-[10px] uppercase block font-bold">${dayNames[i]}</span><span class="text-sm md:text-lg text-white font-bold bg-brand-darkGold w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center mx-auto mt-0.5">${dayNum}</span></div>`;
+                else headersHTML += `<div class="cal-header border-t border-gray-200"><span class="text-gray-400 text-[10px] uppercase block">${dayNames[i]}</span><span class="text-sm md:text-lg text-gray-800">${dayNum}</span></div>`;
+            });
+            document.getElementById('cal-headers').innerHTML = headersHTML;
+            
+            let bookingMap = {};
+            if(bookings) bookings.forEach(b => { bookingMap[`${b['Data Agendamento']}_${b['Hora']}`] = b; });
+            
+            let bodyHTML = '';
+            workHours.forEach(hour => {
+                bodyHTML += `<div class="cal-cell flex items-start justify-center pt-2"><span class="cal-time">${hour}</span></div>`;
+                weekDates.forEach((date, index) => {
+                    const dateStr = toLocalISOString(date); 
+                    const b = bookingMap[`${dateStr}_${hour}`];
+                    const bgClass = (dateStr === todayStr) ? 'bg-brand-lightGold/30' : '';
+                    
+                    const isBlockedDate = globalBlockedDates.includes(dateStr);
+
+                    if (isBlockedDate) {
+                        bodyHTML += `<div class="cal-cell bg-gray-100/80 flex items-center justify-center"><span class="text-[10px] text-gray-400 font-bold">Folga/Férias</span></div>`;
+                    } else if (b && b['Status'] !== 'Cancelado') { 
+                        const initials = String(b['Cliente']).substring(0,2).toUpperCase(); 
+                        bodyHTML += `<div class="cal-cell ${bgClass}"><div class="event-pill ${getColorForService(b['Servico'])} hover:opacity-90 border border-brand-active/20" title="${b['Cliente']} - ${b['Servico']}"><div class="font-bold text-[10px] md:text-xs text-brand-active">${initials}</div><div class="truncate text-[9px] md:text-[11px] mt-1 hidden sm:block text-gray-300">${b['Servico']}</div></div></div>`; 
+                    } else { 
+                        bodyHTML += `<div class="cal-cell ${bgClass}"></div>`; 
+                    }
+                });
+            });
+            document.getElementById('cal-body').innerHTML = bodyHTML;
+        }
+
+        let lastTotalItems = -1;
+        function playLoudNotification() { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.5); gain.gain.setValueAtTime(1, ctx.currentTime); osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 1.2); osc.stop(ctx.currentTime + 1.2); }
+
+        async function fetchData() {
+            const syncUI = document.getElementById('sync-status'); syncUI.innerText = "A atualizar...";
+            try {
+                const res = await fetch(WEB_APP_URL + "?action=get_all"); const data = await res.json();
+                allBookings = data.bookings || [];
+
+                buildContactsList(allBookings);
+
+                if (data.blocked) {
+                    globalBlockedDates = data.blocked.map(b => String(b['DataBloqueio']).trim());
+                }
+
+                if (data.bookings) { data.bookings = data.bookings.map(b => { let dataStr = String(b['Data Agendamento']); if (dataStr.includes('T')) b['Data Agendamento'] = dataStr.split('T')[0]; let horaStr = String(b['Hora']); let timeMatch = horaStr.match(/\d{1,2}:\d{2}/); if (timeMatch) b['Hora'] = timeMatch[0]; return b; }); }
+                const currentTotalItems = (data.bookings ? data.bookings.length : 0);
+                if (lastTotalItems !== -1 && currentTotalItems > lastTotalItems) { playLoudNotification(); }
+                lastTotalItems = currentTotalItems;
+                
+                renderDynamicCalendar(data.bookings);
+                
+                const bookingsList = document.getElementById('lista-agendamentos');
+                if(!data.bookings || data.bookings.length === 0) bookingsList.innerHTML = `<div class="text-center py-5 text-gray-400">Nenhum registo.</div>`;
+                else bookingsList.innerHTML = data.bookings.reverse().map(b => {
+                    const isConfirmed = b['Status'] === 'Confirmado'; const statusColor = isConfirmed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
+                    const obs = b['Observações'] || b['Observacoes'] || '';
+                    const obsHtml = obs ? `<p class="text-xs text-gray-500 mt-1 italic bg-gray-50 p-2 rounded border border-gray-100">"${obs}"</p>` : '';
+                    
+                    const safeObs = obs.replace(/['"]/g, " ");
+                    
+                    return `
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-brand-active hover:shadow-md transition bg-white gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-brand-lightGold text-brand-darkGold flex items-center justify-center font-bold border border-[#fde68a]"><span class="text-sm">${b['Hora']}</span></div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 text-sm md:text-lg">${b['Cliente']}</h4>
+                                    <p class="text-xs text-gray-500 mt-1">${b['Servico']} · ${b['Telefone']}</p>
+                                    ${obsHtml}
+                                </div>
+                            </div>
+                            <div class="flex sm:flex-col items-end justify-between sm:justify-start gap-1">
+                                <span class="px-2 py-1 rounded-full text-[10px] md:text-xs font-bold ${statusColor}">${b['Status']}</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[10px] text-gray-400">${b['Data Agendamento']}</span>
+                                    
+                                    <button onclick="shareBooking('${b['Cliente']}', '${b['Telefone']}', '${b['Servico']}', '${b['Data Agendamento']}', '${b['Hora']}')" class="p-1 text-green-600 hover:bg-green-50 rounded-lg transition" title="Partilhar Texto">
+                                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                                    </button>
+                                    
+                                    <button onclick="deleteBooking('${b['Data Agendamento']}', '${b['Hora']}')" class="p-1 text-red-500 hover:bg-red-50 rounded-lg transition" title="Eliminar Agendamento">
+                                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                const bloqueiosList = document.getElementById('lista-bloqueios');
+                if(!data.blocked || data.blocked.length === 0) {
+                    bloqueiosList.innerHTML = `<p class="text-gray-400 italic text-sm col-span-full">Nenhum dia bloqueado atualmente.</p>`;
+                } else {
+                    bloqueiosList.innerHTML = data.blocked.map(b => `
+                        <div class="flex items-center justify-between p-2.5 bg-red-50 text-red-800 rounded-xl border border-red-100 text-xs">
+                            <span class="font-bold">${b['DataBloqueio']}</span>
+                            <button onclick="unblockDate('${b['DataBloqueio']}')" class="text-red-600 hover:text-red-800 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('stat-agendamentos').innerText = data.bookings ? data.bookings.length : 0;
+                let receita = 0; const clientesMap = new Map();
+                if(data.bookings) data.bookings.forEach(b => { if(b['Status'] === 'Confirmado' && b['Valor']) receita += Number(b['Valor']); if(!clientesMap.has(b['Telefone'])) clientesMap.set(b['Telefone'], b['Cliente']); });
+                document.getElementById('stat-receita').innerText = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(receita);
+                document.getElementById('lista-clientes').innerHTML = Array.from(clientesMap, ([phone, name]) => ({phone, name})).slice(0,5).map(c => `<div class="flex items-center justify-between p-2"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600">${String(c.name).substring(0,2).toUpperCase()}</div><div><p class="text-sm font-bold">${c.name}</p><p class="text-xs text-gray-400">${c.phone}</p></div></div></div>`).join('');
+                syncUI.innerText = "Sincronizado";
+                lucide.createIcons();
+            } catch (error) { syncUI.innerText = "Erro de Ligação"; }
+        }
+        document.getElementById('finDate').value = new Date().toISOString().slice(0,10);
+    </script>
+</body>
+</html>

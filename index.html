@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Prime Club Barbearia — Agendamento</title>
+  <title>Prime Club Barbearia  Agendamento</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root{--gold:#D4AF37;--bg:#090909}
     html{scroll-behavior:smooth}
@@ -26,14 +27,13 @@
     .hook-text{white-space:pre-line;line-height:1.6}
     @media(min-width:1024px){.title{font-size:4.5rem}}
   </style>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
   <header class="relative border-b border-neutral-900 bg-[#070707]">
     <div class="container mx-auto px-6 py-8 flex items-center justify-between">
       <div class="flex flex-col md:flex-row md:items-center gap-6">
-        <img src="/images/prime_club_barbearia_logo.png" alt="Logo Prime Club" class="logo">
+        <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo Prime Club" class="logo">
         <div class="border-l-0 md:border-l border-neutral-700 md:pl-6">
           <div class="text-xs gold uppercase tracking-widest mb-1">Prime Club Barbearia</div>
           <div class="hook-text text-sm text-gray-300 italic font-medium">
@@ -67,13 +67,12 @@
       </div>
       <div class="hidden lg:block">
         <div class="relative">
-          <div class="absolute -inset-4 bg-gold opacity-10 blur-2xl rounded-full"></div>
           <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" alt="Interior Barbearia" class="relative rounded-2xl shadow-2xl grayscale transition hover:grayscale-0 duration-700">
         </div>
       </div>
     </section>
 
-    <!-- Services Section -->
+    <!-- Services Section (completa) -->
     <section id="services" class="py-24 border-t border-neutral-900">
       <div class="text-center mb-16">
         <h2 class="text-4xl font-serif gold mb-4">Nossos Serviços</h2>
@@ -81,6 +80,7 @@
       </div>
 
       <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Inclui todos os serviços que você enviou (vídeo + HTML original) -->
         <div class="card">
           <h3 class="text-xl font-bold mb-2">Alinhamento capilar</h3>
           <p class="text-gray-500 text-sm mb-6">Tratamento para fios alinhados e sem frizz.</p>
@@ -89,6 +89,7 @@
             <span class="text-2xl font-bold">R$35</span>
           </div>
         </div>
+
         <div class="card">
           <h3 class="text-xl font-bold mb-2">Barba</h3>
           <p class="text-gray-500 text-sm mb-6">Design e cuidado completo para sua barba.</p>
@@ -97,6 +98,7 @@
             <span class="text-2xl font-bold">R$40</span>
           </div>
         </div>
+
         <div class="card">
           <h3 class="text-xl font-bold mb-2">Camuflagem de fios brancos</h3>
           <p class="text-gray-500 text-sm mb-6">Cobertura natural e discreta dos fios.</p>
@@ -105,6 +107,16 @@
             <span class="text-2xl font-bold">R$50</span>
           </div>
         </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Corte</h3>
+          <p class="text-gray-500 text-sm mb-6">Cortes clássicos e modernos para todas as ocasiões.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">30 min</span>
+            <span class="text-2xl font-bold">R$40</span>
+          </div>
+        </div>
+
         <div class="card">
           <h3 class="text-xl font-bold mb-2">Corte & barba</h3>
           <p class="text-gray-500 text-sm mb-6">O combo clássico indispensável.</p>
@@ -113,6 +125,7 @@
             <span class="text-2xl font-bold">R$60</span>
           </div>
         </div>
+
         <div class="card">
           <h3 class="text-xl font-bold mb-2">Corte & pigmentação</h3>
           <p class="text-gray-500 text-sm mb-6">Definição máxima e acabamento perfeito.</p>
@@ -121,6 +134,16 @@
             <span class="text-2xl font-bold">R$120</span>
           </div>
         </div>
+
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Pacote Premium</h3>
+          <p class="text-gray-500 text-sm mb-6">Corte, Barba, Sobrancelha & Tratamento Facial.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">90 min</span>
+            <span class="text-2xl font-bold">R$90</span>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -140,8 +163,10 @@
               <option value="Alinhamento capilar" data-price="35">Alinhamento capilar</option>
               <option value="Barba" data-price="40">Barba</option>
               <option value="Camuflagem de fios brancos" data-price="50">Camuflagem de fios brancos</option>
+              <option value="Corte" data-price="40">Corte</option>
               <option value="Corte & barba" data-price="60" selected>Corte & barba</option>
               <option value="Corte & pigmentação" data-price="120">Corte & pigmentação</option>
+              <option value="Pacote Premium" data-price="90">Pacote Premium</option>
             </select>
           </div>
 
@@ -218,7 +243,6 @@
       <h2 class="text-3xl font-serif gold mb-8">Nossa Localização</h2>
       <div class="map-wrap flex flex-col items-center justify-center relative">
         <iframe id="mapIframe" src="https://share.google/Xt5KgdgiEDS7OyMT8" style="width:100%;height:100%;border:0;" loading="lazy"></iframe>
-        <!-- Overlay if blocked -->
         <div id="mapOverlay" class="absolute inset-0 bg-neutral-900 flex flex-col items-center justify-center p-8 text-center hidden">
           <i class="fas fa-map-marked-alt text-5xl mb-4 gold"></i>
           <h4 class="text-xl mb-2">Visite-nos na Barbearia</h4>
@@ -230,7 +254,7 @@
   </main>
 
   <footer class="py-16 bg-[#050505] border-t border-neutral-900 text-center">
-    <img src="/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-32 mb-8 grayscale hover:grayscale-0 transition duration-500">
+    <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-32 mb-8 grayscale hover:grayscale-0 transition duration-500">
     <div class="flex justify-center gap-6 mb-8 text-2xl text-neutral-600">
       <a href="#" class="hover:text-gold transition"><i class="fab fa-instagram"></i></a>
       <a href="#" class="hover:text-gold transition"><i class="fab fa-whatsapp"></i></a>
@@ -256,7 +280,6 @@
       summaryService.textContent = opt.value;
       summaryBarber.textContent = barberEl.value;
       summaryPrice.textContent = 'R$' + opt.dataset.price;
-
       if(dateEl.value && selectedTime) {
         const parts = dateEl.value.split('-');
         summaryDatetime.textContent = parts[2]+'/'+parts[1]+'/'+parts[0] + ' • ' + selectedTime;
@@ -295,24 +318,17 @@
         res.className = 'mt-4 text-center font-bold text-orange-500';
         return;
       }
-
-      const msg = `Olá! Gostaria de agendar:\n\n📌 Serviço: ${serviceEl.value}\n💈 Barbeiro: ${barberEl.value}\n📅 Data: ${summaryDatetime.textContent}\n👤 Cliente: ${name}`;
+      const msg = `Olá! Gostaria de agendar:\n\n📍 Serviço: ${serviceEl.value}\n💈 Barbeiro: ${barberEl.value}\n📅 Data: ${summaryDatetime.textContent}\n👤 Cliente: ${name}`;
       const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`;
-
       const res = document.getElementById('result');
       res.innerHTML = `<a href="${whatsappUrl}" target="_blank" class="text-gold underline">Clique aqui para enviar no WhatsApp</a>`;
       res.className = 'mt-4 text-center font-bold text-green-500';
     });
 
-    // Check if iframe works (very basic check)
     window.onload = function() {
-      const iframe = document.getElementById('mapIframe');
-      setTimeout(() => {
-        // Fallback for demo: if iframe is totally empty or blocked in this context
-        // In real web it depends on CORS/X-Frame-Options
-        console.log("Verificando mapa...");
-      }, 2000);
       updateSummary();
+      // Note: iframe embed may be blocked by the provider (X-Frame-Options).
+      // If blocked, users should open the link in a new tab (button provided).
     };
   </script>
 </body>

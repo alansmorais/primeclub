@@ -12,28 +12,33 @@
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:#fff;font-family:'Inter',system-ui,-apple-system,sans-serif;margin:0}
     
-    .logo{
-      width:130px; 
-      height:130px; 
-      object-fit:cover; 
-      border-radius:50%;
-      border: 2px solid var(--gold);
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
-    }
-    
+    .logo{width:130px; height:130px; object-fit:cover; border-radius:50%; border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);}
     .title{font-family:'Cinzel', serif;font-size:3rem;line-height:1.1}
-    .card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:16px;padding:24px;transition:0.3s}
-    .card:hover{border-color:var(--gold)}
-    .time{border:1px solid #2b2b2b;padding:12px;border-radius:12px;background:#0e0e0e;transition:0.2s;text-align:center}
-    .time:hover{border-color:var(--gold);color:var(--gold)}
-    .time.selected{background:var(--gold);color:#000;border-color:var(--gold)}
+    
+    /* Cards de Serviço */
+    .card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:16px;padding:24px;transition:0.3s; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;}
+    .card:hover{border-color:var(--gold); transform:translateY(-5px);}
+    
+    /* Botões de Data e Hora */
+    .date-card{min-width:70px; border:1px solid #2b2b2b; padding:12px 8px; border-radius:12px; background:#0e0e0e; transition:0.2s; text-align:center; cursor:pointer; flex-shrink:0;}
+    .date-card.selected{background:var(--gold); color:#000; border-color:var(--gold); font-weight:bold;}
+    
+    .time{border:1px solid #2b2b2b;padding:12px;border-radius:12px;background:#0e0e0e;transition:0.2s;text-align:center; cursor:pointer;}
+    .time:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+    .time.selected{background:var(--gold);color:#000;border-color:var(--gold); font-weight:bold;}
+    .time:disabled{opacity:0.3; cursor:not-allowed; text-decoration:line-through; background:#050505;}
+    
+    /* Utilitários */
     .btn-gold{background:var(--gold);color:#000;padding:14px 24px;border-radius:999px;font-weight:700;display:inline-block;transition:0.3s;text-align:center; cursor:pointer;}
     .btn-gold:hover:not(:disabled){transform:scale(1.02);box-shadow:0 0 20px rgba(212,175,55,0.3)}
     .btn-gold:disabled{opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none;}
     .btn-outline{border:1px solid rgba(212,175,55,0.4);padding:12px 24px;border-radius:999px;transition:0.3s;text-align:center}
     .btn-outline:hover{background:rgba(212,175,55,0.1)}
+    
     .map-wrap{height:400px;border-radius:16px;overflow:hidden;border:1px solid #222;background:#000; position: relative;}
     .hook-text{white-space:pre-line;line-height:1.6}
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     @media(min-width:1024px){.title{font-size:4.5rem}}
   </style>
 </head>
@@ -69,7 +74,6 @@
         </p>
         <div class="mt-10 flex flex-wrap gap-5">
           <a href="#booking" class="btn-gold w-full md:w-auto">Agendar Agora</a>
-          <a href="#services" class="btn-outline w-full md:w-auto text-white">Ver Serviços</a>
         </div>
       </div>
       <div class="hidden lg:block">
@@ -79,134 +83,71 @@
       </div>
     </section>
 
+    <!-- Lista Atualizada de Serviços -->
     <section id="services" class="py-24 border-t border-neutral-900">
       <div class="text-center mb-16">
         <h2 class="text-4xl font-serif text-[#D4AF37] mb-4">Nossos Serviços</h2>
         <div class="h-1 w-20 bg-[#D4AF37] mx-auto rounded-full"></div>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Alinhamento capilar</h3>
-          <p class="text-gray-500 text-sm mb-6">Tratamento para fios alinhados e sem frizz.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">30 min</span>
-            <span class="text-2xl font-bold">R$35</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Barba</h3>
-          <p class="text-gray-500 text-sm mb-6">Design e cuidado completo para sua barba.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">30 min</span>
-            <span class="text-2xl font-bold">R$40</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Camuflagem de fios brancos</h3>
-          <p class="text-gray-500 text-sm mb-6">Cobertura natural e discreta dos fios.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">45 min</span>
-            <span class="text-2xl font-bold">R$50</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Corte</h3>
-          <p class="text-gray-500 text-sm mb-6">Cortes clássicos e modernos para todas as ocasiões.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">30 min</span>
-            <span class="text-2xl font-bold">R$40</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Corte & barba</h3>
-          <p class="text-gray-500 text-sm mb-6">O combo clássico indispensável.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">45 min</span>
-            <span class="text-2xl font-bold">R$60</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Corte & pigmentação</h3>
-          <p class="text-gray-500 text-sm mb-6">Definição máxima e acabamento perfeito.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">90 min</span>
-            <span class="text-2xl font-bold">R$120</span>
-          </div>
-        </div>
-        <div class="card">
-          <h3 class="text-xl font-bold mb-2">Pacote Premium</h3>
-          <p class="text-gray-500 text-sm mb-6">Corte, Barba, Sobrancelha & Tratamento Facial.</p>
-          <div class="flex justify-between items-center text-[#D4AF37]">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">90 min</span>
-            <span class="text-2xl font-bold">R$90</span>
-          </div>
-        </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-grid">
+        <!-- Os serviços serão injetados aqui via JavaScript para facilitar a manutenção -->
       </div>
     </section>
 
+    <!-- Booking Section Interativa -->
     <section id="booking" class="py-24 bg-[#070707] rounded-3xl p-8 lg:p-16 mb-24 border border-neutral-900">
       <div class="text-center mb-16">
         <h2 class="text-4xl font-serif text-[#D4AF37] mb-4">Reserve seu Horário</h2>
-        <p class="text-gray-400">Selecione os detalhes abaixo para agendar</p>
+        <p class="text-gray-400">Escolha o barbeiro, a data e o horário disponível.</p>
       </div>
 
       <div class="grid lg:grid-cols-2 gap-16">
         <div class="space-y-8">
+          
           <div>
-            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Serviço</label>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Serviço Selecionado</label>
             <select id="service" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
-              <option value="Alinhamento capilar" data-price="35">Alinhamento capilar</option>
-              <option value="Barba" data-price="40">Barba</option>
-              <option value="Camuflagem de fios brancos" data-price="50">Camuflagem de fios brancos</option>
-              <option value="Corte" data-price="40">Corte</option>
-              <option value="Corte & barba" data-price="60" selected>Corte & barba</option>
-              <option value="Corte & pigmentação" data-price="120">Corte & pigmentação</option>
-              <option value="Pacote Premium" data-price="90">Pacote Premium</option>
+              <!-- Preenchido pelo JS -->
             </select>
           </div>
+
           <div>
             <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Barbeiro</label>
             <select id="barber" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
-              <option>Christiano</option>
-              <option>Alessandro</option>
-              <option>Qualquer profissional</option>
+              <option value="Qualquer profissional">Qualquer profissional</option>
+              <option value="Christiano">Christiano</option>
+              <option value="Alessandro">Alessandro</option>
             </select>
           </div>
+
+          <!-- Carrossel de Datas da Semana -->
           <div>
             <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Data</label>
-            <input id="date" type="date" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
-          </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Horário</label>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2" id="times">
-              <button class="time" data-time="09:00">09:00</button>
-              <button class="time" data-time="09:30">09:30</button>
-              <button class="time" data-time="10:00">10:00</button>
-              <button class="time" data-time="10:30">10:30</button>
-              <button class="time" data-time="11:00">11:00</button>
-              <button class="time" data-time="15:00">15:00</button>
-              <button class="time" data-time="16:30">16:30</button>
-              <button class="time" data-time="18:00">18:00</button>
+            <div id="dates-container" class="flex overflow-x-auto gap-3 pb-4 pt-2 hide-scrollbar snap-x">
+              <!-- Botões de data gerados via JS -->
             </div>
           </div>
-          
-          <!-- Adicionado método de pagamento, pois o script do Google usa -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Pagamento</label>
-            <select id="payment" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
-              <option value="No Local">Pagar no local (Dinheiro/Cartão/Pix)</option>
-            </select>
-          </div>
 
+          <!-- Grade de Horários -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3 flex justify-between">
+              Horários 
+              <span id="loading-times" class="text-[#D4AF37] text-xs hidden animate-pulse">Atualizando disponibilidade...</span>
+            </label>
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-3 mt-2" id="times-container">
+              <!-- Horários gerados via JS -->
+            </div>
+          </div>
         </div>
 
+        <!-- Resumo -->
         <div class="card !bg-black border-2 border-neutral-800 p-8 flex flex-col">
           <h3 class="text-2xl font-serif text-[#D4AF37] mb-8 border-b border-neutral-800 pb-4">Resumo do Agendamento</h3>
           <div class="space-y-6 flex-grow">
             <div class="flex justify-between">
               <span class="text-gray-500 uppercase text-xs tracking-widest">Serviço</span>
-              <span id="summary-service" class="font-bold">—</span>
+              <span id="summary-service" class="font-bold text-right ml-4">—</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-500 uppercase text-xs tracking-widest">Barbeiro</span>
@@ -225,9 +166,11 @@
               <input id="name" placeholder="Seu nome completo" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none">
               <input id="whatsapp" placeholder="WhatsApp (ex: 27999999999)" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none">
             </div>
+            <div id="restriction-warning" class="hidden bg-orange-900/30 border border-orange-500 text-orange-200 p-3 rounded-xl text-sm">
+              <i class="fas fa-exclamation-triangle mr-2"></i> Este número requer pagamento de 50% adiantado (Pix) para confirmar a reserva.
+            </div>
           </div>
           <div class="mt-10 flex gap-4">
-            <button id="backBtn" class="btn-outline flex-1 text-white">Voltar</button>
             <button id="proceedBtn" class="btn-gold flex-1">Agendar</button>
           </div>
           <div id="result" class="mt-4 text-center font-bold"></div>
@@ -235,118 +178,300 @@
       </div>
     </section>
 
-    <!-- Location Section (Map com Endereço Atualizado) -->
+    <!-- Location Section -->
     <section class="mb-24">
       <h2 class="text-3xl font-serif text-[#D4AF37] mb-8">Nossa Localização</h2>
       <div class="map-wrap flex flex-col items-center justify-center relative">
-        <iframe 
-          id="mapIframe" 
-          src="https://maps.google.com/maps?q=Rua+elizeu+xavier+nunes+874,+Esp%C3%ADrito+Santo,+Brazil&hl=pt-BR&z=15&output=embed" 
-          style="width:100%;height:100%;border:0;" 
-          loading="lazy"
-          allowfullscreen>
-        </iframe>
+        <iframe id="mapIframe" src="https://maps.google.com/maps?q=Rua+elizeu+xavier+nunes+874,+Esp%C3%ADrito+Santo,+Brazil&hl=pt-BR&z=15&output=embed" style="width:100%;height:100%;border:0;" loading="lazy" allowfullscreen></iframe>
       </div>
     </section>
   </main>
 
   <footer class="py-16 bg-[#050505] border-t border-neutral-900 text-center">
     <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-32 h-32 object-cover rounded-full mb-8 grayscale hover:grayscale-0 transition duration-500">
-    <div class="flex justify-center gap-6 mb-8 text-2xl text-neutral-600">
-      <a href="#" class="hover:text-[#D4AF37] transition"><i class="fab fa-instagram"></i></a>
-      <a href="#" class="hover:text-[#D4AF37] transition"><i class="fab fa-whatsapp"></i></a>
-    </div>
     <p class="text-neutral-600 text-sm tracking-widest uppercase">© 2026 Prime Club Barbearia | Todos os direitos reservados</p>
   </footer>
 
   <script>
-    const serviceEl = document.getElementById('service');
-    const barberEl = document.getElementById('barber');
-    const dateEl = document.getElementById('date');
-    const nameEl = document.getElementById('name');
-    const whatsappEl = document.getElementById('whatsapp');
-    const paymentEl = document.getElementById('payment');
-    const summaryService = document.getElementById('summary-service');
-    const summaryBarber = document.getElementById('summary-barber');
-    const summaryDatetime = document.getElementById('summary-datetime');
-    const summaryPrice = document.getElementById('summary-price');
-    const times = document.querySelectorAll('.time');
-    
-    // URL DO SEU GOOGLE APPS SCRIPT
+    // ==========================================
+    // 1. DADOS DOS SERVIÇOS
+    // ==========================================
+    const servicesList = [
+      { id: "c-masc", name: "Corte Masculino", duration: "30min", price: 40.00 },
+      { id: "barba", name: "Barba", duration: "20min", price: 25.00 },
+      { id: "c-barba", name: "Corte & barba", duration: "45min", price: 60.00 },
+      { id: "c-barba-sob", name: "Corte, barba & sobrancelha", duration: "45min", price: 65.00 },
+      { id: "c-b-s-l", name: "Corte, barba, sobrancelha & limpeza", duration: "1h:00min", price: 90.00 },
+      { id: "c-pig", name: "Corte & pigmentação", duration: "45min", price: 60.00 },
+      { id: "plat", name: "Platinado", duration: "30min", price: 120.00 },
+      { id: "luzes", name: "Luzes", duration: "30min", price: 100.00 },
+      { id: "alin", name: "Alinhamento capilar", duration: "20min", price: 40.00 },
+      { id: "camu", name: "Camuflagem de fios brancos", duration: "10min", price: 30.00 },
+      { id: "limp", name: "Limpeza de pele e extração", duration: "30min", price: 35.00 },
+      { id: "nariz", name: "Depilação de nariz", duration: "10min", price: 20.00 },
+      { id: "pez", name: "Pezinho de cabelo", duration: "05min", price: 10.00 }
+    ];
+
+    // ==========================================
+    // 2. LISTA NEGRA (NÚMEROS COM RESTRIÇÃO)
+    // ==========================================
+    // Insira aqui os WhatsApps (apenas números, com DDD) que precisam pagar 50% adiantado.
+    const numerosRestritos = [
+      "27999999999", 
+      "11988888888"
+    ];
+
+    // ==========================================
+    // 3. CONFIGURAÇÕES GERAIS
+    // ==========================================
     const googleScriptURL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
     
+    // Variáveis de estado
+    let selectedDateISO = null;
     let selectedTime = null;
+    let allBookings = []; // Vai guardar os agendamentos já feitos vindos da planilha
 
-    function updateSummary(){
-      const opt = serviceEl.options[serviceEl.selectedIndex];
-      summaryService.textContent = opt.value;
-      summaryBarber.textContent = barberEl.value;
-      summaryPrice.textContent = 'R$' + opt.dataset.price;
-      if(dateEl.value && selectedTime) {
-        const parts = dateEl.value.split('-');
-        summaryDatetime.textContent = parts[2]+'/'+parts[1]+'/'+parts[0] + ' • ' + selectedTime;
-      } else {
-        summaryDatetime.textContent = '—';
+    // Elementos DOM
+    const serviceSelect = document.getElementById('service');
+    const barberSelect = document.getElementById('barber');
+    const whatsappInput = document.getElementById('whatsapp');
+    const datesContainer = document.getElementById('dates-container');
+    const timesContainer = document.getElementById('times-container');
+    
+    // ==========================================
+    // 4. INICIALIZAÇÃO DA INTERFACE
+    // ==========================================
+    function init() {
+      renderServices();
+      renderDates();
+      fetchAvailability(); // Busca horários ocupados na planilha
+    }
+
+    // Injeta os serviços na grade e no Select
+    function renderServices() {
+      const grid = document.getElementById('services-grid');
+      grid.innerHTML = '';
+      serviceSelect.innerHTML = '';
+
+      servicesList.forEach((srv, index) => {
+        // Popula Select
+        const opt = document.createElement('option');
+        opt.value = srv.name;
+        opt.dataset.price = srv.price;
+        serviceSelect.appendChild(opt);
+
+        // Popula Grade
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div>
+            <h3 class="text-xl font-bold mb-2">${srv.name}</h3>
+          </div>
+          <div class="flex justify-between items-center text-[#D4AF37] mt-6">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400"><i class="far fa-clock mr-1"></i> ${srv.duration}</span>
+            <span class="text-2xl font-bold">R$${srv.price.toFixed(2)}</span>
+          </div>
+        `;
+        
+        // Ao clicar no card, seleciona o serviço e rola para o agendamento
+        card.onclick = () => {
+          serviceSelect.selectedIndex = index;
+          updateSummary();
+          document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
+        };
+        
+        grid.appendChild(card);
+      });
+    }
+
+    // Gera o carrossel dos próximos 14 dias
+    function renderDates() {
+      datesContainer.innerHTML = '';
+      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const hoje = new Date();
+
+      for (let i = 0; i < 14; i++) {
+        let data = new Date(hoje);
+        data.setDate(hoje.getDate() + i);
+        
+        // Formato YYYY-MM-DD para o banco de dados
+        let isoDate = data.getFullYear() + "-" + String(data.getMonth() + 1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
+        
+        let diaNome = i === 0 ? 'Hoje' : diasSemana[data.getDay()];
+        let diaNumero = data.getDate();
+
+        const btn = document.createElement('div');
+        btn.className = 'date-card snap-start';
+        btn.innerHTML = `<div class="text-xs text-gray-400 mb-1">${diaNome}</div><div class="text-xl">${diaNumero}</div>`;
+        
+        // Seleciona o primeiro dia automaticamente
+        if (i === 0) {
+          btn.classList.add('selected');
+          selectedDateISO = isoDate;
+        }
+
+        btn.onclick = () => {
+          document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedDateISO = isoDate;
+          selectedTime = null; // Reseta horário ao mudar de data
+          renderTimes(); // Recarrega horários (verificando duplicidade)
+        };
+        
+        datesContainer.appendChild(btn);
       }
     }
 
-    serviceEl.addEventListener('change', updateSummary);
-    barberEl.addEventListener('change', updateSummary);
-    dateEl.addEventListener('change', updateSummary);
-    nameEl.addEventListener('input', updateSummary);
+    // ==========================================
+    // 5. LÓGICA DE PREVENÇÃO DE DUPLICIDADE
+    // ==========================================
+    
+    // Busca dados da planilha (roda invisível ao carregar o site)
+    function fetchAvailability() {
+      document.getElementById('loading-times').classList.remove('hidden');
+      fetch(googleScriptURL + '?action=get_all')
+        .then(res => res.json())
+        .then(data => {
+          allBookings = data.bookings || [];
+          document.getElementById('loading-times').classList.add('hidden');
+          renderTimes(); // Atualiza a grade de horários agora que sabemos o que está ocupado
+        })
+        .catch(err => {
+          console.error("Erro ao buscar horários", err);
+          document.getElementById('loading-times').classList.add('hidden');
+          renderTimes();
+        });
+    }
 
-    times.forEach(btn => {
-      btn.addEventListener('click', e => {
-        times.forEach(b => b.classList.remove('selected'));
-        e.currentTarget.classList.add('selected');
-        selectedTime = e.currentTarget.dataset.time;
-        updateSummary();
-      });
-    });
-
-    document.getElementById('backBtn').addEventListener('click', () => {
-      nameEl.value=''; whatsappEl.value=''; dateEl.value=''; selectedTime=null;
-      times.forEach(b => b.classList.remove('selected'));
+    // Gera os botões de horário
+    function renderTimes() {
+      timesContainer.innerHTML = '';
       updateSummary();
-      document.getElementById('result').textContent='';
-    });
 
+      // Horários padrão de funcionamento (09:00 as 19:00 a cada 30 min)
+      const horariosPadrao = [
+        "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
+        "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", 
+        "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"
+      ];
+
+      const barber = barberSelect.value;
+
+      horariosPadrao.forEach(hora => {
+        // Verifica se este horário já existe no allBookings para a data e barbeiro selecionado
+        const estaOcupado = allBookings.some(booking => {
+          // Extrai apenas a data (YYYY-MM-DD)
+          let bookingDate = booking["Data Agendamento"];
+          if(bookingDate && bookingDate.includes('T')) bookingDate = bookingDate.split('T')[0];
+
+          // Extrai o horário (HH:mm)
+          let bookingTime = booking["Hora"] ? booking["Hora"].substring(0,5) : "";
+
+          // Verifica se bate Data, Hora e Barbeiro (e não está cancelado)
+          let dataBate = (bookingDate === selectedDateISO);
+          let horaBate = (bookingTime === hora);
+          let barbeiroBate = barber === "Qualquer profissional" ? true : (booking["Servico"] && booking["Servico"].includes(barber));
+          let ativo = (booking["Status"] !== 'Cancelado');
+
+          return dataBate && horaBate && barbeiroBate && ativo;
+        });
+
+        const btn = document.createElement('button');
+        btn.className = 'time';
+        btn.textContent = hora;
+        
+        if (estaOcupado) {
+          btn.disabled = true;
+          btn.title = "Horário já reservado";
+        } else {
+          btn.onclick = (e) => {
+            document.querySelectorAll('.time').forEach(b => b.classList.remove('selected'));
+            e.currentTarget.classList.add('selected');
+            selectedTime = hora;
+            updateSummary();
+          };
+        }
+        
+        timesContainer.appendChild(btn);
+      });
+    }
+
+    // ==========================================
+    // 6. ATUALIZAÇÃO DE RESUMO & LISTA NEGRA
+    // ==========================================
+    function updateSummary(){
+      const opt = serviceSelect.options[serviceSelect.selectedIndex];
+      summaryService.textContent = opt.value;
+      summaryBarber.textContent = barberSelect.value;
+      
+      let precoReal = parseFloat(opt.dataset.price);
+      
+      // Verifica Lista Negra enquanto digita o WhatsApp
+      const currentPhone = whatsappInput.value.replace(/\D/g, '');
+      const isRestricted = numerosRestritos.includes(currentPhone);
+      
+      if(isRestricted) {
+        document.getElementById('restriction-warning').classList.remove('hidden');
+        precoReal = precoReal / 2; // Cobra 50%
+        summaryPrice.innerHTML = `<span class="text-sm text-gray-500 line-through mr-2">R$${opt.dataset.price}</span> R$${precoReal.toFixed(2)} <span class="text-xs text-orange-500 block">(Sinal 50%)</span>`;
+      } else {
+        document.getElementById('restriction-warning').classList.add('hidden');
+        summaryPrice.textContent = 'R$' + precoReal.toFixed(2);
+      }
+
+      if(selectedDateISO && selectedTime) {
+        const parts = selectedDateISO.split('-');
+        summaryDatetime.textContent = parts[2]+'/'+parts[1]+'/'+parts[0] + ' às ' + selectedTime;
+      } else {
+        summaryDatetime.textContent = 'Selecione data e horário';
+      }
+    }
+
+    // Monitores de eventos para atualizar interface
+    serviceSelect.addEventListener('change', updateSummary);
+    barberSelect.addEventListener('change', renderTimes); // Mudar barbeiro altera horários ocupados!
+    whatsappInput.addEventListener('input', updateSummary);
+
+    // ==========================================
+    // 7. ENVIO PARA O GOOGLE SCRIPT (BOTÃO AGENDAR)
+    // ==========================================
     document.getElementById('proceedBtn').addEventListener('click', () => {
-      const name = nameEl.value.trim();
-      const phone = whatsappEl.value.replace(/\D/g,'');
+      const name = document.getElementById('name').value.trim();
+      const phone = whatsappInput.value.replace(/\D/g,'');
       const res = document.getElementById('result');
       const btn = document.getElementById('proceedBtn');
       
-      if(!name || !phone || !dateEl.value || !selectedTime){
-        res.textContent = 'Preencha todos os campos corretamente.';
+      if(!name || !phone || !selectedDateISO || !selectedTime){
+        res.textContent = 'Preencha seu nome, whatsapp e escolha um horário.';
         res.className = 'mt-4 text-center font-bold text-orange-500';
         return;
       }
-      
-      // Muda visual do botão
+
+      const isRestricted = numerosRestritos.includes(phone);
+      const opt = serviceSelect.options[serviceSelect.selectedIndex];
+      const precoOriginal = parseFloat(opt.dataset.price);
+      const precoFinal = isRestricted ? precoOriginal / 2 : precoOriginal;
+      const notas = isRestricted ? "AGUARDANDO PIX (Restrição 50% Adiantado)" : "Agendado via Site Prime Club";
+
       btn.disabled = true;
       btn.textContent = 'Enviando...';
       res.textContent = '';
 
-      // O seu Google Script espera os dados no formato JSON
       const payload = {
         type: 'booking',
         client: name,
         phone: phone,
-        service: serviceEl.value + ' (Com ' + barberEl.value + ')',
-        date: dateEl.value, // O script espera YYYY-MM-DD
+        service: serviceSelect.value + ' (Com ' + barberSelect.value + ')',
+        date: selectedDateISO,
         time: selectedTime,
-        price: summaryPrice.textContent.replace('R$', ''),
-        paymentMethod: paymentEl.value,
-        notes: "Agendado via Site Prime Club"
+        price: precoFinal.toString(),
+        paymentMethod: "No Local",
+        notes: notas
       };
 
-      // Envia os dados (fetch POST enviando JSON)
       fetch(googleScriptURL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain;charset=utf-8',
-        },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       })
       .then(response => response.json())
@@ -355,35 +480,41 @@
         btn.textContent = 'Agendar Novamente';
 
         if(data.status === 'success') {
-          // Cria a mensagem do WhatsApp para finalizar
-          const msg = `Olá! Acabei de agendar pelo site:\n\n📍 Serviço: ${serviceEl.value}\n💈 Barbeiro: ${barberEl.value}\n📅 Data: ${summaryDatetime.textContent}\n👤 Cliente: ${name}`;
+          // Mensagem personalizada se estiver bloqueado
+          let msg;
+          if (isRestricted) {
+            msg = `Olá Prime Club! Gostaria de agendar:\n\n📍 Serviço: ${serviceSelect.value}\n💈 Barbeiro: ${barberSelect.value}\n📅 Data: ${selectedDateISO.split('-').reverse().join('/')} às ${selectedTime}\n\n*Meu número possui restrição no sistema, então estou enviando abaixo o comprovante do PIX de R$${precoFinal.toFixed(2)} (50% do valor) para confirmar minha vaga.*`;
+          } else {
+            msg = `Olá! Acabei de agendar pelo site:\n\n📍 Serviço: ${serviceSelect.value}\n💈 Barbeiro: ${barberSelect.value}\n📅 Data: ${selectedDateISO.split('-').reverse().join('/')} às ${selectedTime}\n👤 Cliente: ${name}`;
+          }
+          
           const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`;
           
-          // Exibe a mensagem de sucesso + Link do Whats
           res.innerHTML = `
-            <div class="text-green-500 mb-2">Agendamento confirmado com sucesso! ✅</div>
-            <a href="${whatsappUrl}" target="_blank" class="text-[#D4AF37] underline border border-[#D4AF37] p-2 rounded-lg inline-block mt-2 hover:bg-[#D4AF37] hover:text-black transition">
-              Falar com o Barbeiro no WhatsApp <i class="fab fa-whatsapp"></i>
+            <div class="text-green-500 mb-2">Reserva registrada na barbearia! ✅</div>
+            <div class="text-sm text-gray-400 mb-4">Finalize o processo clicando abaixo:</div>
+            <a href="${whatsappUrl}" target="_blank" class="text-[#D4AF37] underline border border-[#D4AF37] px-6 py-3 rounded-xl inline-block hover:bg-[#D4AF37] hover:text-black transition">
+              ${isRestricted ? 'Enviar Comprovante no WhatsApp <i class="fab fa-whatsapp"></i>' : 'Confirmar no WhatsApp <i class="fab fa-whatsapp"></i>'}
             </a>
           `;
           res.className = 'mt-6 text-center font-bold';
+          
+          // Força recarregar os horários para bloquear o que acabou de ser agendado
+          fetchAvailability(); 
         } else {
-          // Se o script retornar erro (ex: horário ocupado)
-          res.textContent = data.message || 'Horário indisponível. Por favor, escolha outro.';
+          res.textContent = data.message || 'Horário não está mais disponível. Escolha outro.';
           res.className = 'mt-4 text-center font-bold text-red-500';
         }
       }).catch(error => {
         btn.disabled = false;
         btn.textContent = 'Agendar';
-        res.textContent = 'Ocorreu um erro ao salvar o agendamento.';
+        res.textContent = 'Erro ao conectar com a barbearia. Tente novamente.';
         res.className = 'mt-4 text-center font-bold text-red-500';
-        console.error(error);
       });
     });
 
-    window.onload = function() {
-      updateSummary();
-    };
+    // Inicia tudo ao carregar a página
+    window.onload = init;
   </script>
 </body>
 </html>

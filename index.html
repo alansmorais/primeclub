@@ -1,1 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prime Club Barbearia — Agendamento</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{--gold:#D4AF37;--bg:#090909}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:#fff;font-family:'Inter',system-ui,-apple-system,sans-serif;margin:0}
+    .logo{width:160px; height:auto; object-fit:contain}
+    .title{font-family:'Cinzel', serif;font-size:3rem;line-height:1.1}
+    .card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:16px;padding:24px;transition:0.3s}
+    .card:hover{border-color:var(--gold)}
+    .time{border:1px solid #2b2b2b;padding:12px;border-radius:12px;background:#0e0e0e;transition:0.2s;text-align:center}
+    .time:hover{border-color:var(--gold);color:var(--gold)}
+    .time.selected{background:var(--gold);color:#000;border-color:var(--gold)}
+    .btn-gold{background:var(--gold);color:#000;padding:14px 24px;border-radius:999px;font-weight:700;display:inline-block;transition:0.3s;text-align:center}
+    .btn-gold:hover{transform:scale(1.02);box-shadow:0 0 20px rgba(212,175,55,0.3)}
+    .btn-outline{border:1px solid rgba(212,175,55,0.4);padding:12px 24px;border-radius:999px;transition:0.3s;text-align:center}
+    .btn-outline:hover{background:rgba(212,175,55,0.1)}
+    .map-wrap{height:400px;border-radius:16px;overflow:hidden;border:1px solid #222;background:#000}
+    .instagram-btn{position:absolute;right:32px;top:32px;z-index:50}
+    .hook-text{white-space:pre-line;line-height:1.6}
+    @media(min-width:1024px){.title{font-size:4.5rem}}
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
 
+  <header class="relative border-b border-neutral-900 bg-[#070707]">
+    <div class="container mx-auto px-6 py-8 flex items-center justify-between">
+      <div class="flex flex-col md:flex-row md:items-center gap-6">
+        <img src="/images/prime_club_barbearia_logo.png" alt="Logo Prime Club" class="logo">
+        <div class="border-l-0 md:border-l border-neutral-700 md:pl-6">
+          <div class="text-xs gold uppercase tracking-widest mb-1">Prime Club Barbearia</div>
+          <div class="hook-text text-sm text-gray-300 italic font-medium">
+            ✂️ Corte na régua | Barba alinhada
+            💈 Estilo, respeito e identidade
+            🔥 Quem é Prime, sabe🫡
+          </div>
+        </div>
+      </div>
+
+      <div class="instagram-btn">
+        <a href="https://instagram.com/primeclubbarbearia" target="_blank" class="text-white hover:text-[#D4AF37] text-2xl transition" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-6">
+    <!-- Hero Section -->
+    <section class="grid lg:grid-cols-2 gap-12 items-center py-20">
+      <div>
+        <h1 class="title">Prime Club <span class="gold block">Barbearia</span></h1>
+        <p class="text-gray-400 mt-8 text-lg max-w-lg leading-relaxed">
+          Cortes premium, barba e tratamentos de luxo para quem valoriza estilo e sofisticação. Venha viver a experiência do clube.
+        </p>
+        <div class="mt-10 flex flex-wrap gap-5">
+          <a href="#booking" class="btn-gold w-full md:w-auto">Agendar Agora</a>
+          <a href="#services" class="btn-outline w-full md:w-auto text-white">Ver Serviços</a>
+        </div>
+      </div>
+      <div class="hidden lg:block">
+        <div class="relative">
+          <div class="absolute -inset-4 bg-gold opacity-10 blur-2xl rounded-full"></div>
+          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" alt="Interior Barbearia" class="relative rounded-2xl shadow-2xl grayscale transition hover:grayscale-0 duration-700">
+        </div>
+      </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-24 border-t border-neutral-900">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-serif gold mb-4">Nossos Serviços</h2>
+        <div class="h-1 w-20 bg-gold mx-auto rounded-full"></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Alinhamento capilar</h3>
+          <p class="text-gray-500 text-sm mb-6">Tratamento para fios alinhados e sem frizz.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">30 min</span>
+            <span class="text-2xl font-bold">R$35</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Barba</h3>
+          <p class="text-gray-500 text-sm mb-6">Design e cuidado completo para sua barba.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">30 min</span>
+            <span class="text-2xl font-bold">R$40</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Camuflagem de fios brancos</h3>
+          <p class="text-gray-500 text-sm mb-6">Cobertura natural e discreta dos fios.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">45 min</span>
+            <span class="text-2xl font-bold">R$50</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Corte & barba</h3>
+          <p class="text-gray-500 text-sm mb-6">O combo clássico indispensável.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">45 min</span>
+            <span class="text-2xl font-bold">R$60</span>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="text-xl font-bold mb-2">Corte & pigmentação</h3>
+          <p class="text-gray-500 text-sm mb-6">Definição máxima e acabamento perfeito.</p>
+          <div class="flex justify-between items-center text-gold">
+            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400">90 min</span>
+            <span class="text-2xl font-bold">R$120</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Booking Section -->
+    <section id="booking" class="py-24 bg-[#070707] rounded-3xl p-8 lg:p-16 mb-24 border border-neutral-900">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-serif gold mb-4">Reserve seu Horário</h2>
+        <p class="text-gray-400">Selecione os detalhes abaixo para agendar</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-16">
+        <!-- Form -->
+        <div class="space-y-8">
+          <div>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Serviço</label>
+            <select id="service" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-gold outline-none transition">
+              <option value="Alinhamento capilar" data-price="35">Alinhamento capilar</option>
+              <option value="Barba" data-price="40">Barba</option>
+              <option value="Camuflagem de fios brancos" data-price="50">Camuflagem de fios brancos</option>
+              <option value="Corte & barba" data-price="60" selected>Corte & barba</option>
+              <option value="Corte & pigmentação" data-price="120">Corte & pigmentação</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Barbeiro</label>
+            <select id="barber" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-gold outline-none transition">
+              <option>Christiano</option>
+              <option>Alessandro</option>
+              <option>Qualquer profissional</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Data</label>
+            <input id="date" type="date" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-gold outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Horário</label>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2" id="times">
+              <button class="time" data-time="09:00">09:00</button>
+              <button class="time" data-time="09:30">09:30</button>
+              <button class="time" data-time="10:00">10:00</button>
+              <button class="time" data-time="10:30">10:30</button>
+              <button class="time" data-time="11:00">11:00</button>
+              <button class="time" data-time="15:00">15:00</button>
+              <button class="time" data-time="16:30">16:30</button>
+              <button class="time" data-time="18:00">18:00</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Card -->
+        <div class="card !bg-black border-2 border-neutral-800 p-8 flex flex-col">
+          <h3 class="text-2xl font-serif gold mb-8 border-b border-neutral-800 pb-4">Resumo do Agendamento</h3>
+
+          <div class="space-y-6 flex-grow">
+            <div class="flex justify-between">
+              <span class="text-gray-500 uppercase text-xs tracking-widest">Serviço</span>
+              <span id="summary-service" class="font-bold">—</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500 uppercase text-xs tracking-widest">Barbeiro</span>
+              <span id="summary-barber" class="font-bold">—</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500 uppercase text-xs tracking-widest">Data & Hora</span>
+              <span id="summary-datetime" class="font-bold">—</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500 uppercase text-xs tracking-widest">Total</span>
+              <span id="summary-price" class="text-3xl gold font-bold">R$0</span>
+            </div>
+
+            <hr class="border-neutral-900 my-4">
+
+            <div class="space-y-4">
+              <input id="name" placeholder="Seu nome completo" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-4 text-white focus:border-gold outline-none">
+              <input id="whatsapp" placeholder="WhatsApp (ex: 11999999999)" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-4 text-white focus:border-gold outline-none">
+            </div>
+          </div>
+
+          <div class="mt-10 flex gap-4">
+            <button id="backBtn" class="btn-outline flex-1 text-white">Voltar</button>
+            <button id="proceedBtn" class="btn-gold flex-1">Agendar</button>
+          </div>
+          <div id="result" class="mt-4 text-center font-bold"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Location -->
+    <section class="mb-24">
+      <h2 class="text-3xl font-serif gold mb-8">Nossa Localização</h2>
+      <div class="map-wrap flex flex-col items-center justify-center relative">
+        <iframe id="mapIframe" src="https://share.google/Xt5KgdgiEDS7OyMT8" style="width:100%;height:100%;border:0;" loading="lazy"></iframe>
+        <!-- Overlay if blocked -->
+        <div id="mapOverlay" class="absolute inset-0 bg-neutral-900 flex flex-col items-center justify-center p-8 text-center hidden">
+          <i class="fas fa-map-marked-alt text-5xl mb-4 gold"></i>
+          <h4 class="text-xl mb-2">Visite-nos na Barbearia</h4>
+          <p class="text-gray-400 text-sm mb-6">O mapa recusou a conexão por segurança. Clique abaixo para abrir no Google Maps.</p>
+          <a href="https://share.google/Xt5KgdgiEDS7OyMT8" target="_blank" class="btn-gold">Abrir Localização</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="py-16 bg-[#050505] border-t border-neutral-900 text-center">
+    <img src="/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-32 mb-8 grayscale hover:grayscale-0 transition duration-500">
+    <div class="flex justify-center gap-6 mb-8 text-2xl text-neutral-600">
+      <a href="#" class="hover:text-gold transition"><i class="fab fa-instagram"></i></a>
+      <a href="#" class="hover:text-gold transition"><i class="fab fa-whatsapp"></i></a>
+    </div>
+    <p class="text-neutral-600 text-sm tracking-widest uppercase">© 2026 Prime Club Barbearia | Todos os direitos reservados</p>
+  </footer>
+
+  <script>
+    const serviceEl = document.getElementById('service');
+    const barberEl = document.getElementById('barber');
+    const dateEl = document.getElementById('date');
+    const nameEl = document.getElementById('name');
+    const whatsappEl = document.getElementById('whatsapp');
+    const summaryService = document.getElementById('summary-service');
+    const summaryBarber = document.getElementById('summary-barber');
+    const summaryDatetime = document.getElementById('summary-datetime');
+    const summaryPrice = document.getElementById('summary-price');
+    const times = document.querySelectorAll('.time');
+    let selectedTime = null;
+
+    function updateSummary(){
+      const opt = serviceEl.options[serviceEl.selectedIndex];
+      summaryService.textContent = opt.value;
+      summaryBarber.textContent = barberEl.value;
+      summaryPrice.textContent = 'R$' + opt.dataset.price;
+
+      if(dateEl.value && selectedTime) {
+        const parts = dateEl.value.split('-');
+        summaryDatetime.textContent = parts[2]+'/'+parts[1]+'/'+parts[0] + ' • ' + selectedTime;
+      } else {
+        summaryDatetime.textContent = '—';
+      }
+    }
+
+    serviceEl.addEventListener('change', updateSummary);
+    barberEl.addEventListener('change', updateSummary);
+    dateEl.addEventListener('change', updateSummary);
+    nameEl.addEventListener('input', updateSummary);
+
+    times.forEach(btn => {
+      btn.addEventListener('click', e => {
+        times.forEach(b => b.classList.remove('selected'));
+        e.currentTarget.classList.add('selected');
+        selectedTime = e.currentTarget.dataset.time;
+        updateSummary();
+      });
+    });
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+      nameEl.value=''; whatsappEl.value=''; dateEl.value=''; selectedTime=null;
+      times.forEach(b => b.classList.remove('selected'));
+      updateSummary();
+      document.getElementById('result').textContent='';
+    });
+
+    document.getElementById('proceedBtn').addEventListener('click', () => {
+      const name = nameEl.value.trim();
+      const phone = whatsappEl.value.replace(/\D/g,'');
+      if(!name || !phone || !dateEl.value || !selectedTime){
+        const res = document.getElementById('result');
+        res.textContent = 'Preencha todos os campos corretamente.';
+        res.className = 'mt-4 text-center font-bold text-orange-500';
+        return;
+      }
+
+      const msg = `Olá! Gostaria de agendar:\n\n📌 Serviço: ${serviceEl.value}\n💈 Barbeiro: ${barberEl.value}\n📅 Data: ${summaryDatetime.textContent}\n👤 Cliente: ${name}`;
+      const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`;
+
+      const res = document.getElementById('result');
+      res.innerHTML = `<a href="${whatsappUrl}" target="_blank" class="text-gold underline">Clique aqui para enviar no WhatsApp</a>`;
+      res.className = 'mt-4 text-center font-bold text-green-500';
+    });
+
+    // Check if iframe works (very basic check)
+    window.onload = function() {
+      const iframe = document.getElementById('mapIframe');
+      setTimeout(() => {
+        // Fallback for demo: if iframe is totally empty or blocked in this context
+        // In real web it depends on CORS/X-Frame-Options
+        console.log("Verificando mapa...");
+      }, 2000);
+      updateSummary();
+    };
+  </script>
+</body>
+</html>

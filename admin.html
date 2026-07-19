@@ -9,11 +9,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
-            theme: { 
-                extend: { 
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
-                    colors: { 
-                        brand: { 
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
                             dark: '#0a0a0a',
                             active: '#d4af37',
                             bg: '#f4f6f8',
@@ -43,29 +43,27 @@
 </head>
 <body class="bg-brand-bg">
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
         <aside class="w-64 bg-brand-dark text-white hidden md:flex flex-col">
             <div class="p-6 flex items-center gap-3">
                 <img src="prime_club_barbearia_logo.png" alt="Logo" class="w-10 h-10 rounded-full border border-brand-active">
                 <span class="font-bold text-lg tracking-tight">Prime Club</span>
             </div>
             <nav class="flex-1 px-4 space-y-2 mt-4">
-                <button onclick="switchTab('dashboard')" class="nav-link active flex items-center gap-3 w-full p-3 rounded-lg bg-brand-active text-black font-semibold">
+                <button onclick="switchTab('dashboard', this)" class="nav-link active flex items-center gap-3 w-full p-3 rounded-lg bg-brand-active text-black font-semibold">
                     <i data-lucide="layout-dashboard"></i> Dashboard
                 </button>
-                <button onclick="switchTab('calendar')" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <button onclick="switchTab('calendar', this)" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
                     <i data-lucide="calendar"></i> Agenda
                 </button>
-                <button onclick="switchTab('finance')" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <button onclick="switchTab('finance', this)" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
                     <i data-lucide="dollar-sign"></i> Financeiro
                 </button>
-                <button onclick="switchTab('blocks')" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
+                <button onclick="switchTab('blocks', this)" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
                     <i data-lucide="shield-alert"></i> Bloqueios
                 </button>
             </nav>
         </aside>
 
-        <!-- Main -->
         <main class="flex-1 overflow-y-auto flex flex-col">
             <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
                 <h2 id="tab-title" class="text-xl font-bold text-gray-800 uppercase tracking-wide">Dashboard</h2>
@@ -77,7 +75,6 @@
             </header>
 
             <div class="p-4 md:p-8 space-y-8">
-                <!-- Tab: Dashboard -->
                 <section id="dashboard" class="tab-content active space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div class="bg-white p-6 rounded-xl border shadow-sm">
@@ -120,10 +117,8 @@
                     </div>
                 </section>
 
-                <!-- Tab: Bloqueios -->
                 <section id="blocks" class="tab-content space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Bloqueio de Números -->
                         <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
                             <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="phone-off"></i> Números Restritos (50% Sinal)</h3>
                             <div class="flex gap-2">
@@ -135,7 +130,6 @@
                             </div>
                         </div>
 
-                        <!-- Bloqueio de Datas -->
                         <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
                             <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="calendar-off"></i> Bloqueio de Datas</h3>
                             <div class="grid grid-cols-2 gap-2">
@@ -151,7 +145,6 @@
         </main>
     </div>
 
-    <!-- Modal Booking -->
     <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
             <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="plus-circle" class="text-brand-active"></i> Novo Agendamento</h2>
@@ -179,133 +172,198 @@
     </div>
 
     <script>
-// INÍCIO - integração Admin <-> BancoDados.gs
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzobu7mOdovnSLYvIL5M4o4KN635uwu5uEh2Tan7KcxvLJZZExAUXQqfIRWX42FL_lQTw/exec";
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzobu7mOdovnSLYvIL5M4o4KN635uwu5uEh2Tan7KcxvLJZZExAUXQqfIRWX42FL_lQTw/exec";
 
-function normalizePhone(p){ return String(p||'').replace(/\D/g,''); }
+        let allData = { bookings: [], blockedDates: [], blockedNumbers: [] };
 
-let adminData = { bookings: [], blockedDates: [], blockedNumbers: [] };
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            fetchData();
 
-async function fetchPanelData(){
-  // tenta get_all primeiro; se falhar, tenta panel_data
-  const urls = [`${WEB_APP_URL}?action=get_all`, `${WEB_APP_URL}?action=panel_data`];
-  let data = null;
-  for (const u of urls){
-    try{
-      const res = await fetch(u);
-      if (!res.ok) continue;
-      const json = await res.json();
-      // compatibilidade: resposta pode usar blocked, blockedDates, blockedNumbers
-      data = {
-        bookings: json.bookings || json.agendamentos || [],
-        blockedDates: json.blocked || json.blockedDates || json.blocked_dates || [],
-        blockedNumbers: json.blockedNumbers || json.numerosBloqueados || []
-      };
-      break;
-    } catch(err){ continue; }
-  }
-  if (!data) {
-    console.error('Não foi possível obter dados do Web App.');
-    return;
-  }
-  // normaliza blockedNumbers para só dígitos
-  data.blockedNumbers = (data.blockedNumbers || []).map(n => normalizePhone(n)).filter(Boolean);
-  adminData = data;
-  renderAdminLists(); // sua função de UI para popular tabelas/listas
-  return data;
-}
+            document.getElementById('book-phone').addEventListener('input', (e) => {
+                const norm = e.target.value.replace(/\D/g, '');
+                const warning = document.getElementById('deposit-warning');
+                if (allData.blockedNumbers.includes(norm)) warning.classList.remove('hidden');
+                else warning.classList.add('hidden');
+            });
 
-async function postJSON(payload){
-  return fetch(WEB_APP_URL, {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(payload)
-  }).then(r => r.json());
-}
+            document.getElementById('admin-booking-form').addEventListener('submit', onBookingSubmit);
+        });
 
-/* Funções de ação */
+        async function fetchData() {
+            try {
+                const res = await fetch(`${WEB_APP_URL}?action=get_all`);
+                const data = await res.json();
+                allData = {
+                    bookings: data.bookings || [],
+                    blockedDates: data.blocked || [],
+                    blockedNumbers: data.blockedNumbers || []
+                };
+                renderDashboard();
+                renderBlocks();
+                lucide.createIcons();
+            } catch (e) {
+                console.error("Fetch Error:", e);
+            }
+        }
 
-// Criar agendamento (type = 'booking')
-async function createBooking(obj){
-  // obj: {client, phone, service, date, time, price, paymentMethod, notes}
-  obj.type = 'booking';
-  // se número está na lista de bloqueados, anexa nota e define paymentMethod para SINAL 50%
-  const norm = normalizePhone(obj.phone);
-  if (adminData.blockedNumbers.includes(norm)){
-    obj.notes = (obj.notes||'') + ' [SINAL 50% EXIGIDO]';
-    obj.paymentMethod = 'SINAL 50%';
-  }
-  const res = await postJSON(obj);
-  if (res && res.status === 'success') {
-    await fetchPanelData();
-    return true;
-  }
-  throw res;
-}
+        function switchTab(id, el) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
 
-// Deletar agendamento (action = 'delete_booking')
-async function deleteBooking(date, time){
-  const payload = { action: 'delete_booking', date: date, time: time };
-  const res = await postJSON(payload);
-  if (res && res.status === 'success') { await fetchPanelData(); return true; }
-  return false;
-}
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active', 'bg-brand-active', 'text-black', 'font-semibold'));
+            el.classList.add('active', 'bg-brand-active', 'text-black', 'font-semibold');
 
-// Bloquear intervalo de datas (action = 'block_range')
-async function blockDateRange(startDate, endDate){
-  const payload = { action: 'block_range', startDate: startDate, endDate: endDate || startDate };
-  const res = await postJSON(payload);
-  if (res && res.status === 'success') { await fetchPanelData(); return true; }
-  return false;
-}
+            document.getElementById('tab-title').textContent =
+                id === 'dashboard' ? 'Dashboard' :
+                id === 'blocks' ? 'Bloqueios' :
+                id === 'calendar' ? 'Agenda' :
+                id === 'finance' ? 'Financeiro' : 'Dashboard';
+        }
 
-// Desbloquear data (action = 'unblock_date')
-async function unblockDate(date){
-  const payload = { action: 'unblock_date', date: date };
-  const res = await postJSON(payload);
-  if (res && res.status === 'success') { await fetchPanelData(); return true; }
-  return false;
-}
+        function renderDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
-// Adicionar número bloqueado (action = 'add_blocked_number')
-async function addBlockedNumber(number){
-  const payload = { action: 'add_blocked_number', number: normalizePhone(number) };
-  const res = await postJSON(payload);
-  if (res && res.status === 'success') { await fetchPanelData(); return true; }
-  return false;
-}
+            const stats = {
+                today: allData.bookings.filter(b => (b["Data Agendamento"] || b.Data || b.date || "") === today).length,
+                tomorrow: allData.bookings.filter(b => (b["Data Agendamento"] || b.Data || b.date || "") === tomorrow).length,
+                canceled: allData.bookings.filter(b => (b.Status || "") === "Cancelado").length,
+                blocked: allData.blockedNumbers.length
+            };
 
-// Remover número bloqueado (action = 'remove_blocked_number')
-async function removeBlockedNumber(number){
-  const payload = { action: 'remove_blocked_number', number: normalizePhone(number) };
-  const res = await postJSON(payload);
-  if (res && res.status === 'success') { await fetchPanelData(); return true; }
-  return false;
-}
+            document.getElementById('stat-today').innerText = stats.today;
+            document.getElementById('stat-tomorrow').innerText = stats.tomorrow;
+            document.getElementById('stat-canceled').innerText = stats.canceled;
+            document.getElementById('stat-blocked-nums').innerText = stats.blocked;
 
-/* UI helpers: adapte os nomes para as funções que já existem no admin.html */
-function renderAdminLists(){
-  // exemplo: popular lista de números bloqueados
-  if (typeof renderBlockedNumbersList === 'function'){
-    renderBlockedNumbersList(adminData.blockedNumbers);
-  } else {
-    // fallback simples: console
-    console.log('blockedNumbers:', adminData.blockedNumbers);
-  }
-  if (typeof renderBlockedDatesList === 'function'){
-    renderBlockedDatesList(adminData.blockedDates);
-  } else {
-    console.log('blockedDates:', adminData.blockedDates);
-  }
-  if (typeof renderBookingsTable === 'function'){
-    renderBookingsTable(adminData.bookings);
-  } else {
-    console.log('bookings:', adminData.bookings);
-  }
-}
+            const tbody = document.getElementById('recent-bookings');
+            tbody.innerHTML = allData.bookings.slice(0, 10).map(b => {
+                const date = b["Data Agendamento"] || b.Data || b.date || "";
+                const time = b["Hora"] || b.Hora || b.time || "";
+                const client = b["Cliente"] || b.Cliente || b.client || "";
+                const service = b["Servico"] || b["Serviço"] || b.Servico || b.service || "";
+                const price = b["Valor"] || b.Preco || b.price || "";
+                return `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4 font-medium text-sm">${date} <span class="text-gray-400">@ ${time}</span></td>
+                        <td class="px-6 py-4 font-bold text-sm text-gray-800">${client}</td>
+                        <td class="px-6 py-4 text-xs bg-gray-100 italic rounded inline-block mt-3 ml-6 capitalize font-bold text-gray-500">${service}</td>
+                        <td class="px-6 py-4 font-bold text-brand-green">R$ ${price}</td>
+                        <td class="px-6 py-4 text-right">
+                            <button onclick="cancelBooking('${date}','${time}')" class="text-brand-red hover:bg-brand-red/10 p-2 rounded-full">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
 
-// Auto-load
-fetchPanelData();
-// FIM - integração Admin <-> BancoDados.gs
+        function renderBlocks() {
+            const list = document.getElementById('blocked-phones-list');
+            list.innerHTML = allData.blockedNumbers.map(n => `
+                <li class="flex justify-between items-center py-3">
+                    <span class="font-bold text-gray-700">${n}</span>
+                    <button onclick="removeBlockPhone('${n}')" class="text-brand-red font-bold text-xs hover:underline uppercase">Desbloquear</button>
+                </li>
+            `).join('') || '<li class="py-3 text-sm text-gray-500">Nenhum número bloqueado</li>';
+
+            const dList = document.getElementById('blocked-dates-list');
+            dList.innerHTML = allData.blockedDates.map(d => `
+                <span class="bg-brand-dark text-white text-xs px-3 py-1 rounded-full flex items-center gap-2">
+                    ${d.DataBloqueio || d.Data || d}
+                    <button onclick="unblockDate('${d.DataBloqueio || d.Data || d}')">×</button>
+                </span>
+            `).join('') || '<div class="text-sm text-gray-500">Nenhuma data bloqueada</div>';
+        }
+
+        async function postJSON(payload) {
+            const res = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            return res.json();
+        }
+
+        async function addBlockedPhone() {
+            const num = document.getElementById('new-block-phone').value.replace(/\D/g, '');
+            if (!num) return;
+            await postJSON({ action: 'add_blocked_number', number: num });
+            document.getElementById('new-block-phone').value = '';
+            fetchData();
+        }
+
+        async function removeBlockPhone(num) {
+            if (!confirm('Remover este número dos bloqueados?')) return;
+            await postJSON({ action: 'remove_blocked_number', number: num });
+            fetchData();
+        }
+
+        async function blockDateRange() {
+            const start = document.getElementById('block-date-start').value;
+            const end = document.getElementById('block-date-end').value || start;
+            if (!start) return;
+            await postJSON({ action: 'block_range', startDate: start, endDate: end });
+            fetchData();
+        }
+
+        async function unblockDate(date) {
+            if (!confirm('Remover bloqueio em ' + date + '?')) return;
+            await postJSON({ action: 'unblock_date', date });
+            fetchData();
+        }
+
+        async function cancelBooking(date, time) {
+            if (!confirm('Excluir este agendamento?')) return;
+            await postJSON({ action: 'delete_booking', date, time });
+            fetchData();
+        }
+
+        function openBookingModal() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+        }
+
+        async function onBookingSubmit(e) {
+            e.preventDefault();
+            const client = document.getElementById('book-client').value.trim();
+            const phone = document.getElementById('book-phone').value.trim();
+            const normPhone = phone.replace(/\D/g, '');
+            const date = document.getElementById('book-date').value;
+            const time = document.getElementById('book-time').value;
+            const serviceData = document.getElementById('book-service').value.split('|');
+
+            const isBlocked = allData.blockedNumbers.includes(normPhone);
+            const notes = isBlocked ? "[SINAL 50% EXIGIDO]" : "";
+
+            const payload = {
+                type: 'booking',
+                client,
+                phone,
+                service: serviceData[0],
+                price: Number(serviceData[1]),
+                date,
+                time,
+                notes,
+                paymentMethod: isBlocked ? 'SINAL 50%' : 'No Local'
+            };
+
+            const res = await postJSON(payload);
+            if (res.status === 'success') {
+                closeBookingModal();
+                e.target.reset();
+                fetchData();
+            } else {
+                alert(res.message || 'Erro ao salvar agendamento');
+            }
+        }
+    </script>
 </body>
 </html>

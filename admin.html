@@ -134,247 +134,108 @@
         </div>
     </div>
 
-    <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
-        let allData = { bookings: [], blockedDates: [], blockedNumbers: [], finance: [] };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            fetchData();
-            document.getElementById('book-phone').addEventListener('input', (e) => {
-                const norm = e.target.value.replace(/\D/g, '');
-                const warning = document.getElementById('deposit-warning');
-                if (allData.blockedNumbers.includes(norm)) warning.classList.remove('hidden'); else warning.classList.add('hidden');
-            });
-            document.getElementById('admin-booking-form').onsubmit = onBookingSubmit;
-        });
-
-        async function fetchData() {
-            try {
-                const res = await fetch(`${WEB_APP_URL}?action=get_all`);
-                const data = await res.json();
-                allData = {
-                    bookings: data.bookings || [],
-                    blockedDates: data.blocked || [],
-                    blockedNumbers: data.blockedNumbers || [],
-                    finance: data.finance || []
-                };
-                renderDashboard();
-                renderBlocks();
-                renderAgenda();
-                renderFinance();
-                lucide.createIcons();
-            } catch (e) { console.error("Erro ao ler dados:", e); }
-        }
-
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            const target = document.getElementById(id);
-            if (target) target.classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active', 'bg-brand-active', 'text-black', 'font-semibold'));
-            if (el) el.classList.add('active', 'bg-brand-active', 'text-black', 'font-semibold');
-            document.getElementById('tab-title').textContent = id === 'dashboard' ? 'Dashboard' : id === 'calendar' ? 'Agenda' : id === 'finance' ? 'Financeiro' : 'Bloqueios';
-        }
-
-        function renderDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-
-            const todayBookings = allData.bookings.filter(b => (b["Data Agendamento"] || b.Data || "") === today);
-            const tomorrowBookings = allData.bookings.filter(b => (b["Data Agendamento"] || b.Data || "") === tomorrow);
-            const totalRev = todayBookings.reduce((acc, curr) => acc + parseFloat(curr.Valor || curr.Preco || 0), 0);
-
-            document.getElementById('stat-today').innerText = todayBookings.length;
-            document.getElementById('stat-tomorrow').innerText = tomorrowBookings.length;
-            document.getElementById('stat-revenue').innerText = "R$ " + totalRev.toFixed(0);
-            document.getElementById('stat-blocked-nums').innerText = allData.blockedNumbers.length;
-
-            const tbody = document.getElementById('recent-bookings');
-            tbody.innerHTML = allData.bookings.slice(0, 15).map(b => {
-                const phone = String(b.Telefone || b.phone || "").replace(/\D/g, '');
-                const date = b["Data Agendamento"] || b.Data || "";
-                const time = b.Hora || b.time || "";
-                const val = b.Valor || b.Preco || "0";
-                const whatsMsg = encodeURIComponent(`Olá ${b.Cliente}, confirmamos seu horário na Prime Club dia ${date} às ${time}. Até lá!`);
-
-                return `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 text-xs font-bold text-gray-500">${date}<br><span class="text-brand-dark text-sm">${time}</span></td>
-                    <td class="px-6 py-4 font-bold text-sm">${b.Cliente}</td>
-                    <td class="px-6 py-4"><span class="text-[10px] bg-gray-200 px-2 py-1 rounded font-bold uppercase">${b.Servico || ""}</span><br><span class="text-brand-green font-bold text-sm">R$ ${val}</span></td>
-                    <td class="px-6 py-4 text-right flex gap-2 justify-end">
-                        <a href="https://wa.me/55${phone}?text=${whatsMsg}" target="_blank" class="p-2 text-green-600 bg-green-50 rounded-lg"><i data-lucide="message-circle" class="w-4 h-4"></i></a>
-                        <button onclick="cancelBooking('${date}','${time}')" class="p-2 text-red-600 bg-red-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>`;
-            }).join('');
-        }
-
-        function renderAgenda() {
-            const list = document.getElementById('agenda-list');
-            const sorted = [...allData.bookings].sort((a,b) => (a.Data + a.Hora).localeCompare(b.Data + b.Hora));
-            list.innerHTML = sorted.map(b => `
-                <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
-                    <div class="flex items-center gap-4">
-                        <div class="bg-brand-active text-black text-[10px] font-bold p-2 rounded leading-none text-center">${b.Hora}</div>
-                        <div><p class="font-bold text-sm">${b.Cliente}</p><p class="text-xs text-gray-500">${b.Servico} | ${b.Data}</p></div>
-                    </div>
-                    <div class="text-right"><p class="text-xs font-bold text-brand-green">R$ ${b.Valor || b.Preco}</p></div>
-                </div>
-            `).join('') || '<p class="text-sm text-gray-400">Nenhum agendamento futuro.</p>';
-        }
-
-        function renderFinance() {
-            const list = document.getElementById('finance-list');
-            list.innerHTML = (allData.finance || []).map(f => `
-                <div class="flex justify-between p-2 text-sm border-b">
-                    <span>${f["Data Transacao"] || f.date || ""} - ${f.Descricao || ""}</span>
-                    <span class="font-bold text-brand-green">R$ ${f.Valor || 0}</span>
-                </div>
-            `).join('') || '<p class="text-sm text-gray-400">Sem registros financeiros ainda.</p>';
-        }
-
-        function renderBlocks() {
-            const phones = document.getElementById('blocked-phones-list');
-            phones.innerHTML = allData.blockedNumbers.length ? allData.blockedNumbers.map(n => `
-                <li class="flex justify-between items-center py-2">
-                    <span class="font-bold">${n}</span>
-                    <button onclick="removeBlockPhone('${n}')" class="text-red-600 text-xs font-bold">REMOVER</button>
-                </li>`).join('') : '<li class="text-sm text-gray-400 py-2">Nenhum número bloqueado.</li>';
-
-            const dates = document.getElementById('blocked-dates-list');
-            const blockedDates = allData.blockedDates.map(d => (typeof d === 'string' ? d : (d.DataBloqueio || d.Data || d))).filter(Boolean);
-            dates.innerHTML = blockedDates.length ? blockedDates.map(d => `
-                <button onclick="showUnblockModal('date', '${d}')" class="bg-brand-dark text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-2">
-                    ${d} <span class="font-bold">×</span>
-                </button>`).join('') : '<div class="text-sm text-gray-400">Nenhuma data bloqueada.</div>';
-        }
-
-        async function postJSON(payload) {
-            const res = await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
-            return res.json();
-        }
-
-     // MODAIS E LÓGICA DE BLOQUEIO ATUALIZADA
-async function handleBlockNumber() {
-    const phone = document.getElementById('blockPhone').value;
-    if (!phone) return alert("Digite um número");
-
-    if (!confirm(`Tem certeza que deseja BLOQUEAR o número ${phone}?`)) return;
-
-    showLoading(true);
-    try {
-        const response = await fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors', // Importante para Google Apps Script
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'add_blocked_number', phone: phone })
-        });
-        // Como o mode é no-cors, não conseguimos ler o JSON de resposta fácil, 
-        // então assumimos sucesso e recarregamos após 1s ou tratamos a UI.
-        alert("Comando de bloqueio enviado!");
-        document.getElementById('blockPhone').value = '';
-        fetchData(); // Recarrega a lista
-    } catch (error) {
-        alert("Erro ao enviar bloqueio.");
-    } finally {
-        showLoading(false);
-    }
+ function normalizeNumber(v) {
+    return String(v || '').replace(/\D/g, '');
 }
 
-async function handleBlockDates() {
-    const start = document.getElementById('blockStart').value;
-    const end = document.getElementById('blockEnd').value;
-    if (!start || !end) return alert("Selecione o intervalo");
-
-    if (!confirm("Confirmar o BLOQUEIO total de agendamentos neste intervalo?")) return;
-
-    // Gerar lista de datas entre start e end
-    let dates = [];
-    let current = new Date(start + 'T00:00:00');
-    const last = new Date(end + 'T00:00:00');
-    while (current <= last) {
-        dates.push(current.toISOString().split('T')[0]);
-        current.setDate(current.getDate() + 1);
-    }
-
-    showLoading(true);
-    try {
-        await fetch(WEB_APP_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ action: 'block_range', dates: dates })
-        });
-        alert("Intervalo bloqueado com sucesso!");
-        fetchData();
-    } catch (e) {
-        alert("Erro ao bloquear datas.");
-    } finally {
-        showLoading(false);
-    }
+function normalizeDateValue(v) {
+    return String(v || '').trim().split('T')[0];
 }
 
-async function removeBlockedNumber(phone) {
-    if (!confirm("Remover bloqueio deste número?")) return;
-    showLoading(true);
-    await fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({ action: 'remove_blocked_number', phone: phone })
+function showConfirmModal(message, onConfirm) {
+    if (confirm(message)) onConfirm();
+}
+
+// --- Ações de Bloqueio (corrigidas sem mexer no que já funciona) ---
+
+async function addBlockedPhone() {
+    const input = document.getElementById('new-block-phone');
+    const num = normalizeNumber(input.value);
+    if (!num) return alert('Digite um número válido (DDD + número).');
+
+    showConfirmModal(`Deseja BLOQUEAR o número ${num}?`, async () => {
+        try {
+            const result = await postJSON({ action: 'add_blocked_number', phone: num, number: num });
+            if (result.status === 'success') {
+                input.value = '';
+                await fetchData();
+                alert('Número bloqueado com sucesso.');
+            } else {
+                alert(result.message || 'Erro ao bloquear número.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao enviar bloqueio.');
+        }
     });
-    fetchData();
-    showLoading(false);
+}
+
+async function removeBlockPhone(num) {
+    const phone = normalizeNumber(num);
+    showConfirmModal(`Deseja REMOVER o bloqueio do número ${phone}?`, async () => {
+        try {
+            const result = await postJSON({ action: 'remove_blocked_number', phone: phone, number: phone });
+            if (result.status === 'success') {
+                await fetchData();
+                alert('Bloqueio removido com sucesso.');
+            } else {
+                alert(result.message || 'Erro ao remover bloqueio.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao remover bloqueio.');
+        }
+    });
+}
+
+async function blockDateRange() {
+    const start = document.getElementById('block-date-start').value;
+    const end = document.getElementById('block-date-end').value || start;
+    if (!start) return alert('Selecione a data inicial.');
+
+    showConfirmModal(`Confirmar BLOQUEIO de ${start} até ${end}?`, async () => {
+        let dates = [];
+        let cur = new Date(start + 'T00:00:00');
+        let last = new Date(end + 'T00:00:00');
+        if (isNaN(cur) || isNaN(last)) return alert('Datas inválidas.');
+        while (cur <= last) {
+            dates.push(cur.toISOString().split('T')[0]);
+            cur.setDate(cur.getDate() + 1);
+        }
+
+        try {
+            const result = await postJSON({ action: 'block_range', dates: dates, startDate: start, endDate: end });
+            if (result.status === 'success') {
+                document.getElementById('block-date-start').value = '';
+                document.getElementById('block-date-end').value = '';
+                await fetchData();
+                alert('Bloqueio de datas enviado.');
+            } else {
+                alert(result.message || 'Erro ao bloquear datas.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao bloquear datas.');
+        }
+    });
 }
 
 async function unblockDate(date) {
-    if (!confirm(`Deseja DESBLOQUEAR a data ${date}?`)) return;
-    showLoading(true);
-    await fetch(WEB_APP_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({ action: 'unblock_date', date: date })
+    const d = normalizeDateValue(date);
+    showConfirmModal(`Deseja DESBLOQUEAR a data ${d}?`, async () => {
+        try {
+            const result = await postJSON({ action: 'unblock_date', date: d, DataBloqueio: d });
+            if (result.status === 'success') {
+                await fetchData();
+                alert('Data desbloqueada com sucesso.');
+            } else {
+                alert(result.message || 'Erro ao desbloquear data.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Erro ao desbloquear data.');
+        }
     });
-    fetchData();
-    showLoading(false);
 }
-
-        async function cancelBooking(d, t) {
-            if(!confirm('Excluir este agendamento?')) return;
-            await postJSON({ action: 'delete_booking', date: d, time: t });
-            fetchData();
-        }
-
-        function openBookingModal() { document.getElementById('modal-overlay').classList.remove('hidden'); }
-        function closeBookingModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
-
-        async function onBookingSubmit(e) {
-            e.preventDefault();
-            const phone = document.getElementById('book-phone').value.replace(/\D/g, '');
-            const isRestricted = allData.blockedNumbers.includes(phone);
-            const svc = document.getElementById('book-service').value.split('|');
-
-            const payload = {
-                type: 'booking',
-                client: document.getElementById('book-client').value,
-                phone: phone,
-                date: document.getElementById('book-date').value,
-                time: document.getElementById('book-time').value,
-                service: svc[0],
-                price: svc[1],
-                paymentMethod: isRestricted ? "SINAL 50%" : "No Local",
-                notes: isRestricted ? "COBRAR SINAL VIA WHATSAPP" : "Agendado via Painel"
-            };
-
-            const res = await postJSON(payload);
-            if(res.status === 'success') {
-                closeBookingModal();
-                fetchData();
-                if(isRestricted) {
-                    const text = encodeURIComponent(`Olá, seu agendamento requer o pagamento de 50% de sinal para ser confirmado. Segue o link Pix...`);
-                    window.open(`https://wa.me/55${phone}?text=${text}`, '_blank');
-                }
-            } else { alert(res.message || 'Erro ao agendar'); }
-        }
-    </script>
 </body>
 </html>

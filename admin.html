@@ -39,224 +39,273 @@
         .cal-cell { border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; height: 70px; position: relative; }
         @media(min-width: 768px) { .cal-cell { height: 80px; } }
         .cal-header { background-color: #ffffff; text-align: center; padding: 8px 0; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
-        .cal-time { font-size: 0.70rem; color: #9ca3af; text-align: center; transform: translateY(-50%); display: block; }
-        .event-pill { position: absolute; left: 2px; right: 2px; top: 4px; bottom: 4px; border-radius: 6px; padding: 4px; color: white; font-size: 0.70rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.15); z-index: 10; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; }
-        @media(min-width: 768px) { .event-pill { left: 4px; right: 4px; padding: 6px 8px; font-size: 0.75rem; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
-        .addon-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
-        .addon-item:last-child { border-bottom: none; padding-bottom: 5px; }
-        .addon-info { display: flex; flex-direction: column; gap: 2px; }
-        .addon-name { font-weight: 600; font-size: 13px; color: #1f2937; max-width: 220px; line-height: 1.3; }
-        .addon-price { color: #b45309; font-weight: 700; font-size: 13px; }
-        .addon-ctrl { display: flex; align-items: center; gap: 8px; }
-        .addon-chk { width: 20px; height: 20px; accent-color: #d4af37; cursor: pointer; }
-        .bg-brand-gray { background-color: #374151; }
     </style>
 </head>
-<body class="bg-brand-bg text-gray-800 font-sans h-screen flex overflow-hidden">
-    <!-- (Login removido) -->
-
-    <!-- Barra Lateral de Navegação -->
-    <aside id="sidebar" class="w-64 bg-brand-dark text-gray-300 flex-col hidden md:flex z-[200] shadow-2xl fixed md:relative h-full inset-y-0 left-0 transition-all border-r border-gray-800">
-        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-800 bg-black">
-            <div class="flex items-center">
-                <div class="w-8 h-8 rounded-lg bg-black border border-brand-active text-brand-active flex flex-col items-center justify-center font-bold text-lg mr-3 shadow-lg">
-                    <span class="text-[8px] leading-none mt-0.5">PRIME</span>
-                </div>
-                <div><h1 class="text-white font-semibold text-sm">Painel de Gestão</h1><span class="text-xs text-brand-active">Prime Club</span></div>
+<body class="bg-brand-bg">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-brand-dark text-white hidden md:flex flex-col">
+            <div class="p-6 flex items-center gap-3">
+                <img src="prime_club_barbearia_logo.png" alt="Logo" class="w-10 h-10 rounded-full border border-brand-active">
+                <span class="font-bold text-lg tracking-tight">Prime Club</span>
             </div>
-            <button onclick="toggleMenu()" class="md:hidden text-gray-400 hover:text-white p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
-        </div>
-        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-            <button onclick="switchTab('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-brand-active text-black transition text-sm font-bold shadow-md shadow-brand-active/20"><i data-lucide="calendar-days" class="w-5 h-5"></i> Agendamentos</button>
-            <button onclick="switchTab('contactos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="users" class="w-5 h-5"></i> Lista de Clientes</button>
-            <button onclick="switchTab('financeiro', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="dollar-sign" class="w-5 h-5"></i> Financeiro</button>
-            <button onclick="switchTab('ferias', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="calendar-off" class="w-5 h-5"></i> Bloquear Datas</button>
-        </nav>
-    </aside>
-
-    <!-- Conteúdo Principal -->
-    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
-        <header class="h-16 bg-white flex items-center justify-between px-4 lg:px-8 border-b border-gray-200 z-10 shadow-sm">
-            <div class="flex items-center gap-4">
-                <button onclick="toggleMenu()" class="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"><i data-lucide="menu" class="w-6 h-6"></i></button>
-                <h2 class="text-xl font-bold text-gray-800 hidden sm:block">Dashboard</h2>
-                <div id="sync-status" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">Sincronizado</div>
-            </div>
-
-            <div class="flex items-center gap-4">
-                <button onclick="openAdminBookingModal()" class="bg-brand-dark hover:bg-black text-brand-active font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-black/20 flex items-center gap-1.5">
-                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                    <span>Novo Agendamento</span>
+            <nav class="flex-1 px-4 space-y-2 mt-4">
+                <button onclick="switchTab('dashboard')" class="nav-link active flex items-center gap-3 w-full p-3 rounded-lg bg-brand-active text-black font-semibold">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
                 </button>
-            </div>
-        </header>
+                <button onclick="switchTab('calendar')" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
+                    <i data-lucide="calendar"></i> Agenda
+                </button>
+                <button onclick="switchTab('finance')" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
+                    <i data-lucide="dollar-sign"></i> Financeiro
+                </button>
+                <button onclick="switchTab('blocks')" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg hover:bg-white/10 transition-colors">
+                    <i data-lucide="shield-alert"></i> Bloqueios
+                </button>
+            </nav>
+        </aside>
 
-        <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-brand-bg">
-            <!-- TAB: DASHBOARD / AGENDAMENTOS -->
-            <div id="tab-dashboard" class="tab-content active">
-                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                    <div class="xl:col-span-8 flex flex-col gap-6">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-5">
-                            <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
-                                <h3 id="calendar-month-title" class="text-lg lg:text-xl font-bold text-gray-800">Mês...</h3>
-                                <button onclick="fetchData()" class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <div class="min-w-[500px] md:min-w-[600px]">
-                                    <div class="cal-grid bg-gray-50 rounded-t-lg" id="cal-headers"></div>
-                                    <div class="cal-grid" id="cal-body"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 flex-1 flex flex-col">
-                            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">Lista Completa</h3>
-                            <div id="lista-agendamentos" class="space-y-3 overflow-y-auto max-h-[400px] pr-2"></div>
-                        </div>
-                    </div>
-                    <div class="xl:col-span-4 flex flex-col gap-6">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-5">
-                                <span class="text-xs font-semibold text-gray-500">Total Marcações</span>
-                                <strong id="stat-agendamentos" class="block text-2xl lg:text-3xl font-black mt-1 text-brand-dark">0</strong>
-                            </div>
-                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-5">
-                                <span class="text-xs font-semibold text-gray-500">Receita Prevista</span>
-                                <strong id="stat-receita" class="block text-xl font-black mt-1 text-brand-darkGold">R$ 0,00</strong>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-6 flex-1">
-                            <h3 class="font-bold text-gray-800 mb-5 border-b border-gray-100 pb-3">Clientes Ativos</h3>
-                            <div id="lista-clientes" class="space-y-4"></div>
-                        </div>
-                    </div>
+        <!-- Main -->
+        <main class="flex-1 overflow-y-auto flex flex-col">
+            <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
+                <h2 id="tab-title" class="text-xl font-bold text-gray-800 uppercase tracking-wide">Dashboard</h2>
+                <div class="flex items-center gap-4">
+                    <button onclick="fetchData()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-brand-active">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    </button>
                 </div>
-            </div>
+            </header>
 
-            <!-- TAB: LISTA DE CONTACTOS -->
-            <div id="tab-contactos" class="tab-content">
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-gray-800">Histórico de Clientes</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Contactos guardados automaticamente a partir dos agendamentos.</p>
+            <div class="p-4 md:p-8 space-y-8">
+                <!-- Tab: Dashboard -->
+                <section id="dashboard" class="tab-content active space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <p class="text-xs font-bold text-brand-active uppercase">Hoje</p>
+                            <h3 id="stat-today" class="text-3xl font-bold mt-1">0</h3>
                         </div>
-                        <div class="relative w-full sm:w-64">
-                            <input type="text" id="searchContact" oninput="filterContacts()" placeholder="Pesquisar cliente..." class="w-full p-2.5 pl-9 text-sm border border-gray-200 rounded-xl outline-none focus:border-brand-active transition">
-                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <p class="text-xs font-bold text-brand-blue uppercase">Amanhã</p>
+                            <h3 id="stat-tomorrow" class="text-3xl font-bold mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <p class="text-xs font-bold text-brand-green uppercase">Cancelados</p>
+                            <h3 id="stat-canceled" class="text-3xl font-bold mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <p class="text-xs font-bold text-brand-darkGold uppercase">Bloqueados</p>
+                            <h3 id="stat-blocked-nums" class="text-3xl font-bold mt-1">0</h3>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th class="px-6 py-3">Cliente</th>
-                                    <th class="px-6 py-3">Telemóvel</th>
-                                    <th class="px-6 py-3 text-center">Cortes Confirmados</th>
-                                    <th class="px-6 py-3 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="contacts-table-body" class="divide-y divide-gray-100">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
-            <!-- TAB: FINANCEIRO -->
-            <div id="tab-financeiro" class="tab-content">
-                <div class="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
-                    <h3 class="text-xl font-bold mb-6">Registo Financeiro</h3>
-                    <form id="financeForm" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <input type="date" id="finDate" required class="p-3 border rounded-xl"><select id="finCat" required class="p-3 border rounded-xl"><option value="Entrada">Entrada (Caixa)</option><option value="Saida">Saída (Despesas)</option></select><input type="number" id="finValue" placeholder="Valor" required step="0.01" class="p-3 border rounded-xl"><input type="text" id="finDesc" placeholder="Descrição" required class="p-3 border rounded-xl md:col-span-2"><button type="submit" id="btnFin" class="md:col-span-5 bg-brand-dark text-brand-active font-bold p-3 rounded-xl hover:bg-black transition">Registar Transação</button>
-                    </form>
-                </div>
-                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"><h3 class="font-bold mb-4">Histórico Transacional</h3><div id="lista-financeiro" class="space-y-3"></div></div>
-            </div>
+                    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+                        <div class="p-6 border-b flex justify-between items-center">
+                            <h4 class="font-bold">Agendamentos Recentes</h4>
+                            <button onclick="openBookingModal()" class="bg-brand-active text-black px-4 py-2 rounded-lg font-bold text-sm">+ Novo</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-4">Data/Hora</th>
+                                        <th class="px-6 py-4">Cliente</th>
+                                        <th class="px-6 py-4">Serviço</th>
+                                        <th class="px-6 py-4">Valor</th>
+                                        <th class="px-6 py-4 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-bookings" class="divide-y divide-gray-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- TAB: BLOQUEIO DE FERIAS -->
-            <div id="tab-ferias" class="tab-content bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                <h3 class="text-xl font-bold mb-6">Bloquear Datas (Férias/Folgas)</h3>
-                <form id="blockDateForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-600">Data de Início</label>
-                        <input type="date" id="blockedDateStart" required class="p-3 border rounded-xl">
+                <!-- Tab: Bloqueios -->
+                <section id="blocks" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Bloqueio de Números -->
+                        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
+                            <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="phone-off"></i> Números Restritos (50% Sinal)</h3>
+                            <div class="flex gap-2">
+                                <input id="new-block-phone" type="text" placeholder="DDD + Número" class="flex-1 p-2 border rounded-lg outline-none focus:ring-2 ring-brand-active">
+                                <button onclick="addBlockedPhone()" class="bg-brand-active px-4 py-2 rounded-lg font-bold">Bloquear</button>
+                            </div>
+                            <div class="max-h-64 overflow-y-auto mt-4">
+                                <ul id="blocked-phones-list" class="divide-y text-sm"></ul>
+                            </div>
+                        </div>
+
+                        <!-- Bloqueio de Datas -->
+                        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
+                            <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="calendar-off"></i> Bloqueio de Datas</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <input id="block-date-start" type="date" class="p-2 border rounded-lg outline-none">
+                                <input id="block-date-end" type="date" class="p-2 border rounded-lg outline-none">
+                            </div>
+                            <button onclick="blockDateRange()" class="w-full bg-brand-dark text-white p-3 rounded-lg font-bold hover:bg-gray-800 uppercase">Bloquear Período</button>
+                            <div id="blocked-dates-list" class="flex flex-wrap gap-2 mt-4"></div>
+                        </div>
                     </div>
-                    <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-gray-600">Data de Fim</label>
-                        <input type="date" id="blockedDateEnd" required class="p-3 border rounded-xl">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" id="btnBlock" class="w-full bg-brand-red text-white font-bold p-3 rounded-xl hover:bg-red-600 transition h-[48px]">Bloquear Período</button>
-                    </div>
-                </form>
-                <h4 class="font-bold text-gray-700 mb-3 border-t pt-4">Lista de Dias Bloqueados</h4>
-                <div id="lista-bloqueios" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3"></div>
+                </section>
             </div>
         </main>
     </div>
 
-    <!-- MODAL: AGENDAMENTO MANUAL POR ADMIN -->
-    <div id="modalAdminBooking" class="fixed inset-0 bg-black/70 z-[300] hidden place-items-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl relative animate-slideUp max-h-[95vh] overflow-y-auto">
-            <button onclick="closeAdminBookingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">×</button>
-            <div class="flex items-center gap-2 mb-4">
-                <div class="w-10 h-10 bg-brand-lightGold text-brand-darkGold rounded-full flex items-center justify-center"><i data-lucide="calendar-plus" class="w-5 h-5"></i></div>
-                <div>
-                    <h3 class="text-lg font-bold text-gray-800">Novo Agendamento</h3>
-                    <p class="text-xs text-gray-500">Registe o cliente na agenda Prime.</p>
+    <!-- Modal Booking -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+            <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="plus-circle" class="text-brand-active"></i> Novo Agendamento</h2>
+            <form id="admin-booking-form" class="space-y-4">
+                <input required id="book-client" type="text" placeholder="Nome do Cliente" class="w-full p-3 border rounded-xl outline-none focus:ring-2 ring-brand-active">
+                <input required id="book-phone" type="tel" placeholder="WhatsApp (DDD + Número)" class="w-full p-3 border rounded-xl outline-none focus:ring-2 ring-brand-active">
+                <div class="grid grid-cols-2 gap-3">
+                    <input required id="book-date" type="date" class="p-3 border rounded-xl outline-none">
+                    <input required id="book-time" type="time" class="p-3 border rounded-xl outline-none">
                 </div>
-            </div>
-
-            <form id="adminBookingForm" class="space-y-4">
-                <!-- Captura Inteligente -->
-                <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                    <label class="block text-[11px] font-bold text-gray-600 mb-1 flex items-center gap-1">
-                        <i data-lucide="clipboard-paste" class="w-3.5 h-3.5"></i> Captura Rápida (Cole texto do WhatsApp)
-                    </label>
-                    <input type="text" id="admSmartPaste" oninput="executeSmartPaste(this.value)" placeholder="Cole texto com Nome e Número..." class="w-full p-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-brand-active bg-white">
+                <select id="book-service" class="w-full p-3 border rounded-xl outline-none focus:ring-2 ring-brand-active">
+                    <option value="Cabelo|35">Cabelo (R$ 35)</option>
+                    <option value="Barba|35">Barba (R$ 35)</option>
+                    <option value="Combo|60">Combo (R$ 60)</option>
+                </select>
+                <div id="deposit-warning" class="hidden p-3 bg-brand-lightGold text-brand-darkGold border border-brand-active rounded-xl text-sm font-medium animate-pulse">
+                    ⚠️ Atenção: Este número requer depósito de 50% para confirmação!
                 </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Cliente</label>
-                        <input type="text" id="admClient" list="clientList" oninput="autoFillPhone()" required placeholder="Ex: João Silva" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
-                        <datalist id="clientList"></datalist>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">WhatsApp</label>
-                        <input type="tel" id="admPhone" required placeholder="(11) 99999-9999" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
-                    </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeBookingModal()" class="flex-1 p-3 border rounded-xl font-bold hover:bg-gray-50">Cancelar</button>
+                    <button type="submit" class="flex-1 p-3 bg-brand-active text-black rounded-xl font-bold shadow-lg">Confirmar</button>
                 </div>
+            </form>
+        </div>
+    </div>
 
-                <!-- Profissional Prime Club -->
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Barbeiro / Profissional</label>
-                    <select id="admPro" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
-                        <option value="Christiano barbosa">Christiano barbosa</option>
-                        <option value="Qualquer um">Qualquer um</option>
-                    </select>
-                </div>
+    <script>
+// INÍCIO - integração Admin <-> BancoDados.gs
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzobu7mOdovnSLYvIL5M4o4KN635uwu5uEh2Tan7KcxvLJZZExAUXQqfIRWX42FL_lQTw/exec";
 
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="col-span-2">
-                        <label class="block text-xs font-semibold text-gray-600 mb-1">Serviço Principal</label>
-                        <select id="admService" onchange="updateAdminPrice()" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
-                            <option value="Corte Masculino" data-price="40">Corte Masculino (R$ 40)</option>
-                            <option value="Barba" data-price="25">Barba (R$ 25)</option>
-                            <option value="Corte & barba" data-price="60">Corte & barba (R$ 60)</option>
-                            <option value="Corte, barba & sobrancelha" data-price="65">Corte, barba & sob. (R$ 65)</option>
-                            <option value="Platinado" data-price="120">Platinado (R$ 120)</option>
-                            <option value="Luzes" data-price="100">Luzes (R$ 100)</option>
-                            <option value="Alinhamento capilar" data-price="40">Alinhamento (R$ 40)</option>
-                        </select>
+function normalizePhone(p){ return String(p||'').replace(/\D/g,''); }
 
-                        <!-- BOTÃO DE EXTRAS NO ADMIN -->
-                        <button type="button" onclick="abrirAdminAddons()" class="w-full mt-2 bg-brand-lightGold text-brand-darkGold border border-dashed border-brand-active rounded-lg p-2 text-xs font-bold hover:bg-[#fde68a] transition flex items-center justify-center gap-1">
-                            <i data-lucide="plus-circle" class="w-3 h-3"></i> Adicionar Extras / Outros Serviços
-                        </button>
-                        <div id="admExtrasSummary" class="text-[11px] text-gray-500 mt-1 font-medium leading-tight"></div>
-                    </div>
+let adminData = { bookings: [], blockedDates: [], blockedNumbers: [] };
 
-(complete file...)
+async function fetchPanelData(){
+  // tenta get_all primeiro; se falhar, tenta panel_data
+  const urls = [`${WEB_APP_URL}?action=get_all`, `${WEB_APP_URL}?action=panel_data`];
+  let data = null;
+  for (const u of urls){
+    try{
+      const res = await fetch(u);
+      if (!res.ok) continue;
+      const json = await res.json();
+      // compatibilidade: resposta pode usar blocked, blockedDates, blockedNumbers
+      data = {
+        bookings: json.bookings || json.agendamentos || [],
+        blockedDates: json.blocked || json.blockedDates || json.blocked_dates || [],
+        blockedNumbers: json.blockedNumbers || json.numerosBloqueados || []
+      };
+      break;
+    } catch(err){ continue; }
+  }
+  if (!data) {
+    console.error('Não foi possível obter dados do Web App.');
+    return;
+  }
+  // normaliza blockedNumbers para só dígitos
+  data.blockedNumbers = (data.blockedNumbers || []).map(n => normalizePhone(n)).filter(Boolean);
+  adminData = data;
+  renderAdminLists(); // sua função de UI para popular tabelas/listas
+  return data;
+}
+
+async function postJSON(payload){
+  return fetch(WEB_APP_URL, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).then(r => r.json());
+}
+
+/* Funções de ação */
+
+// Criar agendamento (type = 'booking')
+async function createBooking(obj){
+  // obj: {client, phone, service, date, time, price, paymentMethod, notes}
+  obj.type = 'booking';
+  // se número está na lista de bloqueados, anexa nota e define paymentMethod para SINAL 50%
+  const norm = normalizePhone(obj.phone);
+  if (adminData.blockedNumbers.includes(norm)){
+    obj.notes = (obj.notes||'') + ' [SINAL 50% EXIGIDO]';
+    obj.paymentMethod = 'SINAL 50%';
+  }
+  const res = await postJSON(obj);
+  if (res && res.status === 'success') {
+    await fetchPanelData();
+    return true;
+  }
+  throw res;
+}
+
+// Deletar agendamento (action = 'delete_booking')
+async function deleteBooking(date, time){
+  const payload = { action: 'delete_booking', date: date, time: time };
+  const res = await postJSON(payload);
+  if (res && res.status === 'success') { await fetchPanelData(); return true; }
+  return false;
+}
+
+// Bloquear intervalo de datas (action = 'block_range')
+async function blockDateRange(startDate, endDate){
+  const payload = { action: 'block_range', startDate: startDate, endDate: endDate || startDate };
+  const res = await postJSON(payload);
+  if (res && res.status === 'success') { await fetchPanelData(); return true; }
+  return false;
+}
+
+// Desbloquear data (action = 'unblock_date')
+async function unblockDate(date){
+  const payload = { action: 'unblock_date', date: date };
+  const res = await postJSON(payload);
+  if (res && res.status === 'success') { await fetchPanelData(); return true; }
+  return false;
+}
+
+// Adicionar número bloqueado (action = 'add_blocked_number')
+async function addBlockedNumber(number){
+  const payload = { action: 'add_blocked_number', number: normalizePhone(number) };
+  const res = await postJSON(payload);
+  if (res && res.status === 'success') { await fetchPanelData(); return true; }
+  return false;
+}
+
+// Remover número bloqueado (action = 'remove_blocked_number')
+async function removeBlockedNumber(number){
+  const payload = { action: 'remove_blocked_number', number: normalizePhone(number) };
+  const res = await postJSON(payload);
+  if (res && res.status === 'success') { await fetchPanelData(); return true; }
+  return false;
+}
+
+/* UI helpers: adapte os nomes para as funções que já existem no admin.html */
+function renderAdminLists(){
+  // exemplo: popular lista de números bloqueados
+  if (typeof renderBlockedNumbersList === 'function'){
+    renderBlockedNumbersList(adminData.blockedNumbers);
+  } else {
+    // fallback simples: console
+    console.log('blockedNumbers:', adminData.blockedNumbers);
+  }
+  if (typeof renderBlockedDatesList === 'function'){
+    renderBlockedDatesList(adminData.blockedDates);
+  } else {
+    console.log('blockedDates:', adminData.blockedDates);
+  }
+  if (typeof renderBookingsTable === 'function'){
+    renderBookingsTable(adminData.bookings);
+  } else {
+    console.log('bookings:', adminData.bookings);
+  }
+}
+
+// Auto-load
+fetchPanelData();
+// FIM - integração Admin <-> BancoDados.gs
+</body>
+</html>

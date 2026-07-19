@@ -255,49 +255,88 @@
             return res.json();
         }
 
-        async function addBlockedPhone() {
-            const raw = document.getElementById('new-block-phone').value;
-            const num = raw.replace(/\D/g, '');
-            if (!num) return alert('Digite um número válido com DDD.');
-            const confirmMsg = `Confirmar bloqueio do número ${raw.trim()}? Este cliente exigirá 50% de sinal.`;
-            if (!confirm(confirmMsg)) return;
-            const result = await postJSON({ action: 'add_blocked_number', number: num });
-            if (result && result.status === 'success') {
-                document.getElementById('new-block-phone').value = '';
-                showToast('Número bloqueado com sucesso.');
-                fetchData();
-            } else {
-                alert((result && result.message) || 'Não foi possível bloquear o número.');
-            }
-        }
+     // MODAIS E LÓGICA DE BLOQUEIO ATUALIZADA
+async function handleBlockNumber() {
+    const phone = document.getElementById('blockPhone').value;
+    if (!phone) return alert("Digite um número");
 
-        async function removeBlockPhone(num) {
-            if(!confirm('Desbloquear este número?')) return;
-            await postJSON({ action: 'remove_blocked_number', number: num });
-            fetchData();
-        }
+    if (!confirm(`Tem certeza que deseja BLOQUEAR o número ${phone}?`)) return;
 
-        async function blockDateRange() {
-            const s = document.getElementById('block-date-start').value;
-            const e = document.getElementById('block-date-end').value || s;
-            if (!s) return alert('Escolha a data inicial.');
-            const confirmMsg = e && e !== s
-                ? `Confirmar bloqueio de ${s} até ${e}?`
-                : `Confirmar bloqueio da data ${s}?`;
-            if (!confirm(confirmMsg)) return;
-            const result = await postJSON({ action: 'block_range', startDate: s, endDate: e });
-            if (result && result.status === 'success') {
-                showToast('Data bloqueada com sucesso.');
-                fetchData();
-            } else {
-                alert((result && result.message) || 'Não foi possível bloquear a data.');
-            }
-        }
+    showLoading(true);
+    try {
+        const response = await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Importante para Google Apps Script
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'add_blocked_number', phone: phone })
+        });
+        // Como o mode é no-cors, não conseguimos ler o JSON de resposta fácil, 
+        // então assumimos sucesso e recarregamos após 1s ou tratamos a UI.
+        alert("Comando de bloqueio enviado!");
+        document.getElementById('blockPhone').value = '';
+        fetchData(); // Recarrega a lista
+    } catch (error) {
+        alert("Erro ao enviar bloqueio.");
+    } finally {
+        showLoading(false);
+    }
+}
 
-        async function unblockDate(d) {
-            await postJSON({ action: 'unblock_date', date: d });
-            fetchData();
-        }
+async function handleBlockDates() {
+    const start = document.getElementById('blockStart').value;
+    const end = document.getElementById('blockEnd').value;
+    if (!start || !end) return alert("Selecione o intervalo");
+
+    if (!confirm("Confirmar o BLOQUEIO total de agendamentos neste intervalo?")) return;
+
+    // Gerar lista de datas entre start e end
+    let dates = [];
+    let current = new Date(start + 'T00:00:00');
+    const last = new Date(end + 'T00:00:00');
+    while (current <= last) {
+        dates.push(current.toISOString().split('T')[0]);
+        current.setDate(current.getDate() + 1);
+    }
+
+    showLoading(true);
+    try {
+        await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ action: 'block_range', dates: dates })
+        });
+        alert("Intervalo bloqueado com sucesso!");
+        fetchData();
+    } catch (e) {
+        alert("Erro ao bloquear datas.");
+    } finally {
+        showLoading(false);
+    }
+}
+
+async function removeBlockedNumber(phone) {
+    if (!confirm("Remover bloqueio deste número?")) return;
+    showLoading(true);
+    await fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action: 'remove_blocked_number', phone: phone })
+    });
+    fetchData();
+    showLoading(false);
+}
+
+async function unblockDate(date) {
+    if (!confirm(`Deseja DESBLOQUEAR a data ${date}?`)) return;
+    showLoading(true);
+    await fetch(WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action: 'unblock_date', date: date })
+    });
+    fetchData();
+    showLoading(false);
+}
 
         async function cancelBooking(d, t) {
             if(!confirm('Excluir este agendamento?')) return;

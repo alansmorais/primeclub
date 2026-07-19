@@ -5,262 +5,262 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Prime Club Barbearia | Agendamento</title>
   
-  <!-- Tailwind CSS & FontAwesome -->
+  <!-- Tailwind CSS & FontAwesome (Ícones Oficiais) -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   
   <style>
-    :root { --gold: #D4AF37; --bg: #090909; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--bg); color: #fff; font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; -webkit-tap-highlight-color: transparent; }
+    :root{--gold:#D4AF37;--bg:#090909}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:#fff;font-family:'Inter',system-ui,-apple-system,sans-serif;margin:0}
     
-    /* Fontes Customizadas */
-    .title { font-family: 'Cinzel', serif; font-size: 2.5rem; line-height: 1.1; }
-    @media(min-width: 1024px) { .title { font-size: 4rem; } }
+    .logo{width:130px; height:130px; object-fit:cover; border-radius:50%; border: 2px solid var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);}
+    .title{font-family:'Cinzel', serif;font-size:3rem;line-height:1.1}
     
-    /* Estilização Refinada Geral */
-    .card { background: #0d0d0d; border: 1px solid #1f1f1f; border-radius: 16px; padding: 20px; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
+    /* Cards de Serviço */
+    .card{background:#0d0d0d;border:1px solid #1f1f1f;border-radius:16px;padding:24px;transition:0.3s; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer;}
+    .card:hover{border-color:var(--gold); transform:translateY(-5px);}
     
-    /* Cards de Serviço Compactos */
-    .service-card { background: #0d0d0d; border: 1px solid #1f1f1f; border-radius: 12px; padding: 14px 18px; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-    .service-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212,175,55,0.05); background: #111; }
+    /* Botões de Data e Hora */
+    .date-card{min-width:70px; border:1px solid #2b2b2b; padding:12px 8px; border-radius:12px; background:#0e0e0e; transition:0.2s; text-align:center; cursor:pointer; flex-shrink:0;}
+    .date-card.selected{background:var(--gold); color:#000; border-color:var(--gold); font-weight:bold;}
     
-    .date-card { min-width: 65px; border: 1px solid #2b2b2b; padding: 10px 8px; border-radius: 12px; background: #0e0e0e; transition: 0.2s; text-align: center; cursor: pointer; flex-shrink: 0; }
-    .date-card.selected { background: var(--gold); color: #000; border-color: var(--gold); font-weight: bold; transform: scale(1.05); }
+    .time{border:1px solid #2b2b2b;padding:12px;border-radius:12px;background:#0e0e0e;transition:0.2s;text-align:center; cursor:pointer;}
+    .time:hover:not(:disabled){border-color:var(--gold);color:var(--gold)}
+    .time.selected{background:var(--gold);color:#000;border-color:var(--gold); font-weight:bold;}
+    .time:disabled{opacity:0.3; cursor:not-allowed; text-decoration:line-through; background:#050505;}
     
-    .time { border: 1px solid #2b2b2b; padding: 10px; border-radius: 10px; background: #0e0e0e; transition: 0.2s; text-align: center; cursor: pointer; font-size: 13px; font-weight: 500;}
-    .time:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
-    .time.selected { background: var(--gold); color: #000; border-color: var(--gold); font-weight: bold; }
+    /* Utilitários */
+    .btn-gold{background:var(--gold);color:#000;padding:14px 24px;border-radius:999px;font-weight:700;display:inline-block;transition:0.3s;text-align:center; cursor:pointer;}
+    .btn-gold:hover:not(:disabled){transform:scale(1.02);box-shadow:0 0 20px rgba(212,175,55,0.3)}
+    .btn-gold:disabled{opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none;}
+    .btn-outline{border:1px solid rgba(212,175,55,0.4);padding:12px 24px;border-radius:999px;transition:0.3s;text-align:center}
+    .btn-outline:hover{background:rgba(212,175,55,0.1)}
     
-    .btn-gold { background: var(--gold); color: #000; padding: 12px 24px; border-radius: 999px; font-weight: 700; display: inline-flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; cursor: pointer; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-    .btn-gold:hover:not(:disabled) { transform: scale(1.02); box-shadow: 0 0 20px rgba(212,175,55,0.3); }
-    .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-    
-    .btn-outline { border: 1px solid rgba(212,175,55,0.4); padding: 12px 24px; border-radius: 999px; transition: 0.3s; text-align: center; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
-    .btn-outline:hover { background: rgba(212,175,55,0.1); }
-    
-    .map-wrap { height: 300px; border-radius: 16px; overflow: hidden; border: 1px solid #222; background: #000; position: relative; }
+    .map-wrap{height:400px;border-radius:16px;overflow:hidden;border:1px solid #222;background:#000; position: relative;}
+    .hook-text{white-space:pre-line;line-height:1.6}
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @media(min-width:1024px){.title{font-size:4.5rem}}
   </style>
 </head>
-<body class="antialiased">
+<body>
 
-  <!-- CABEÇALHO -->
-  <header class="relative border-b border-neutral-900 bg-[#070707] sticky top-0 z-40 shadow-sm">
-    <div class="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
-      
-      <div class="flex items-center gap-5">
-        <div class="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-lg shrink-0">
-            <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo Prime Club" class="w-full h-full object-cover">
-        </div>
-        <div class="border-l border-neutral-800 pl-4 md:pl-5">
-          <div class="text-[10px] md:text-xs text-[#D4AF37] uppercase tracking-[0.2em] font-bold mb-1">Prime Club</div>
-          <div class="text-xs md:text-sm text-gray-400 italic leading-relaxed">
-            ✂️ Corte na régua | Barba alinhada<br>
+  <header class="relative border-b border-neutral-900 bg-[#070707] sticky top-0 z-40">
+    <div class="container mx-auto px-6 py-6 flex items-center justify-between">
+      <div class="flex flex-col md:flex-row md:items-center gap-6">
+        <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo Prime Club" class="logo">
+        <div class="border-l-0 md:border-l border-neutral-700 md:pl-6">
+          <div class="text-xs text-[#D4AF37] uppercase tracking-widest mb-1 font-bold">Prime Club Barbearia</div>
+          <div class="hook-text text-sm text-gray-300 italic font-medium">
+            ✂️ Corte na régua | Barba alinhada
+            💈 Estilo, respeito e identidade
             🔥 Quem é Prime, sabe🫡
           </div>
         </div>
       </div>
-
-      <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="hidden md:flex w-12 h-12 bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-full items-center justify-center text-white hover:text-[#E1306C] transition shadow-sm group">
-        <i class="fab fa-instagram text-xl group-hover:scale-110 transition"></i>
-      </a>
-
+      <div class="hidden md:block">
+        <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-neutral-900 border border-neutral-800 text-white hover:text-[#E1306C] hover:bg-[#E1306C]/10 text-xl transition-colors" aria-label="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 md:px-6">
-    
-    <!-- HERO SECTION -->
-    <section class="grid lg:grid-cols-2 gap-10 items-center py-12 md:py-16">
+  <main class="container mx-auto px-6">
+    <section class="grid lg:grid-cols-2 gap-12 items-center py-20">
       <div>
         <h1 class="title">Prime Club <span class="block text-[#D4AF37]">Barbearia</span></h1>
-        <p class="text-gray-400 mt-6 text-sm md:text-base max-w-lg leading-relaxed">
+        <p class="text-gray-400 mt-8 text-lg max-w-lg leading-relaxed">
           Cortes premium, barba e tratamentos de luxo para quem valoriza estilo e sofisticação. Venha viver a experiência do clube.
         </p>
-        <div class="mt-8 flex flex-wrap gap-4">
-          <a href="#booking" class="btn-gold w-full md:w-auto"><i class="fas fa-calendar-check mt-0.5"></i> Agendar Agora</a>
-          <a href="#services" class="btn-outline w-full md:w-auto text-white">Ver Serviços</a>
+        <div class="mt-10 flex flex-wrap gap-5">
+          <a href="#booking" class="btn-gold w-full md:w-auto"><i class="fas fa-calendar-check mr-2"></i> Agendar Agora</a>
         </div>
       </div>
       <div class="hidden lg:block">
-        <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" alt="Interior Barbearia" class="rounded-2xl shadow-2xl border border-neutral-800 grayscale hover:grayscale-0 transition duration-700 object-cover h-[400px] w-full">
+        <div class="relative">
+          <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=800" alt="Interior Barbearia" class="relative rounded-2xl shadow-2xl grayscale transition hover:grayscale-0 duration-700">
+        </div>
       </div>
     </section>
 
-    <!-- LISTA DE SERVIÇOS COMPACTA -->
-    <section id="services" class="py-12 md:py-16 border-t border-neutral-900">
-      <div class="text-center mb-8">
-        <h2 class="text-2xl md:text-3xl font-serif text-[#D4AF37] mb-3">Nossos Serviços</h2>
-        <div class="h-1 w-12 bg-[#D4AF37] mx-auto rounded-full"></div>
+    <!-- Lista Atualizada de Serviços -->
+    <section id="services" class="py-24 border-t border-neutral-900">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-serif text-[#D4AF37] mb-4">Nossos Serviços</h2>
+        <div class="h-1 w-20 bg-[#D4AF37] mx-auto rounded-full"></div>
       </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="services-grid">
-        <!-- Injetado por JS -->
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-grid">
+        <!-- Os serviços serão injetados aqui via JavaScript para facilitar a manutenção -->
       </div>
     </section>
 
-    <!-- BOOKING SECTION (Agendamento) -->
-    <section id="booking" class="py-16 bg-[#070707] rounded-3xl p-6 md:p-12 mb-20 border border-neutral-900 shadow-xl">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-serif text-[#D4AF37] mb-3">Reserve seu Horário</h2>
-        <p class="text-gray-400 text-sm">Escolha o serviço, profissional e a data desejada.</p>
+    <!-- Booking Section Interativa -->
+    <section id="booking" class="py-24 bg-[#070707] rounded-3xl p-8 lg:p-16 mb-24 border border-neutral-900 shadow-2xl">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-serif text-[#D4AF37] mb-4">Reserve seu Horário</h2>
+        <p class="text-gray-400">Escolha o serviço, profissional, a data e o horário disponível.</p>
       </div>
 
-      <div class="grid lg:grid-cols-2 gap-12 lg:gap-20">
-        
-        <!-- Formulário (Lado Esquerdo) -->
-        <div class="space-y-6">
+      <div class="grid lg:grid-cols-2 gap-16">
+        <div class="space-y-8">
+          
           <div class="hidden">
-            <select id="service" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-3.5 text-sm text-white outline-none focus:border-[#D4AF37] transition"></select>
+            <select id="service" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition"></select>
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">1. Profissional</label>
-            <select id="barber" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-3.5 text-sm text-white outline-none focus:border-[#D4AF37] transition">
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Profissional</label>
+            <select id="barber" class="w-full bg-black border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
               <option value="Qualquer profissional">Qualquer profissional</option>
               <option value="Christiano">Christiano</option>
               <option value="Alessandro">Alessandro</option>
             </select>
           </div>
 
+          <!-- Carrossel de Datas da Semana -->
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">2. Data</label>
-            <div id="dates-container" class="flex overflow-x-auto gap-2 pb-2 hide-scrollbar snap-x">
-              <!-- Injetado -->
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Data</label>
+            <div id="dates-container" class="flex overflow-x-auto gap-3 pb-4 pt-2 hide-scrollbar snap-x">
+              <!-- Botões de data gerados via JS -->
             </div>
           </div>
 
+          <!-- Grade de Horários -->
           <div class="min-h-[150px]">
-            <label class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex justify-between items-center">
-              3. Horários Livres
-              <span id="loading-times" class="text-[#D4AF37] text-[10px] hidden animate-pulse bg-[#D4AF37]/10 px-2 py-1 rounded">Buscando...</span>
+            <label class="block text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3 flex justify-between">
+              Horários Livres
+              <span id="loading-times" class="text-[#D4AF37] text-xs hidden animate-pulse bg-[#D4AF37]/10 px-2 py-1 rounded">Buscando...</span>
             </label>
-            <div class="grid grid-cols-4 md:grid-cols-5 gap-2" id="times-container">
-              <!-- Injetado -->
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-3 mt-2" id="times-container">
+              <!-- Horários gerados via JS -->
             </div>
-            <div id="no-times-msg" class="hidden text-center text-xs text-red-500 font-bold mt-4 bg-red-900/10 p-3 rounded-lg border border-red-900/30">
+            <div id="no-times-msg" class="hidden text-center text-xs text-red-500 font-bold mt-4 bg-red-900/20 p-3 rounded-lg border border-red-900/50">
               Agenda cheia ou indisponível nesta data.
             </div>
           </div>
         </div>
 
-        <!-- Resumo & Finalização (Lado Direito) -->
-        <div class="card !bg-[#050505] border border-neutral-800 p-6 md:p-8 flex flex-col relative overflow-hidden">
+        <!-- Resumo -->
+        <div class="card !bg-[#050505] border-2 border-neutral-800 p-8 flex flex-col relative overflow-hidden">
           <div class="absolute top-0 left-0 w-full h-1 bg-[#D4AF37]"></div>
           
-          <h3 class="text-xl font-serif text-[#D4AF37] mb-6">Resumo da Reserva</h3>
+          <h3 class="text-2xl font-serif text-[#D4AF37] mb-8 border-b border-neutral-800 pb-4">Resumo do Agendamento</h3>
           
-          <div class="space-y-4 flex-grow">
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500"><i class="fas fa-cut w-4 text-center"></i> Serviço</span>
+          <div class="space-y-6 flex-grow">
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 uppercase text-xs tracking-widest"><i class="fas fa-cut mr-1"></i> Serviço</span>
               <span id="summary-service" class="font-bold text-right ml-4">—</span>
             </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500"><i class="fas fa-user w-4 text-center"></i> Barbeiro</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 uppercase text-xs tracking-widest"><i class="fas fa-user mr-1"></i> Barbeiro</span>
               <span id="summary-barber" class="font-bold">—</span>
             </div>
-            <div class="flex justify-between items-center text-sm">
-              <span class="text-gray-500"><i class="fas fa-calendar-alt w-4 text-center"></i> Data/Hora</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 uppercase text-xs tracking-widest"><i class="fas fa-calendar-alt mr-1"></i> Data/Hora</span>
               <span id="summary-datetime" class="font-bold text-[#D4AF37]">—</span>
             </div>
-            <div class="flex justify-between items-center text-sm pt-4 border-t border-neutral-800">
-              <span class="text-gray-500 uppercase tracking-widest text-xs font-bold">Total</span>
-              <span id="summary-price" class="text-2xl font-black text-white">R$ 0,00</span>
+            <div class="flex justify-between items-center pt-2">
+              <span class="text-gray-500 uppercase text-xs tracking-widest">Total</span>
+              <span id="summary-price" class="text-3xl text-white font-bold">R$ 0,00</span>
             </div>
-
-            <hr class="border-neutral-900 my-6">
-
-            <!-- Inputs Finais -->
-            <div class="space-y-3">
-              <input type="text" id="name" placeholder="Seu nome completo" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-3.5 text-sm text-white outline-none focus:border-[#D4AF37] transition">
-              <input type="tel" id="whatsapp" placeholder="WhatsApp (DDD + Número)" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-3.5 text-sm text-white outline-none focus:border-[#D4AF37] transition">
+            
+            <hr class="border-neutral-900 my-4">
+            
+            <div class="space-y-4">
+              <input type="text" id="name" placeholder="Seu nome completo" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
+              <input type="tel" id="whatsapp" placeholder="WhatsApp (DDD + Número)" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-4 text-white focus:border-[#D4AF37] outline-none transition">
             </div>
-
-            <div id="restriction-warning" class="hidden bg-orange-500/10 border border-orange-500/30 text-orange-400 p-3 rounded-xl text-xs leading-relaxed font-medium mt-3">
-              <i class="fas fa-exclamation-triangle mr-1"></i> Este número requer 50% de sinal via Pix para confirmar a reserva.
+            
+            <div id="restriction-warning" class="hidden bg-orange-500/10 border border-orange-500/30 text-orange-400 p-3 rounded-xl text-sm leading-relaxed mt-4">
+              <i class="fas fa-exclamation-triangle mr-2"></i> Este número requer pagamento de 50% adiantado via Pix para confirmar a reserva.
             </div>
-          </div>
-
-          <div class="mt-8" id="action-area">
-            <button id="proceedBtn" class="btn-gold w-full text-sm py-4"><i class="fas fa-check-circle"></i> Concluir Agendamento</button>
           </div>
           
-          <!-- Área de Sucesso -->
-          <div id="success-area" class="hidden mt-6 text-center">
-            <div class="w-12 h-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
-              <i class="fas fa-check text-xl"></i>
-            </div>
-            <h4 class="text-white font-bold text-lg mb-1">Tudo Certo!</h4>
-            <p class="text-xs text-gray-400 mb-5">Seu pedido foi registrado em nossa agenda.</p>
-            <a id="btn-wa-confirm" href="#" target="_blank" class="w-full bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 transition uppercase tracking-wider shadow-lg shadow-green-900/20">
-              <i class="fab fa-whatsapp text-lg"></i> Validar no WhatsApp
-            </a>
-            <button onclick="location.reload()" class="mt-4 text-xs text-gray-500 underline hover:text-white">Fazer outro agendamento</button>
+          <div class="mt-10" id="action-area">
+            <button id="proceedBtn" class="btn-gold w-full text-base py-4"><i class="fas fa-check-circle"></i> Concluir Agendamento</button>
           </div>
 
+          <!-- Área de Sucesso (Oculta por padrão) -->
+          <div id="success-area" class="hidden mt-8 text-center bg-green-900/10 border border-green-900/30 p-6 rounded-2xl">
+            <div class="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-check text-3xl"></i>
+            </div>
+            <h4 class="text-white font-bold text-xl mb-2">Tudo Certo!</h4>
+            <p class="text-sm text-gray-400 mb-6">Seu pedido foi registrado em nossa agenda.</p>
+            <a id="btn-wa-confirm" href="#" target="_blank" class="w-full bg-[#25D366] hover:bg-[#1ebe57] text-white font-bold py-4 rounded-xl text-sm flex items-center justify-center gap-2 transition uppercase tracking-wider shadow-lg shadow-[#25D366]/20">
+              <i class="fab fa-whatsapp text-xl"></i> Validar no WhatsApp
+            </a>
+            <button onclick="location.reload()" class="mt-5 text-sm text-gray-500 underline hover:text-white">Fazer outro agendamento</button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- LOCALIZAÇÃO -->
+    <!-- Location Section -->
     <section class="mb-24">
-      <div class="flex items-center gap-3 mb-6">
-        <i class="fas fa-map-marker-alt text-[#D4AF37] text-2xl"></i>
-        <h2 class="text-2xl font-serif text-white">Nossa Localização</h2>
+      <div class="flex items-center gap-4 mb-8">
+        <i class="fas fa-map-marker-alt text-[#D4AF37] text-3xl"></i>
+        <h2 class="text-3xl font-serif text-white">Nossa Localização</h2>
       </div>
-      <div class="map-wrap flex flex-col items-center justify-center relative shadow-xl">
+      <div class="map-wrap flex flex-col items-center justify-center relative shadow-2xl">
         <iframe src="https://maps.google.com/maps?q=Rua+elizeu+xavier+nunes+874,+Espírito+Santo,+Brazil&hl=pt-BR&z=15&output=embed" style="width:100%;height:100%;border:0;" loading="lazy" allowfullscreen></iframe>
       </div>
-      <p class="text-sm text-gray-400 mt-4 text-center">Rua Elizeu Xavier Nunes, 874 - Espírito Santo, ES - CEP: 29285-000</p>
+      <p class="text-gray-400 mt-6 text-center text-lg">Rua Elizeu Xavier Nunes, 874 - Espírito Santo, ES - CEP: 29285-000</p>
     </section>
   </main>
 
-  <!-- RODAPÉ COM COPYRIGHT E LINK -->
-  <footer class="py-12 bg-[#050505] border-t border-neutral-900 text-center">
-    <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-20 h-20 object-cover rounded-full border border-neutral-800 mb-6 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition duration-500">
+  <!-- RODAPÉ COM COPYRIGHT -->
+  <footer class="py-16 bg-[#050505] border-t border-neutral-900 text-center">
+    <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-24 h-24 object-cover rounded-full border border-neutral-800 mb-8 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition duration-500">
     
-    <div class="flex justify-center gap-6 mb-8">
-      <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="w-10 h-10 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E1306C] hover:bg-[#E1306C]/10 transition"><i class="fab fa-instagram text-lg"></i></a>
-      <a id="footer-wa" href="#" target="_blank" class="w-10 h-10 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center text-gray-400 hover:text-[#25D366] hover:bg-[#25D366]/10 transition"><i class="fab fa-whatsapp text-lg"></i></a>
+    <div class="flex justify-center gap-6 mb-10">
+      <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="w-12 h-12 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E1306C] hover:bg-[#E1306C]/10 transition" aria-label="Instagram">
+        <i class="fab fa-instagram text-xl"></i>
+      </a>
+      <a id="footer-wa" href="#" target="_blank" class="w-12 h-12 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center text-gray-400 hover:text-[#25D366] hover:bg-[#25D366]/10 transition" aria-label="WhatsApp">
+        <i class="fab fa-whatsapp text-xl"></i>
+      </a>
     </div>
-    
-    <!-- COPYRIGHT & DESENVOLVEDOR -->
-    <p class="text-neutral-500 text-[10px] tracking-widest uppercase mb-2">© 2026 Prime Club Barbearia. Todos os direitos reservados.</p>
-    <p class="text-neutral-600 text-[9px] tracking-widest uppercase">
+
+    <!-- COPYRIGHT E DESENVOLVEDOR -->
+    <p class="text-neutral-500 text-xs tracking-widest uppercase mb-3">© 2026 Prime Club Barbearia. Todos os direitos reservados.</p>
+    <p class="text-neutral-600 text-[10px] tracking-widest uppercase">
       Desenvolvido por <a href="https://alansmsolutions.com" target="_blank" class="text-[#D4AF37] hover:underline transition">Alan SM Solutions</a>
     </p>
   </footer>
 
   <!-- POPUP PIX (ESCONDIDO) -->
   <div id="pix-modal" class="hidden fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
-    <div class="bg-[#111] border border-neutral-800 rounded-[24px] p-8 w-full max-w-[340px] text-center shadow-2xl relative overflow-hidden">
+    <div class="bg-[#111] border border-neutral-800 rounded-[24px] p-8 w-full max-w-[380px] text-center shadow-2xl relative overflow-hidden">
       <div class="absolute top-0 left-0 w-full h-1.5 bg-orange-500"></div>
       <div class="w-16 h-16 bg-orange-500/10 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-orange-500/20">
         <i class="fas fa-lock text-2xl"></i>
       </div>
-      <h3 class="text-lg font-black text-white mb-2">Pagamento Antecipado</h3>
-      <p class="text-xs text-gray-400 mb-6 leading-relaxed">
+      <h3 class="text-xl font-black text-white mb-2">Pagamento Antecipado</h3>
+      <p class="text-sm text-gray-400 mb-6 leading-relaxed">
         Sua reserva ficará <strong class="text-orange-500">PENDENTE</strong>. Para garantir a vaga, é obrigatório o pagamento de <strong>50% via PIX</strong> agora. Não há estorno por cancelamento.
       </p>
-      <div class="bg-[#0a0a0a] p-4 rounded-xl border border-neutral-800 mb-6">
-        <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Chave Pix (Celular)</p>
-        <p class="text-xl font-black text-white tracking-widest">12345678910</p>
+      <div class="bg-[#0a0a0a] p-5 rounded-xl border border-neutral-800 mb-6">
+        <p class="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Chave Pix (Celular)</p>
+        <p class="text-2xl font-black text-white tracking-widest">12345678910</p>
       </div>
-      <div class="flex gap-3">
-        <button type="button" onclick="closePixModal()" class="flex-1 bg-neutral-800 text-gray-400 font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider hover:bg-neutral-700 transition">Cancelar</button>
-        <button type="button" onclick="confirmPixAndSubmit()" class="flex-1 bg-[#D4AF37] text-black font-black py-3.5 rounded-xl text-xs uppercase tracking-wider hover:brightness-110 transition shadow-lg shadow-[#D4AF37]/20">Estou Ciente</button>
+      <div class="flex gap-4">
+        <button type="button" onclick="closePixModal()" class="flex-1 bg-neutral-800 text-gray-400 font-bold py-4 rounded-xl text-xs uppercase tracking-wider hover:bg-neutral-700 transition">Cancelar</button>
+        <button type="button" onclick="confirmPixAndSubmit()" class="flex-1 bg-[#D4AF37] text-black font-black py-4 rounded-xl text-xs uppercase tracking-wider hover:brightness-110 transition shadow-lg shadow-[#D4AF37]/20">Estou Ciente</button>
       </div>
     </div>
   </div>
 
   <script>
+    // ================= CONFIGURAÇÕES GERAIS =================
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
     const BARBEARIA_WHATSAPP = "27999999999"; 
     
-    // Seta os links globais do Whats
+    // Atualiza o link do WhatsApp no rodapé
     document.getElementById('footer-wa').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
 
     const servicesList = [
@@ -297,17 +297,14 @@
     function renderServices() {
       const grid = document.getElementById('services-grid'); grid.innerHTML = ''; els.srv.innerHTML = '';
       servicesList.forEach((s, i) => {
-        // Preenche o Select oculto
         els.srv.innerHTML += `<option value="${s.name}" data-price="${s.price}">${s.name}</option>`;
-        
-        // Cria os Cards Compactos e Elegantes
-        const card = document.createElement('div'); card.className = 'service-card group';
+        const card = document.createElement('div'); card.className = 'card group';
         card.innerHTML = `
-          <div>
-            <h3 class="text-sm font-bold text-white group-hover:text-[#D4AF37] transition mb-1">${s.name}</h3>
-            <span class="text-[9px] text-gray-500 uppercase tracking-widest"><i class="far fa-clock mr-1"></i> ${s.duration}</span>
+          <div><h3 class="text-lg font-bold mb-1 text-white group-hover:text-[#D4AF37] transition">${s.name}</h3></div>
+          <div class="flex justify-between items-center text-[#D4AF37] mt-6 pt-5 border-t border-neutral-900 group-hover:border-neutral-800 transition">
+            <span class="text-[11px] bg-neutral-900 px-3 py-1.5 rounded-lg font-bold uppercase tracking-widest text-gray-400"><i class="far fa-clock mr-1"></i> ${s.duration}</span>
+            <span class="text-2xl font-black">R$ ${s.price.toFixed(2)}</span>
           </div>
-          <span class="text-sm font-black text-[#D4AF37]">R$ ${s.price.toFixed(2)}</span>
         `;
         card.onclick = () => { els.srv.selectedIndex = i; updateSummary(); document.getElementById('booking').scrollIntoView(); };
         grid.appendChild(card);
@@ -335,7 +332,7 @@
         if (!state.dateISO) state.dateISO = iso;
         if (state.dateISO === iso) btn.classList.add('selected');
         
-        btn.innerHTML = `<div class="text-[9px] uppercase mb-1 font-bold ${state.dateISO===iso ? 'text-black' : 'text-gray-500'}">${days[d.getDay()]}</div><div class="text-lg font-black leading-none">${d.getDate()}</div>`;
+        btn.innerHTML = `<div class="text-[10px] uppercase mb-1.5 font-bold ${state.dateISO===iso ? 'text-black' : 'text-gray-500'}">${days[d.getDay()]}</div><div class="text-xl font-black leading-none">${d.getDate()}</div>`;
         btn.onclick = () => { state.dateISO = iso; state.time = null; renderDates(); renderTimes(); };
         els.dates.appendChild(btn); count++; if(count >= 14) break;
       }
@@ -357,6 +354,7 @@
 
       let count = 0;
       horarios.forEach(h => {
+        // Se o horário NÃO estiver na lista de ocupados, ele é exibido
         if(!booked.includes(h)) {
           let btn = document.createElement('button'); btn.className = 'time'; btn.textContent = h;
           if(state.time === h) btn.classList.add('selected');
@@ -380,7 +378,7 @@
       const warn = document.getElementById('restriction-warning');
       if(isRestricted && currentPhone.length >= 10) {
         warn.classList.remove('hidden'); price = price / 2;
-        pEl.innerHTML = `<span class="line-through text-gray-600 text-sm mr-2 font-medium">R$${opt.dataset.price}</span><span class="text-orange-500">R$${price.toFixed(2)}</span><span class="text-[9px] text-orange-500 block uppercase font-bold mt-1 text-right">Sinal (50%)</span>`;
+        pEl.innerHTML = `<span class="line-through text-gray-600 text-sm mr-2 font-medium">R$${opt.dataset.price}</span><span class="text-orange-500">R$${price.toFixed(2)}</span><span class="text-[10px] text-orange-500 block uppercase font-bold mt-1 text-right tracking-widest">Sinal (50%)</span>`;
       } else {
         warn.classList.add('hidden'); pEl.textContent = `R$ ${price.toFixed(2)}`;
       }
@@ -388,7 +386,7 @@
 
       const dEl = document.getElementById('summary-datetime');
       if(state.dateISO && state.time) {
-        dEl.innerHTML = `<span class="bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-1 rounded font-bold">${state.dateISO.split('-').reverse().join('/')} às ${state.time}</span>`;
+        dEl.innerHTML = `<span class="bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#D4AF37] px-3 py-1.5 rounded-lg font-bold">${state.dateISO.split('-').reverse().join('/')} às ${state.time}</span>`;
       } else { dEl.textContent = '—'; }
     }
 
@@ -417,17 +415,17 @@
       try {
         await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(pendingPayload) });
         
-        // Configura a tela de sucesso
+        // Transição da Tela de Resumo para a Tela de Sucesso
         document.getElementById('action-area').classList.add('hidden');
         document.getElementById('success-area').classList.remove('hidden');
         const btnWa = document.getElementById('btn-wa-confirm');
 
         if(isRestricted) {
-          btnWa.innerHTML = '<i class="fab fa-whatsapp text-lg"></i> Enviar Comprovante';
+          btnWa.innerHTML = '<i class="fab fa-whatsapp text-xl"></i> Enviar Comprovante no WhatsApp';
           let msgPix = `Olá Prime Club!\n📍 Serviço: ${els.srv.value}\n💈 Barbeiro: ${els.bar.value}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n\n*Estou ciente do sinal e envio abaixo o comprovante do PIX (R$${currentPrice.toFixed(2)}) para confirmar.*`;
           btnWa.href = `https://wa.me/55${BARBEARIA_WHATSAPP}?text=${encodeURIComponent(msgPix)}`;
         } else {
-          btnWa.innerHTML = '<i class="fab fa-whatsapp text-lg"></i> Validar no WhatsApp';
+          btnWa.innerHTML = '<i class="fab fa-whatsapp text-xl"></i> Validar Reserva no WhatsApp';
           let msg = `Olá! Agendei pelo site:\n📍 Serviço: ${els.srv.value}\n💈 Barbeiro: ${els.bar.value}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n👤 Nome: ${currentName}`;
           btnWa.href = `https://wa.me/55${currentPhone}?text=${encodeURIComponent(msg)}`;
         }

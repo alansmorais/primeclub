@@ -22,7 +22,7 @@
     /* Estilização Refinada Geral */
     .card { background: #0d0d0d; border: 1px solid #1f1f1f; border-radius: 16px; padding: 20px; transition: 0.3s; display: flex; flex-direction: column; justify-content: space-between; }
     
-    /* NOVO: Cards de Serviço Compactos */
+    /* Cards de Serviço Compactos */
     .service-card { background: #0d0d0d; border: 1px solid #1f1f1f; border-radius: 12px; padding: 14px 18px; transition: 0.3s; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
     .service-card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212,175,55,0.05); background: #111; }
     
@@ -97,7 +97,6 @@
         <div class="h-1 w-12 bg-[#D4AF37] mx-auto rounded-full"></div>
       </div>
       
-      <!-- Grid atualizado para 2 colunas no mobile e 3 no PC, com gap menor (Barras horizontais) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="services-grid">
         <!-- Injetado por JS -->
       </div>
@@ -114,7 +113,7 @@
         
         <!-- Formulário (Lado Esquerdo) -->
         <div class="space-y-6">
-          <div class="hidden"> <!-- Escondido, pois o cliente já clica no serviço na lista -->
+          <div class="hidden">
             <select id="service" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-3.5 text-sm text-white outline-none focus:border-[#D4AF37] transition"></select>
           </div>
 
@@ -123,6 +122,7 @@
             <select id="barber" class="w-full bg-[#111] border border-neutral-800 rounded-xl p-3.5 text-sm text-white outline-none focus:border-[#D4AF37] transition">
               <option value="Qualquer profissional">Qualquer profissional</option>
               <option value="Christiano">Christiano</option>
+              <option value="Alessandro">Alessandro</option>
             </select>
           </div>
 
@@ -188,7 +188,7 @@
             <button id="proceedBtn" class="btn-gold w-full text-sm py-4"><i class="fas fa-check-circle"></i> Concluir Agendamento</button>
           </div>
           
-          <!-- Área de Sucesso (Oculta por padrão) -->
+          <!-- Área de Sucesso -->
           <div id="success-area" class="hidden mt-6 text-center">
             <div class="w-12 h-12 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
               <i class="fas fa-check text-xl"></i>
@@ -218,14 +218,20 @@
     </section>
   </main>
 
-  <!-- RODAPÉ -->
+  <!-- RODAPÉ COM COPYRIGHT E LINK -->
   <footer class="py-12 bg-[#050505] border-t border-neutral-900 text-center">
     <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="logo footer" class="mx-auto w-20 h-20 object-cover rounded-full border border-neutral-800 mb-6 grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition duration-500">
-    <div class="flex justify-center gap-6 mb-6">
+    
+    <div class="flex justify-center gap-6 mb-8">
       <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="w-10 h-10 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center text-gray-400 hover:text-[#E1306C] hover:bg-[#E1306C]/10 transition"><i class="fab fa-instagram text-lg"></i></a>
       <a id="footer-wa" href="#" target="_blank" class="w-10 h-10 bg-neutral-900 border border-neutral-800 rounded-full flex items-center justify-center text-gray-400 hover:text-[#25D366] hover:bg-[#25D366]/10 transition"><i class="fab fa-whatsapp text-lg"></i></a>
     </div>
-    <p class="text-neutral-600 text-[10px] tracking-widest uppercase">© 2026 Prime Club Barbearia | Todos os direitos reservados</p>
+    
+    <!-- COPYRIGHT & DESENVOLVEDOR -->
+    <p class="text-neutral-500 text-[10px] tracking-widest uppercase mb-2">© 2026 Prime Club Barbearia. Todos os direitos reservados.</p>
+    <p class="text-neutral-600 text-[9px] tracking-widest uppercase">
+      Desenvolvido por <a href="https://alansmsolutions.com" target="_blank" class="text-[#D4AF37] hover:underline transition">Alan SM Solutions</a>
+    </p>
   </footer>
 
   <!-- POPUP PIX (ESCONDIDO) -->
@@ -254,6 +260,7 @@
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
     const BARBEARIA_WHATSAPP = "27999999999"; 
     
+    // Seta os links globais do Whats
     document.getElementById('footer-wa').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
 
     const servicesList = [
@@ -410,6 +417,7 @@
       try {
         await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(pendingPayload) });
         
+        // Configura a tela de sucesso
         document.getElementById('action-area').classList.add('hidden');
         document.getElementById('success-area').classList.remove('hidden');
         const btnWa = document.getElementById('btn-wa-confirm');

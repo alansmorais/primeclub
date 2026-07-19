@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Prime Club - Painel de Gestão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
-            theme: { 
-                extend: { 
-                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
-                    colors: { 
-                        brand: { 
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
                             dark: '#0a0a0a',
                             active: '#d4af37',
                             bg: '#f4f6f8',
@@ -29,25 +29,32 @@
         }
     </script>
     <style>
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .nav-link.active { background-color: #d4af37; color: black; font-weight: 600; }
+        .nav-link.active { background-color: #d4af37; color: black; font-weight: 700; }
+        .card-shadow { box-shadow: 0 10px 30px rgba(0,0,0,.06); }
     </style>
 </head>
 <body class="bg-brand-bg text-gray-900">
     <div class="flex h-screen overflow-hidden">
-        <!-- Sidebar -->
         <aside class="w-64 bg-brand-dark text-white hidden md:flex flex-col">
             <div class="p-6 flex items-center gap-3">
-                <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-10 h-10 rounded-full border border-brand-active">
+                <img src="prime_club_barbearia_logo.png" alt="Logo" class="w-10 h-10 rounded-full border border-brand-active">
                 <span class="font-bold text-lg tracking-tight">Prime Club</span>
             </div>
+
             <nav class="flex-1 px-4 space-y-2 mt-4">
                 <button onclick="switchTab('dashboard', this)" class="nav-link active flex items-center gap-3 w-full p-3 rounded-lg transition-all">
                     <i data-lucide="layout-dashboard"></i> Dashboard
+                </button>
+                <button onclick="switchTab('calendar', this)" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg transition-all hover:bg-white/10">
+                    <i data-lucide="calendar-days"></i> Agenda
+                </button>
+                <button onclick="switchTab('finance', this)" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg transition-all hover:bg-white/10">
+                    <i data-lucide="wallet"></i> Financeiro
                 </button>
                 <button onclick="switchTab('blocks', this)" class="nav-link flex items-center gap-3 w-full p-3 rounded-lg transition-all hover:bg-white/10">
                     <i data-lucide="shield-alert"></i> Bloqueios
@@ -55,38 +62,57 @@
             </nav>
         </aside>
 
-        <!-- Main -->
         <main class="flex-1 overflow-y-auto flex flex-col">
             <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-10">
                 <h2 id="tab-title" class="text-xl font-bold text-gray-800 uppercase tracking-wide">Dashboard</h2>
-                <button onclick="fetchData()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-brand-active">
-                    <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="fetchData()" class="p-2 hover:bg-gray-100 rounded-full transition-colors text-brand-active" title="Atualizar">
+                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    </button>
+                    <button onclick="openBookingModal()" class="bg-brand-active text-black px-4 py-2 rounded-lg font-bold text-sm shadow-sm">
+                        + Novo Agendamento
+                    </button>
+                </div>
             </header>
 
             <div class="p-4 md:p-8 space-y-8">
-                <!-- Tab: Dashboard -->
                 <section id="dashboard" class="tab-content active space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4" id="stats-grid">
-                        <div class="bg-white p-6 rounded-xl border shadow-sm"><p class="text-xs font-bold text-brand-active uppercase">Hoje</p><h3 id="stat-today" class="text-3xl font-bold mt-1">0</h3></div>
-                        <div class="bg-white p-6 rounded-xl border shadow-sm"><p class="text-xs font-bold text-brand-blue uppercase">Amanhã</p><h3 id="stat-tomorrow" class="text-3xl font-bold mt-1">0</h3></div>
-                        <div class="bg-white p-6 rounded-xl border shadow-sm"><p class="text-xs font-bold text-brand-green uppercase">Total Ativos</p><h3 id="stat-active" class="text-3xl font-bold mt-1">0</h3></div>
-                        <div class="bg-white p-6 rounded-xl border shadow-sm"><p class="text-xs font-bold text-brand-darkGold uppercase">Restritos</p><h3 id="stat-blocked-nums" class="text-3xl font-bold mt-1">0</h3></div>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white p-6 rounded-xl border card-shadow">
+                            <p class="text-xs font-bold text-brand-active uppercase">Hoje</p>
+                            <h3 id="stat-today" class="text-3xl font-bold mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border card-shadow">
+                            <p class="text-xs font-bold text-brand-blue uppercase">Amanhã</p>
+                            <h3 id="stat-tomorrow" class="text-3xl font-bold mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border card-shadow">
+                            <p class="text-xs font-bold text-brand-green uppercase">Ativos</p>
+                            <h3 id="stat-active" class="text-3xl font-bold mt-1">0</h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border card-shadow">
+                            <p class="text-xs font-bold text-brand-darkGold uppercase">Números bloqueados</p>
+                            <h3 id="stat-blocked-nums" class="text-3xl font-bold mt-1">0</h3>
+                        </div>
                     </div>
 
-                    <div class="bg-white rounded-xl border shadow-sm overflow-hidden">
+                    <div class="bg-white rounded-xl border card-shadow overflow-hidden">
                         <div class="p-6 border-b flex justify-between items-center">
                             <h4 class="font-bold text-lg">Agendamentos Recentes</h4>
-                            <button onclick="openBookingModal()" class="bg-brand-active text-black px-4 py-2 rounded-lg font-bold text-sm shadow-sm hover:scale-105 transition-transform">+ Novo</button>
+                            <span class="text-xs text-gray-500">Últimos 10</span>
                         </div>
+
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
                                     <tr>
                                         <th class="px-6 py-4 border-b">Data/Hora</th>
                                         <th class="px-6 py-4 border-b">Cliente</th>
+                                        <th class="px-6 py-4 border-b">Telefone</th>
                                         <th class="px-6 py-4 border-b">Serviço</th>
-                                        <th class="px-6 py-4 border-b">Ações</th>
+                                        <th class="px-6 py-4 border-b">Valor</th>
+                                        <th class="px-6 py-4 border-b">Status</th>
+                                        <th class="px-6 py-4 border-b text-right">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="recent-bookings" class="divide-y divide-gray-100"></tbody>
@@ -95,27 +121,57 @@
                     </div>
                 </section>
 
-                <!-- Tab: Bloqueios -->
+                <section id="calendar" class="tab-content space-y-6">
+                    <div class="bg-white rounded-xl border card-shadow p-6">
+                        <h3 class="font-bold text-lg mb-4">Agenda</h3>
+                        <div id="calendar-list" class="space-y-3"></div>
+                    </div>
+                </section>
+
+                <section id="finance" class="tab-content space-y-6">
+                    <div class="bg-white rounded-xl border card-shadow p-6">
+                        <h3 class="font-bold text-lg mb-4">Financeiro</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="p-4 rounded-xl bg-gray-50 border">
+                                <p class="text-xs uppercase text-gray-500 font-bold">Total de agendamentos</p>
+                                <p id="finance-total-bookings" class="text-2xl font-bold mt-1">0</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-gray-50 border">
+                                <p class="text-xs uppercase text-gray-500 font-bold">Valor total</p>
+                                <p id="finance-total-value" class="text-2xl font-bold mt-1">R$ 0,00</p>
+                            </div>
+                            <div class="p-4 rounded-xl bg-gray-50 border">
+                                <p class="text-xs uppercase text-gray-500 font-bold">Pagamentos no local</p>
+                                <p id="finance-local" class="text-2xl font-bold mt-1">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="blocks" class="tab-content space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Bloqueio de Números -->
-                        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
-                            <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="phone-off" class="text-brand-red"></i> Números Restritos (Sinal 50%)</h3>
+                        <div class="bg-white p-6 rounded-xl border card-shadow space-y-4">
+                            <h3 class="font-bold text-lg flex items-center gap-2">
+                                <i data-lucide="phone-off" class="text-brand-red"></i> Números Bloqueados
+                            </h3>
                             <div class="flex gap-2">
-                                <input id="new-block-phone" type="text" placeholder="DDD + Número" class="flex-1 p-2 border rounded-lg focus:ring-2 ring-brand-active outline-none">
+                                <input id="new-block-phone" type="text" placeholder="DDD + Número" class="flex-1 p-3 border rounded-lg outline-none focus:ring-2 ring-brand-active">
                                 <button onclick="handleBlockPhone()" class="bg-brand-active px-4 py-2 rounded-lg font-bold">Bloquear</button>
                             </div>
-                            <ul id="blocked-phones-list" class="divide-y text-sm max-h-60 overflow-y-auto mt-2"></ul>
+                            <ul id="blocked-phones-list" class="divide-y text-sm max-h-64 overflow-y-auto mt-2"></ul>
                         </div>
 
-                        <!-- Bloqueio de Datas -->
-                        <div class="bg-white p-6 rounded-xl border shadow-sm space-y-4">
-                            <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="calendar-off" class="text-brand-red"></i> Bloqueio de Datas</h3>
+                        <div class="bg-white p-6 rounded-xl border card-shadow space-y-4">
+                            <h3 class="font-bold text-lg flex items-center gap-2">
+                                <i data-lucide="calendar-off" class="text-brand-red"></i> Bloqueio de Datas
+                            </h3>
                             <div class="grid grid-cols-2 gap-2">
-                                <input id="block-date-start" type="date" class="p-2 border rounded-lg outline-none">
-                                <input id="block-date-end" type="date" class="p-2 border rounded-lg outline-none">
+                                <input id="block-date-start" type="date" class="p-3 border rounded-lg outline-none">
+                                <input id="block-date-end" type="date" class="p-3 border rounded-lg outline-none">
                             </div>
-                            <button onclick="handleBlockDateRange()" class="w-full bg-brand-dark text-white p-3 rounded-lg font-bold hover:bg-gray-800 uppercase text-sm">Confirmar Bloqueio</button>
+                            <button onclick="handleBlockDateRange()" class="w-full bg-brand-dark text-white p-3 rounded-lg font-bold hover:bg-gray-800 uppercase text-sm">
+                                Confirmar Bloqueio
+                            </button>
                             <div id="blocked-dates-list" class="flex flex-wrap gap-2 mt-4"></div>
                         </div>
                     </div>
@@ -124,13 +180,14 @@
         </main>
     </div>
 
-    <!-- Modal Novo Agendamento -->
     <div id="modal-overlay" class="fixed inset-0 bg-black/60 z-[100] hidden flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-            <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="plus-circle" class="text-brand-active"></i> Novo Agendamento</h2>
+            <h2 class="text-xl font-bold flex items-center gap-2">
+                <i data-lucide="plus-circle" class="text-brand-active"></i> Novo Agendamento
+            </h2>
             <form id="admin-booking-form" class="space-y-4">
-                <input required id="book-client" type="text" placeholder="Nome do Cliente" class="w-full p-3 border rounded-xl focus:ring-2 ring-brand-active outline-none">
-                <input required id="book-phone" type="tel" placeholder="WhatsApp (DDD + Número)" class="w-full p-3 border rounded-xl focus:ring-2 ring-brand-active outline-none">
+                <input required id="book-client" type="text" placeholder="Nome do Cliente" class="w-full p-3 border rounded-xl outline-none focus:ring-2 ring-brand-active">
+                <input required id="book-phone" type="tel" placeholder="WhatsApp (DDD + Número)" class="w-full p-3 border rounded-xl outline-none focus:ring-2 ring-brand-active">
                 <div class="grid grid-cols-2 gap-3">
                     <input required id="book-date" type="date" class="p-3 border rounded-xl outline-none">
                     <input required id="book-time" type="time" class="p-3 border rounded-xl outline-none">
@@ -141,10 +198,10 @@
                     <option value="Corte & barba|60">Corte & Barba (R$ 60)</option>
                 </select>
                 <div id="deposit-warning" class="hidden p-3 bg-brand-lightGold text-brand-darkGold border border-brand-active rounded-xl text-sm font-medium">
-                    ⚠️ Atenção: Este número exige sinal de 50%!
+                    ⚠️ Atenção: este número requer sinal de 50%.
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="closeBookingModal()" class="flex-1 p-3 border rounded-xl font-bold hover:bg-gray-50 uppercase text-xs">Sair</button>
+                    <button type="button" onclick="closeBookingModal()" class="flex-1 p-3 border rounded-xl font-bold hover:bg-gray-50 uppercase text-xs">Cancelar</button>
                     <button type="submit" class="flex-1 p-3 bg-brand-active text-black rounded-xl font-bold shadow-lg uppercase text-xs">Confirmar</button>
                 </div>
             </form>
@@ -152,8 +209,14 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzobu7mOdovnSLYvIL5M4o4KN635uwu5uEh2Tan7KcxvLJZZExAUXQqfIRWX42FL_lQTw/exec";
-        let allData = { bookings: [], blockedDates: [], blockedNumbers: [] };
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
+
+        let allData = {
+            bookings: [],
+            blockedDates: [],
+            blockedNumbers: [],
+            finance: []
+        };
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
@@ -165,151 +228,285 @@
             try {
                 const res = await fetch(`${WEB_APP_URL}?action=get_all`);
                 const data = await res.json();
-                allData = {
-                    bookings: data.bookings || [],
-                    blockedDates: data.blocked || [], 
-                    blockedNumbers: data.blockedNumbers || []
-                };
+
+                allData = normalizeData(data);
+
                 renderDashboard();
                 renderBlocks();
+                renderCalendar();
+                renderFinance();
                 lucide.createIcons();
-            } catch (e) { console.error("Erro ao ler dados:", e); }
+            } catch (e) {
+                console.error("Erro ao ler dados:", e);
+            }
+        }
+
+        function normalizeData(data) {
+            const bookings = data.bookings || data.agendamentos || [];
+            const blockedDates = data.blocked || data.bloqueios || data.blockedDates || [];
+            const blockedNumbers = data.blockedNumbers || data.numerosBloqueados || data.blockedPhones || [];
+            const finance = data.finance || data.financeiro || [];
+
+            return {
+                bookings: bookings.map(normalizeBooking),
+                blockedDates: blockedDates.map(normalizeDateValue).filter(Boolean),
+                blockedNumbers: blockedNumbers.map(normalizePhoneValue).filter(Boolean),
+                finance
+            };
+        }
+
+        function normalizeBooking(b) {
+            return {
+                ID: b.ID || b.id || '',
+                'Data Registro': b['Data Registro'] || b.dataRegistro || b.registerDate || '',
+                Cliente: b.Cliente || b.client || '',
+                Telefone: normalizePhoneValue(b.Telefone || b.phone || ''),
+                Servico: b.Servico || b.service || '',
+                'Data Agendamento': b['Data Agendamento'] || b.date || b.data || '',
+                Hora: b.Hora || b.time || '',
+                Status: b.Status || b.status || '',
+                Valor: b.Valor || b.price || b.valor || '',
+                'Tipo Pagamento': b['Tipo Pagamento'] || b.paymentMethod || '',
+                Observacao: b.Observacao || b.Observação || b.notes || ''
+            };
+        }
+
+        function normalizePhoneValue(v) {
+            return String(v || '').replace(/\D/g, '');
+        }
+
+        function normalizeDateValue(v) {
+            const s = String(v || '').trim();
+            if (!s) return '';
+            if (s.includes('T')) return s.split('T')[0];
+            const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (br) return `${br[3]}-${br[2]}-${br[1]}`;
+            return s;
         }
 
         function switchTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+            const target = document.getElementById(id);
+            if (target) target.classList.add('active');
+
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            btn.classList.add('active');
-            const titles = { 'dashboard': 'Dashboard', 'blocks': 'Bloqueios' };
+            if (btn) btn.classList.add('active');
+
+            const titles = {
+                dashboard: 'Dashboard',
+                calendar: 'Agenda',
+                finance: 'Financeiro',
+                blocks: 'Bloqueios'
+            };
             document.getElementById('tab-title').innerText = titles[id] || 'Painel';
         }
 
         function checkRestriction(e) {
-            const norm = e.target.value.replace(/\D/g, '');
+            const norm = normalizePhoneValue(e.target.value);
             const warn = document.getElementById('deposit-warning');
-            if (allData.blockedNumbers.includes(norm)) warn.classList.remove('hidden'); else warn.classList.add('hidden');
+            if (allData.blockedNumbers.includes(norm)) warn.classList.remove('hidden');
+            else warn.classList.add('hidden');
+        }
+
+        function isToday(dateStr) {
+            const today = new Date().toISOString().split('T')[0];
+            return normalizeDateValue(dateStr) === today;
+        }
+
+        function isTomorrow(dateStr) {
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            return normalizeDateValue(dateStr) === tomorrow;
         }
 
         function renderDashboard() {
-            const todayISO = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-
-            document.getElementById('stat-today').innerText = allData.bookings.filter(b => b["Data Agendamento"] && b["Data Agendamento"].includes(todayISO)).length;
-            document.getElementById('stat-tomorrow').innerText = allData.bookings.filter(b => b["Data Agendamento"] && b["Data Agendamento"].includes(tomorrow)).length;
-            document.getElementById('stat-active').innerText = allData.bookings.filter(b => b.Status !== 'Cancelado').length;
+            document.getElementById('stat-today').innerText = allData.bookings.filter(b => isToday(b['Data Agendamento'])).length;
+            document.getElementById('stat-tomorrow').innerText = allData.bookings.filter(b => isTomorrow(b['Data Agendamento'])).length;
+            document.getElementById('stat-active').innerText = allData.bookings.filter(b => (b.Status || '').toLowerCase() !== 'cancelado').length;
             document.getElementById('stat-blocked-nums').innerText = allData.blockedNumbers.length;
 
             const list = document.getElementById('recent-bookings');
-            list.innerHTML = allData.bookings.slice(0, 10).reverse().map(b => `
+            const recent = [...allData.bookings].reverse().slice(0, 10);
+
+            list.innerHTML = recent.map(b => `
                 <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 text-xs font-medium">${(b["Data Agendamento"] || '').split('T')[0]} @ ${b.Hora || '--:--'}</td>
+                    <td class="px-6 py-4 text-xs font-medium whitespace-nowrap">
+                        ${normalizeDateValue(b['Data Agendamento']) || '--'} @ ${b.Hora || '--:--'}
+                    </td>
                     <td class="px-6 py-4 font-bold text-sm">${b.Cliente || '---'}</td>
-                    <td class="px-6 py-4 text-xs text-gray-500">${b.Servico || '---'}</td>
-                    <td class="px-6 py-4">
-                        <button onclick="handleCancel('${b.Telefone}', '${b.Hora}')" class="text-brand-red p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <td class="px-6 py-4 text-sm">${b.Telefone || '---'}</td>
+                    <td class="px-6 py-4 text-sm">${b.Servico || '---'}</td>
+                    <td class="px-6 py-4 text-sm font-bold text-brand-green">R$ ${b.Valor || '0'}</td>
+                    <td class="px-6 py-4 text-sm">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold ${String(b.Status || '').toLowerCase() === 'cancelado' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                            ${b.Status || 'Confirmado'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end gap-2">
+                            <button onclick="handleCancel('${b.ID || ''}', '${b.Telefone || ''}', '${b['Data Agendamento'] || ''}', '${b.Hora || ''}')" class="text-brand-red hover:bg-brand-red/10 p-2 rounded-full" title="Cancelar">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
+
             lucide.createIcons();
+        }
+
+        function renderCalendar() {
+            const el = document.getElementById('calendar-list');
+            const bookings = [...allData.bookings].sort((a, b) => {
+                const da = normalizeDateValue(a['Data Agendamento']);
+                const db = normalizeDateValue(b['Data Agendamento']);
+                return String(da).localeCompare(String(db));
+            });
+
+            if (!bookings.length) {
+                el.innerHTML = `<div class="text-sm text-gray-500">Nenhum agendamento encontrado.</div>`;
+                return;
+            }
+
+            el.innerHTML = bookings.map(b => `
+                <div class="p-4 border rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                        <p class="font-bold">${b.Cliente || '---'}</p>
+                        <p class="text-sm text-gray-500">${normalizeDateValue(b['Data Agendamento']) || '--'} às ${b.Hora || '--:--'} • ${b.Servico || '---'}</p>
+                    </div>
+                    <div class="text-sm">
+                        <span class="font-semibold">${b.Telefone || '---'}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFinance() {
+            const totalBookings = allData.bookings.length;
+            const totalValue = allData.bookings.reduce((acc, b) => acc + (parseFloat(String(b.Valor || '0').replace(',', '.')) || 0), 0);
+            const localPayments = allData.bookings.filter(b => String(b['Tipo Pagamento'] || '').toLowerCase().includes('local')).length;
+
+            document.getElementById('finance-total-bookings').innerText = totalBookings;
+            document.getElementById('finance-total-value').innerText = totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            document.getElementById('finance-local').innerText = localPayments;
         }
 
         function renderBlocks() {
             const phoneList = document.getElementById('blocked-phones-list');
-            phoneList.innerHTML = allData.blockedNumbers.map(num => `
-                <li class="flex justify-between py-3 items-center">
-                    <span class="font-bold flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4 text-brand-active"></i> ${num}</span>
-                    <button onclick="handleUnblockPhone('${num}')" class="text-brand-red font-bold text-xs hover:underline uppercase">Desbloquear</button>
-                </li>
-            `).join('');
+            phoneList.innerHTML = allData.blockedNumbers.length
+                ? allData.blockedNumbers.map(num => `
+                    <li class="flex justify-between py-3 items-center">
+                        <span class="font-bold flex items-center gap-2">
+                            <i data-lucide="phone" class="w-4 h-4 text-brand-active"></i> ${num}
+                        </span>
+                        <button onclick="handleUnblockPhone('${num}')" class="text-brand-red font-bold text-xs hover:underline uppercase">Desbloquear</button>
+                    </li>
+                `).join('')
+                : `<li class="py-3 text-sm text-gray-500">Nenhum número bloqueado.</li>`;
 
             const dateList = document.getElementById('blocked-dates-list');
-            dateList.innerHTML = allData.blockedDates.map(date => `
-                <div class="bg-brand-dark text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
-                    ${date} <button onclick="handleUnblockDate('${date}')" class="hover:text-brand-active">×</button>
-                </div>
-            `).join('');
+            dateList.innerHTML = allData.blockedDates.length
+                ? allData.blockedDates.map(date => `
+                    <div class="bg-brand-dark text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+                        ${date}
+                        <button onclick="handleUnblockDate('${date}')" class="hover:text-brand-active">×</button>
+                    </div>
+                `).join('')
+                : `<span class="text-sm text-gray-500">Nenhuma data bloqueada.</span>`;
+
             lucide.createIcons();
-        }
-
-        // --- AÇÕES COM CONFIRMAÇÃO (CONCEITO INDEX) ---
-
-        async function handleBlockPhone() {
-            const num = document.getElementById('new-block-phone').value.replace(/\D/g, '');
-            if (!num) return alert("Digite um número");
-            if (confirm(`Deseja aplicar restrição de 50% ao número ${num}?`)) {
-                await sendAction({ type: 'add_blocked_number', phone: num });
-                document.getElementById('new-block-phone').value = '';
-                fetchData();
-            }
-        }
-
-        async function handleUnblockPhone(num) {
-            if (confirm(`Remover restrição do número ${num}?`)) {
-                await sendAction({ type: 'remove_blocked_number', phone: num });
-                fetchData();
-            }
-        }
-
-        async function handleBlockDateRange() {
-            const start = document.getElementById('block-date-start').value;
-            const end = document.getElementById('block-date-end').value || start;
-            if (!start) return alert("Selecione a data");
-            if (confirm(`Bloquear agenda de ${start} até ${end}?`)) {
-                await sendAction({ type: 'block_range', startDate: start, endDate: end });
-                fetchData();
-            }
-        }
-
-        async function handleUnblockDate(date) {
-            if (confirm(`Liberar a data ${date} na agenda?`)) {
-                await sendAction({ type: 'unblock_date', date: date });
-                fetchData();
-            }
-        }
-
-        async function handleCancel(phone, time) {
-            if (confirm("Deseja realmente cancelar este agendamento?")) {
-                await sendAction({ type: 'cancel_booking', phone, time });
-                fetchData();
-            }
         }
 
         async function sendAction(payload) {
             try {
                 const res = await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' }, // PADRÃO INDEX
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(payload)
                 });
                 return await res.json();
-            } catch (e) { console.error("Erro na ação:", e); }
+            } catch (e) {
+                console.error("Erro na ação:", e);
+                alert('Erro ao enviar ação.');
+            }
         }
 
-        function openBookingModal() { document.getElementById('modal-overlay').classList.remove('hidden'); }
-        function closeBookingModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+        async function handleBlockPhone() {
+            const num = normalizePhoneValue(document.getElementById('new-block-phone').value);
+            if (!num) return alert("Digite um número válido.");
+            if (!confirm(`Deseja bloquear o número ${num}?`)) return;
 
-        document.getElementById('admin-booking-form').onsubmit = async (e) => {
+            await sendAction({ type: 'add_blocked_number', phone: num });
+            document.getElementById('new-block-phone').value = '';
+            fetchData();
+        }
+
+        async function handleUnblockPhone(num) {
+            if (!confirm(`Deseja desbloquear o número ${num}?`)) return;
+            await sendAction({ type: 'remove_blocked_number', phone: num });
+            fetchData();
+        }
+
+        async function handleBlockDateRange() {
+            const start = document.getElementById('block-date-start').value;
+            const end = document.getElementById('block-date-end').value || start;
+            if (!start) return alert('Selecione a data inicial.');
+            if (!confirm(`Bloquear de ${start} até ${end}?`)) return;
+
+            await sendAction({ type: 'block_range', startDate: start, endDate: end });
+            fetchData();
+        }
+
+        async function handleUnblockDate(date) {
+            if (!confirm(`Deseja liberar a data ${date}?`)) return;
+            await sendAction({ type: 'unblock_date', date });
+            fetchData();
+        }
+
+        async function handleCancel(id, phone, date, time) {
+            if (!confirm('Deseja realmente cancelar este agendamento?')) return;
+            await sendAction({
+                type: 'cancel_booking',
+                id,
+                phone,
+                date,
+                time
+            });
+            fetchData();
+        }
+
+        function openBookingModal() {
+            document.getElementById('modal-overlay').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeBookingModal() {
+            document.getElementById('modal-overlay').classList.add('hidden');
+            document.getElementById('admin-booking-form').reset();
+            document.getElementById('deposit-warning').classList.add('hidden');
+        }
+
+        document.getElementById('admin-booking-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
             const srv = document.getElementById('book-service').value.split('|');
-            const phone = document.getElementById('book-phone').value.replace(/\D/g, '');
-            
+            const phone = normalizePhoneValue(document.getElementById('book-phone').value);
+
             const payload = {
                 type: 'booking',
-                client: document.getElementById('book-client').value,
+                client: document.getElementById('book-client').value.trim(),
                 phone: phone,
                 service: srv[0],
                 date: document.getElementById('book-date').value,
                 time: document.getElementById('book-time').value,
                 price: srv[1],
-                paymentMethod: 'Painel Admin',
-                notes: allData.blockedNumbers.includes(phone) ? 'RESTRIÇÃO: Sinal 50%' : 'Adicionado pelo Admin'
+                paymentMethod: allData.blockedNumbers.includes(phone) ? 'Sinal 50%' : 'No Local',
+                notes: allData.blockedNumbers.includes(phone) ? 'RESTRIÇÃO: número bloqueado' : 'Agendado pelo painel admin'
             };
 
             await sendAction(payload);
             closeBookingModal();
             fetchData();
-        };
+        });
     </script>
 </body>
 </html>

@@ -14,14 +14,7 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        brand: {
-                            black: '#0a0a0a',
-                            gold: '#d4af37',
-                            lightGold: '#fef3c7',
-                            darkGold: '#b45309',
-                            bg: '#ffffff',
-                            green: '#0f9d58'
-                        }
+                        brand: { black: '#0a0a0a', gold: '#d4af37', lightGold: '#fef3c7', darkGold: '#b45309', bg: '#ffffff', green: '#0f9d58' }
                     }
                 }
             }
@@ -32,49 +25,46 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* Modal animação slide-up */
-        #booking-modal { display: none; position: absolute; inset: 0; z-index: 100; background: white; color: #1a1a1a; }
-        #booking-modal.active { display: flex; flex-direction: column; animation: slideUp 0.3s ease-out; }
+        /* Estrutura Perfeita de App */
+        .app-wrapper { width: 100%; max-w: 480px; margin: 0 auto; background: white; min-height: 100vh; position: relative; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; }
+        
+        /* Modal Corrigido para não vazar a tela e permitir rolagem */
+        #booking-modal { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; background: white; flex-direction: column; animation: slideUp 0.3s ease-out; }
+        #booking-modal.active { display: flex; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        .screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
         .screen.active { display: flex; }
+
+        .scroll-area { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 40px; }
 
         .pro-card.selected { border-color: #fde68a; background-color: #fef3c7; }
         .date-card.selected { border-color: #fde68a; background-color: #fef3c7; color: #b45309; font-weight: bold; }
         .time-btn.selected { background-color: #0a0a0a; color: white; border-color: #0a0a0a; }
 
-        .video-header { background: white; border-bottom: 1px solid #f3f4f6; padding: 24px 20px; text-align: center; }
-
-        .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 80px; background: rgba(16,185,129,0.95); color: #fff; padding: 10px 16px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: none; z-index: 200; white-space: nowrap;}
+        .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 80px; background: rgba(16,185,129,0.95); color: #fff; padding: 12px 20px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); display: none; z-index: 200; white-space: nowrap; font-weight: bold; font-size: 14px;}
         .toast.show { display: block; }
     </style>
 </head>
-<body class="flex flex-col min-h-screen items-center">
+<body class="bg-gray-100">
 
-    <!-- WRAPPER PARA CENTRALIZAR NO COMPUTADOR -->
-    <div class="w-full max-w-md bg-white min-h-screen flex flex-col relative shadow-2xl overflow-hidden">
-        
+    <div class="app-wrapper">
         <!-- HEADER -->
-        <header class="video-header flex flex-col items-center sticky top-0 z-50">
-            <div class="w-24 h-24 bg-black rounded-full flex items-center justify-center overflow-hidden mb-4 shadow-lg">
+        <header class="bg-white border-b border-gray-50 py-6 px-5 flex flex-col items-center sticky top-0 z-40">
+            <div class="w-24 h-24 bg-black rounded-full flex items-center justify-center overflow-hidden mb-3 shadow-lg border-2 border-brand-gold">
                 <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-20 h-20 object-contain">
             </div>
-            <div class="space-y-1">
-                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mb-1">Welcome to</p>
-                <h1 class="text-xl font-black text-gray-900 tracking-tight">Prime Club barbearia</h1>
-                <div class="text-gray-500 text-[11px] font-medium leading-relaxed mt-2 italic px-4">
-                    ✂️ Corte na régua | Barba alinhada<br>
-                    💈 Estilo, respeito e identidade<br>
-                    🔥 Quem é Prime, sabe🫡
-                </div>
+            <div class="text-center">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">Bem-vindo à</p>
+                <h1 class="text-xl font-black text-gray-900 tracking-tight">Prime Club</h1>
+                <p class="text-gray-500 text-[11px] font-medium leading-relaxed mt-2 italic">Corte na régua | Barba alinhada<br>Quem é Prime, sabe🫡</p>
             </div>
         </header>
 
-        <!-- MAIN CONTENT -->
-        <main id="main-content" class="flex-1 bg-white pb-20">
-            <div class="px-5 py-6 border-b border-gray-50">
-                <h3 class="text-lg font-black text-gray-800">Serviços</h3>
+        <!-- LISTA DE SERVIÇOS -->
+        <main class="flex-1 overflow-y-auto pb-24">
+            <div class="px-5 py-4 border-b border-gray-50 bg-gray-50/50 sticky top-0 z-30">
+                <h3 class="text-sm font-black text-gray-800 uppercase tracking-wider">Nossos Serviços</h3>
             </div>
             <div id="services-list" class="flex flex-col">
                 <!-- Injetado por JS -->
@@ -82,110 +72,110 @@
         </main>
 
         <!-- FOOTER NAV -->
-        <nav class="absolute bottom-0 left-0 right-0 bg-white/90 border-t border-gray-100 flex justify-around p-3 z-40 backdrop-blur-md">
+        <nav class="absolute bottom-0 left-0 right-0 bg-white/95 border-t border-gray-100 flex justify-around p-3 z-40 backdrop-blur-md pb-5">
             <a href="https://instagram.com/prime_club_barbearia" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold">
-                <i data-lucide="instagram" class="w-5 h-5"></i>
-                <span class="text-[9px] font-bold">INSTAGRAM</span>
+                <i data-lucide="instagram" class="w-5 h-5"></i><span class="text-[9px] font-bold">INSTAGRAM</span>
             </a>
             <a id="wa-link" href="#" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold">
-                <i data-lucide="message-circle" class="w-5 h-5"></i>
-                <span class="text-[9px] font-bold">WHATSAPP</span>
-            </a>
-            <a id="call-link" href="#" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold">
-                <i data-lucide="phone" class="w-5 h-5"></i>
-                <span class="text-[9px] font-bold">LIGAR</span>
+                <i data-lucide="message-circle" class="w-5 h-5"></i><span class="text-[9px] font-bold">WHATSAPP</span>
             </a>
         </nav>
 
-        <!-- BOOKING MODAL -->
+        <!-- BOOKING MODAL (Cobre a tela inteira da div central) -->
         <div id="booking-modal">
-            <!-- Step 2 -->
-            <section id="step-2" class="screen bg-white">
-                <header class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-                    <button onclick="closeBooking()" class="p-2 text-gray-400"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
-                    <div class="flex-1 text-center pr-8">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">Agendando</p>
-                        <p id="lbl-selected-service" class="text-sm font-bold text-brand-darkGold"></p>
+            
+            <!-- STEP 2: ESCOLHER DADOS -->
+            <section id="step-2" class="screen">
+                <!-- CABEÇALHO FIXO -->
+                <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm">
+                    <button onclick="closeBooking()" class="p-1 text-gray-500 hover:text-black"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+                    <div class="flex-1 text-center pr-6">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Agendando</p>
+                        <p id="lbl-selected-service" class="text-sm font-bold text-brand-darkGold truncate px-2"></p>
                     </div>
                 </header>
 
-                <div class="p-5 space-y-6">
+                <!-- ÁREA DE ROLAGEM (CORRIGIDA) -->
+                <div class="scroll-area space-y-8 bg-white">
                     <div>
-                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Profissional</h4>
-                        <div class="flex gap-4 overflow-x-auto hide-scrollbar">
-                            <div onclick="selectPro('Christiano')" id="pro-Christiano" class="pro-card selected cursor-pointer shrink-0 w-24 border border-gray-100 rounded-3xl p-3 flex flex-col items-center gap-2 transition-all">
-                                <span class="text-[11px] font-bold text-gray-800">Christiano</span>
+                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">1. Profissional</h4>
+                        <div class="flex gap-4 overflow-x-auto hide-scrollbar snap-x">
+                            <div onclick="selectPro('Christiano')" id="pro-Christiano" class="pro-card selected snap-start cursor-pointer shrink-0 w-28 border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all">
+                                <span class="text-xs font-bold text-gray-800">Christiano</span>
                             </div>
-                            <div onclick="selectPro('Alessandro')" id="pro-Alessandro" class="pro-card opacity-40 cursor-pointer shrink-0 w-24 border border-gray-100 rounded-3xl p-3 flex flex-col items-center gap-2 transition-all">
-                                <span class="text-[11px] font-bold text-gray-800">Alessandro</span>
+                            <div onclick="selectPro('Alessandro')" id="pro-Alessandro" class="pro-card opacity-40 snap-start cursor-pointer shrink-0 w-28 border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-2 transition-all">
+                                <span class="text-xs font-bold text-gray-800">Alessandro</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-5 rounded-[32px]">
-                        <h4 id="lbl-month" class="text-center text-[10px] font-black text-gray-900 mb-4 uppercase tracking-[0.2em]"></h4>
-                        <div id="dates-container" class="flex gap-3 overflow-x-auto hide-scrollbar snap-x"></div>
+                    <div class="bg-gray-50 p-5 rounded-2xl border border-gray-100">
+                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3">2. Data</h4>
+                        <h4 id="lbl-month" class="text-center text-[10px] font-black text-gray-900 mb-3 uppercase tracking-[0.2em]"></h4>
+                        <div id="dates-container" class="flex gap-3 overflow-x-auto hide-scrollbar snap-x pb-2"></div>
                     </div>
 
-                    <div class="pt-2 pb-10">
-                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex justify-between">
-                            Horários disponíveis <span id="time-loader" class="text-brand-gold animate-pulse hidden">Buscando...</span>
+                    <div>
+                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex justify-between items-center">
+                            3. Horário <span id="time-loader" class="text-brand-gold text-[9px] animate-pulse hidden bg-brand-lightGold px-2 py-1 rounded">Buscando...</span>
                         </h4>
                         <div id="times-container" class="grid grid-cols-4 gap-2"></div>
-                        <p id="no-times-msg" class="hidden text-center text-xs text-red-500 font-bold mt-4">Nenhum horário disponível para esta data.</p>
+                        <p id="no-times-msg" class="hidden text-center text-xs text-red-500 font-bold mt-4 bg-red-50 p-3 rounded-lg border border-red-100">Nenhum horário disponível para esta data.</p>
                     </div>
                 </div>
 
-                <div class="mt-auto p-5 border-t border-gray-50 bg-white sticky bottom-0">
-                    <button id="btn-to-step3" disabled onclick="goToStep(3)" class="w-full bg-black text-white py-4 rounded-2xl font-bold disabled:opacity-30 transition-all shadow-xl">Continuar</button>
+                <!-- RODAPÉ FIXO -->
+                <div class="shrink-0 p-5 border-t border-gray-100 bg-white shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+                    <button id="btn-to-step3" disabled onclick="goToStep(3)" class="w-full bg-black text-white py-4 rounded-xl font-bold disabled:opacity-30 disabled:bg-gray-300 transition-all text-sm uppercase tracking-wider">Continuar</button>
                 </div>
             </section>
 
-            <!-- Step 3: Resumo e Dados -->
-            <section id="step-3" class="screen bg-white">
-                <header class="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+            <!-- STEP 3: RESUMO E FORMULÁRIO -->
+            <section id="step-3" class="screen">
+                <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center gap-3 shrink-0">
                     <button onclick="goToStep(2)" class="p-1 text-gray-500"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
-                    <h2 class="text-sm font-bold text-gray-900">Finalizar Reserva</h2>
+                    <h2 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Finalizar</h2>
                 </header>
 
-                <div class="p-5 space-y-6">
-                    <div class="bg-gray-50 p-5 rounded-[24px] border-l-[6px] border-brand-gold">
-                        <h3 id="sum-service" class="font-black text-lg text-gray-900 mb-3"></h3>
-                        <div class="space-y-2 text-sm text-gray-600">
+                <div class="scroll-area space-y-6 bg-white">
+                    <div class="bg-gray-50 p-5 rounded-2xl border-l-[4px] border-brand-gold shadow-sm">
+                        <h3 id="sum-service" class="font-black text-base text-gray-900 mb-3"></h3>
+                        <div class="space-y-2 text-xs text-gray-600 font-medium">
                             <div class="flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-brand-gold"></i> <span id="sum-datetime"></span></div>
                             <div class="flex items-center gap-2"><i data-lucide="user" class="w-4 h-4 text-brand-gold"></i> <span id="sum-pro"></span></div>
-                            <div class="flex items-center gap-2"><i data-lucide="banknote" class="w-4 h-4 text-brand-green"></i> <span id="sum-price" class="font-bold text-gray-900"></span></div>
+                            <div class="flex items-center gap-2 pt-2 border-t border-gray-200"><i data-lucide="banknote" class="w-4 h-4 text-brand-green"></i> <span id="sum-price" class="font-bold text-lg text-gray-900"></span></div>
                         </div>
                     </div>
 
                     <form id="booking-form" class="space-y-4">
-                        <input type="text" id="client-name" required placeholder="Digite seu nome" class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-brand-gold focus:bg-white transition text-sm">
-                        <input type="tel" id="client-phone" required placeholder="WhatsApp com DDD" class="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-brand-gold focus:bg-white transition text-sm">
+                        <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-1">Seu Nome</label>
+                        <input type="text" id="client-name" required placeholder="Ex: João Silva" class="w-full px-4 py-3.5 mt-1 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-sm"></div>
                         
-                        <!-- AVISO DE PIX PARA NÚMEROS RESTRITOS -->
-                        <div id="pix-warning" class="hidden bg-red-50 border border-red-200 p-4 rounded-xl text-red-700 text-xs leading-relaxed font-medium mt-4 shadow-sm">
-                            ⚠️ <strong>ATENÇÃO:</strong> Identificamos uma restrição em nosso sistema.<br>
-                            Sua reserva ficará com o status de <strong>PENDENTE</strong>. Para confirmar definitivamente sua vaga, é obrigatório o pagamento de 50% do valor como sinal via PIX.<br><br>
-                            <strong>Chave PIX:</strong> 12345678910<br><br>
-                            <em>* Sem estorno em caso de cancelamento.</em>
-                        </div>
-
-                        <div class="pt-4">
-                            <button type="submit" id="btn-submit" class="w-full bg-brand-green text-white font-black py-4 rounded-2xl shadow-xl shadow-green-100 uppercase tracking-wider text-sm">Concluir Agendamento</button>
+                        <div><label class="text-[10px] font-bold text-gray-400 uppercase ml-1">WhatsApp (DDD + Número)</label>
+                        <input type="tel" id="client-phone" required placeholder="Ex: 27999999999" class="w-full px-4 py-3.5 mt-1 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-sm"></div>
+                        
+                        <div id="pix-warning" class="hidden bg-orange-50 border border-orange-200 p-4 rounded-xl text-orange-800 text-xs leading-relaxed mt-4 shadow-sm">
+                            <strong class="text-orange-900 block mb-1">⚠️ PAGAMENTO ANTECIPADO</strong>
+                            Seu status ficará <strong>PENDENTE</strong>. Para confirmar sua vaga, pague 50% via PIX agora.<br><br>
+                            <strong>Chave PIX:</strong> 12345678910<br>
+                            <em>* Sem reembolso em caso de cancelamento.</em>
                         </div>
                     </form>
                 </div>
+
+                <div class="shrink-0 p-5 border-t border-gray-100 bg-white">
+                    <button type="submit" form="booking-form" id="btn-submit" class="w-full bg-brand-green text-white font-black py-4 rounded-xl shadow-lg shadow-green-100 uppercase tracking-wider text-sm transition-all">Concluir Agendamento</button>
+                </div>
             </section>
 
-            <!-- Step Success -->
-            <section id="step-success" class="screen justify-center items-center text-center p-10 bg-white">
+            <!-- STEP SUCCESS -->
+            <section id="step-success" class="screen justify-center items-center text-center p-8 bg-white">
                 <div class="w-20 h-20 bg-green-50 text-brand-green rounded-full flex items-center justify-center mb-6"><i data-lucide="check-circle-2" class="w-10 h-10"></i></div>
-                <h2 class="text-2xl font-black mb-2 text-gray-900">Quase lá!</h2>
-                <p class="text-gray-500 mb-8 leading-relaxed text-sm">Registramos seu pedido. Conclua clicando no botão abaixo para nos enviar a mensagem no WhatsApp.</p>
-                <button onclick="location.reload()" class="w-full bg-black text-white font-bold py-4 rounded-2xl text-sm">Voltar ao Início</button>
+                <h2 class="text-2xl font-black mb-2 text-gray-900">Tudo Certo!</h2>
+                <p class="text-gray-500 mb-8 leading-relaxed text-sm">Seu pedido foi registrado na agenda. Clique abaixo para enviar a confirmação no WhatsApp da barbearia.</p>
+                <button onclick="location.reload()" class="w-full bg-black text-white font-bold py-4 rounded-xl text-sm uppercase tracking-wider">Voltar ao Início</button>
             </section>
         </div>
-
         <div id="toast" class="toast"></div>
     </div>
 
@@ -210,48 +200,38 @@
         ];
 
         let state = { service: null, professional: "Christiano", date: null, time: null, dateStr: null };
-        let allBookings = [];
-        let blockedDates = [];
-        let blockedNumbers = []; // Puxado automaticamente do CRM
+        let allBookings = []; let blockedDates = []; let blockedNumbers = [];
 
         function renderServices() {
             const container = document.getElementById('services-list');
             container.innerHTML = services.map(s => `
-                <div class="flex items-center justify-between px-5 py-6 border-b border-gray-50 hover:bg-gray-50 transition cursor-pointer" onclick="chooseService('${s.id}')">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-[15px] text-gray-900">${s.name}</h4>
-                        <div class="flex items-center gap-4 text-[10px] font-black text-gray-400 uppercase mt-2">
+                <div class="flex items-center justify-between px-5 py-5 border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer" onclick="chooseService('${s.id}')">
+                    <div class="flex-1 pr-4">
+                        <h4 class="font-bold text-[14px] text-gray-900">${s.name}</h4>
+                        <div class="flex items-center gap-3 text-[10px] font-black text-gray-500 uppercase mt-1.5">
                             <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${s.duration}</span>
                             <span class="text-brand-darkGold">R$ ${s.price.toFixed(2)}</span>
                         </div>
                     </div>
-                    <button class="bg-brand-lightGold text-brand-darkGold text-[11px] font-black px-5 py-2.5 rounded-xl border border-brand-gold/20 shadow-sm uppercase tracking-wider">Agendar</button>
+                    <button class="bg-black text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase tracking-wider shrink-0">Agendar</button>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
-        // ================= SINCRONIZAÇÃO EM TEMPO REAL =================
         function fetchAvailability() {
             document.getElementById('time-loader').classList.remove('hidden');
             fetch(WEB_APP_URL + '?action=get_all')
             .then(r => r.json())
             .then(data => { 
-                allBookings = data.bookings || []; 
-                blockedDates = data.blockedDates || [];
-                blockedNumbers = data.blockedNumbers || [];
+                allBookings = data.bookings || []; blockedDates = data.blockedDates || []; blockedNumbers = data.blockedNumbers || [];
                 document.getElementById('time-loader').classList.add('hidden');
-                
-                // Se já estiver com o calendário aberto, recarrega ele
-                if(document.getElementById('booking-modal').classList.contains('active')){
-                    renderCalendar();
-                }
-            })
-            .catch(err => { console.error(err); });
+                if(document.getElementById('booking-modal').classList.contains('active')){ renderCalendar(); }
+            }).catch(err => console.error(err));
         }
 
-        function openBooking() { document.getElementById('booking-modal').classList.add('active'); document.body.style.overflow = 'hidden'; }
-        function closeBooking() { document.getElementById('booking-modal').classList.remove('active'); document.body.style.overflow = ''; }
+        function openBooking() { document.getElementById('booking-modal').classList.add('active'); }
+        function closeBooking() { document.getElementById('booking-modal').classList.remove('active'); }
 
         function goToStep(step) {
             document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -266,11 +246,8 @@
             state.date = null; state.time = null; state.dateStr = null;
             document.getElementById('btn-to-step3').disabled = true;
             document.getElementById('times-container').innerHTML = '';
-            
-            // Busca dados atualizados antes de abrir
             fetchAvailability();
-            openBooking();
-            goToStep(2);
+            openBooking(); goToStep(2);
         }
 
         function selectPro(name) {
@@ -278,101 +255,72 @@
             document.querySelectorAll('.pro-card').forEach(c => c.classList.add('opacity-40'));
             document.getElementById(`pro-${name}`).classList.remove('opacity-40');
             state.time = null; document.getElementById('btn-to-step3').disabled = true;
-            if(state.dateStr) renderTimes(); // Atualiza horários do novo barbeiro
+            if(state.dateStr) renderTimes();
         }
 
         function renderCalendar() {
             const container = document.getElementById('dates-container');
-            const today = new Date();
-            const days = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
-            const months = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
+            const today = new Date(); const days = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
+            const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
             document.getElementById('lbl-month').textContent = `${months[today.getMonth()]} ${today.getFullYear()}`;
 
-            let html = '';
-            let validDaysCount = 0;
-
-            for(let i=0; i<30; i++){ // Procura nos próximos 30 dias para preencher
+            let html = ''; let validDaysCount = 0;
+            for(let i=0; i<30; i++){
                 let d = new Date(); d.setDate(today.getDate() + i);
                 let iso = d.toISOString().split('T')[0];
                 let display = d.toLocaleDateString('pt-BR');
-                
-                // PULA COMPLETAMENTE AS DATAS BLOQUEADAS
                 if(blockedDates.includes(iso)) continue;
-
-                let isSelected = (iso === state.dateStr) ? "selected shadow-brand-gold/20" : "";
-                
-                html += `<div onclick="selectDate('${iso}','${display}',this)" class="date-card ${isSelected} snap-start shrink-0 w-16 h-20 bg-white border border-gray-100 rounded-[24px] flex flex-col items-center justify-center cursor-pointer transition-all shadow-sm">
-                    <span class="text-[9px] font-black text-gray-400 uppercase">${days[d.getDay()]}</span>
-                    <span class="text-xl font-black text-gray-900 mt-1">${d.getDate()}</span>
+                let isSelected = (iso === state.dateStr) ? "selected shadow-md" : "";
+                html += `<div onclick="selectDate('${iso}','${display}',this)" class="date-card ${isSelected} snap-start shrink-0 w-14 h-16 bg-white border border-gray-200 rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all">
+                    <span class="text-[8px] font-black text-gray-400 uppercase">${days[d.getDay()]}</span>
+                    <span class="text-lg font-black text-gray-900 mt-0.5">${d.getDate()}</span>
                 </div>`;
                 validDaysCount++;
-                if(validDaysCount >= 14) break; // Mostra apenas 14 dias disponíveis
+                if(validDaysCount >= 14) break;
             }
             container.innerHTML = html;
-            
-            // Se tinha uma data selecionada, tenta renderizar os horários dela
             if(state.dateStr) renderTimes();
         }
 
         function selectDate(iso, display, el) {
             state.dateStr = iso; state.date = display; state.time = null;
-            document.querySelectorAll('.date-card').forEach(c => c.classList.remove('selected', 'shadow-brand-gold/20'));
-            el.classList.add('selected', 'shadow-brand-gold/20');
+            document.querySelectorAll('.date-card').forEach(c => c.classList.remove('selected', 'shadow-md'));
+            el.classList.add('selected', 'shadow-md');
             document.getElementById('btn-to-step3').disabled = true;
             renderTimes();
         }
 
-        // ================= OCULTA HORÁRIOS OCUPADOS =================
         function renderTimes() {
             if(!state.dateStr) return;
-            const times = ["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+            const times = ["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"];
             const container = document.getElementById('times-container');
             const noTimesMsg = document.getElementById('no-times-msg');
             
-            // Filtra os que já estão no banco de dados para esse Barbeiro e Data
             const booked = allBookings.filter(b => {
                 let bDate = b['Data Agendamento'] && b['Data Agendamento'].includes('T') ? b['Data Agendamento'].split('T')[0] : b['Data Agendamento'];
                 let bTime = b['Hora'] ? b['Hora'].substring(0,5) : '';
                 return bDate === state.dateStr && (state.professional === 'Qualquer profissional' || (b['Servico'] && b['Servico'].includes(state.professional))) && b['Status'] !== 'Cancelado';
             }).map(b => b['Hora'] ? b['Hora'].substring(0,5) : '');
 
-            let html = '';
-            let timesAvailable = 0;
-
+            let html = ''; let timesAvailable = 0;
             times.forEach(t => {
-                // SE ESTIVER OCUPADO, ESCONDE TOTALMENTE DA TELA
                 if(!booked.includes(t)) {
-                    html += `<button onclick="selectTime('${t}', this)" class="time-btn border border-gray-100 py-3 rounded-2xl text-[12px] font-black text-gray-500 transition-all">${t}</button>`;
+                    html += `<button onclick="selectTime('${t}', this)" class="time-btn bg-gray-50 border border-gray-200 py-3 rounded-xl text-[11px] font-black text-gray-600 transition-all shadow-sm">${t}</button>`;
                     timesAvailable++;
                 }
             });
 
             container.innerHTML = html;
-            
-            if(timesAvailable === 0) {
-                noTimesMsg.classList.remove('hidden');
-            } else {
-                noTimesMsg.classList.add('hidden');
-            }
+            noTimesMsg.classList.toggle('hidden', timesAvailable > 0);
         }
 
         function selectTime(t, el) {
             state.time = t;
-            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected'));
-            el.classList.add('selected');
+            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected', 'bg-black', 'text-white'));
+            el.classList.add('selected', 'bg-black', 'text-white');
             document.getElementById('btn-to-step3').disabled = false;
         }
 
-        function updateSummary() {
-            document.getElementById('sum-service').textContent = state.service.name;
-            document.getElementById('sum-datetime').textContent = `${state.date} às ${state.time}`;
-            document.getElementById('sum-pro').textContent = `Barbeiro: ${state.professional}`;
-            
-            // Verifica o preço na hora de atualizar o resumo
-            checkPhoneRestriction(document.getElementById('client-phone').value);
-        }
-
-        // ================= VERIFICAÇÃO DE CALOTEIRO =================
         function checkPhoneRestriction(phoneVal) {
             const phone = phoneVal.replace(/\D/g,'');
             const isRestricted = blockedNumbers.includes(phone);
@@ -381,78 +329,52 @@
             
             if(isRestricted) {
                 warningEl.classList.remove('hidden');
-                priceEl.innerHTML = `<span class="line-through text-gray-400 text-xs mr-2">R$ ${state.service.price.toFixed(2)}</span> <span class="text-red-500">R$ ${(state.service.price/2).toFixed(2)} (Sinal)</span>`;
+                priceEl.innerHTML = `<span class="line-through text-gray-400 text-xs mr-1">R$ ${state.service.price.toFixed(2)}</span> <span class="text-orange-600">R$ ${(state.service.price/2).toFixed(2)} (Sinal)</span>`;
             } else {
                 warningEl.classList.add('hidden');
                 priceEl.textContent = `R$ ${state.service.price.toFixed(2)}`;
             }
         }
 
-        document.getElementById('client-phone').addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/\D/g,'');
-            updateContactLinks(e.target.value);
-            checkPhoneRestriction(e.target.value); // Checa a cada número digitado
-        });
-
-        function updateContactLinks(phone){
-            const cleaned = phone.replace(/\D/g,'');
-            document.getElementById('wa-link').href = `https://wa.me/55${cleaned}`;
-            document.getElementById('call-link').href = `tel:+55${cleaned}`;
+        function updateSummary() {
+            document.getElementById('sum-service').textContent = state.service.name;
+            document.getElementById('sum-datetime').textContent = `${state.date} às ${state.time}`;
+            document.getElementById('sum-pro').textContent = `Barbeiro: ${state.professional}`;
+            checkPhoneRestriction(document.getElementById('client-phone').value);
         }
 
-        // ================= ENVIO DO AGENDAMENTO =================
+        document.getElementById('client-phone').addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g,'');
+            document.getElementById('wa-link').href = `https://wa.me/55${e.target.value}`;
+            document.getElementById('call-link').href = `tel:+55${e.target.value}`;
+            checkPhoneRestriction(e.target.value);
+        });
+
         document.getElementById('booking-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('btn-submit');
             const name = document.getElementById('client-name').value.trim();
             const phone = document.getElementById('client-phone').value.replace(/\D/g,'');
-            if(!name || !phone || !state.dateStr || !state.time){ alert('Preencha todos os campos.'); return; }
-
+            
             const isRestricted = blockedNumbers.includes(phone);
             const price = isRestricted ? (state.service.price/2) : state.service.price;
-            const notes = isRestricted ? 'AGUARDANDO PIX (Restrição 50% Adiantado)' : 'Agendado via Site';
-            
-            // STATUS FICA PENDENTE SE FOR BLOQUEADO
-            const statusAgendamento = isRestricted ? 'Pendente' : 'Confirmado';
+            const statusAg = isRestricted ? 'Pendente' : 'Confirmado';
+            const notes = isRestricted ? 'AGUARDANDO PIX (50%)' : 'Site Prime Club';
 
             btn.disabled = true; btn.innerText = 'Processando...';
 
-            const payload = { 
-                type:'booking', 
-                client: name, 
-                phone: phone, 
-                service: `${state.service.name} (Barbeiro: ${state.professional})`, 
-                date: state.dateStr, 
-                time: state.time, 
-                price: price.toString(), 
-                status: statusAgendamento, // <-- Enviando status dinâmico
-                paymentMethod: isRestricted ? 'PIX' : 'No Local', 
-                notes: notes 
-            };
+            const payload = { type:'booking', client: name, phone: phone, service: `${state.service.name} (Com ${state.professional})`, date: state.dateStr, time: state.time, price: price.toString(), status: statusAg, paymentMethod: isRestricted ? 'PIX' : 'Balcão', notes: notes };
 
             try{
-                const resp = await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(payload) });
-                
-                // MENSAGEM DO WHATSAPP (Avisa do PIX se restrito)
-                let msg = isRestricted ? 
-                    `Olá Prime Club! Gostaria de agendar:\n\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateStr.split('-').reverse().join('/')} às ${state.time}\n\n*Conforme solicitado, estou enviando abaixo o comprovante do PIX no valor de R$${price.toFixed(2)} para confirmar definitivamente minha reserva.*` 
-                    : 
-                    `Olá! Acabei de agendar pelo site:\n\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateStr.split('-').reverse().join('/')} às ${state.time}\n👤 Cliente: ${name}`;
-                
+                await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(payload) });
+                let msg = isRestricted ? `Olá Prime Club!\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateStr.split('-').reverse().join('/')} às ${state.time}\n\n*Enviei o comprovante do PIX (R$${price.toFixed(2)}) para confirmar minha vaga.*` : `Olá! Agendei pelo site:\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateStr.split('-').reverse().join('/')} às ${state.time}\n👤 Nome: ${name}`;
                 const wa = `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`;
-                document.getElementById('step-success').classList.add('active'); 
-                document.getElementById('step-3').classList.remove('active');
-                setTimeout(()=>{ window.open(wa,'_blank'); }, 800);
-            }catch(err){ 
-                console.error(err); alert('Falha ao conectar. Tente novamente.'); btn.disabled=false; btn.innerText='Concluir Agendamento'; 
-            }
+                document.getElementById('step-success').classList.add('active'); document.getElementById('step-3').classList.remove('active');
+                setTimeout(()=>{ window.open(wa,'_blank'); }, 600);
+            }catch(err){ alert('Erro. Tente novamente.'); btn.disabled=false; btn.innerText='Concluir Agendamento'; }
         });
 
-        // INICIALIZAÇÃO
-        window.onload = () => {
-            renderServices();
-            fetchAvailability(); // Busca horários e bloqueios assim que abre o site
-        };
+        window.onload = () => { renderServices(); fetchAvailability(); };
     </script>
 </body>
 </html>

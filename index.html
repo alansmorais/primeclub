@@ -1,141 +1,863 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="color-scheme" content="light">
-<title>Prime Club Barbearia — Agendamentos</title>
-<link rel="icon" href="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png">
-<style>
-/* (Mantive os estilos do template funcional, adaptados ao branding Prime Club) */
-:root {
-  --bg: #FEFDFB; --card: #ffffff; --ink: #111827; --muted: #6b7280;
-  --line: #E9DDBE; --gold: #C49A3D; --gold-soft: #F3E8CF; --soft: #FBF6EC;
-  --radius: 20px;
-}
-body { margin:0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: var(--bg); color: var(--ink); padding-bottom: 100px; }
-.app { max-width: 1180px; margin: auto; padding: 22px; }
-/* (restante CSS idêntico ao template funcional) */
-.brand-logo { display:flex; align-items:center; }
-.logo-img { max-height:100px; width:auto; display:block; }
-.topbar { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:14px 0; border-bottom:1px solid var(--line); margin-bottom:24px; flex-wrap:wrap;}
-.brand-logo { font-size:22px; font-weight:900; color:var(--gold); letter-spacing:-0.5px; }
-.public-nav { display:flex; gap:20px; align-items:center; flex-wrap:wrap; }
-.public-nav a, .public-nav button { font-weight:600; font-size:14px; background:transparent; border:none; color:var(--ink); cursor:pointer; }
-.public-nav a:hover, .public-nav button:hover { color:var(--gold); }
-.public-nav .highlight { color:var(--gold); background:var(--gold-soft); padding:8px 16px; border-radius:999px; }
-.section-title { font-size:28px; font-weight:900; margin-bottom:24px; color:var(--ink); display:flex; align-items:center; gap:10px;}
-.section-title::before { content:""; display:block; width:12px; height:12px; border-radius:50%; background:var(--gold); }
-.hero, .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 15px 40px rgba(196, 154, 61, 0.06); }
-.hero { text-align:center; padding:50px 20px; margin:20px 0 40px; }
-.eyebrow { color: var(--gold); font-weight:900; letter-spacing:.16em; text-transform:uppercase; font-size:12px; margin-bottom:10px; display:block;}
-h1 { font-size: clamp(32px, 4vw, 48px); margin:0 0 20px; letter-spacing:-1px; }
-.lead { color: var(--muted); font-size:16px; max-width:750px; line-height:1.6; margin:0 auto; }
-/* restante css do template copiado por questão de brevidade omitido aqui — cole o seu CSS completo conforme o template funcional */
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Club - Painel de Gestão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }, 
+                    colors: { 
+                        brand: { 
+                            dark: '#0a0a0a',
+                            active: '#d4af37',
+                            bg: '#f4f6f8',
+                            blue: '#4c8ee8',
+                            red: '#ef4444',
+                            green: '#10b981',
+                            lightGold: '#fef3c7',
+                            darkGold: '#b45309'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .cal-grid { display: grid; grid-template-columns: 50px repeat(6, 1fr); border-top: 1px solid #e5e7eb; border-left: 1px solid #e5e7eb; }
+        @media(min-width: 768px) { .cal-grid { grid-template-columns: 60px repeat(6, 1fr); } }
+        .cal-cell { border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; height: 70px; position: relative; }
+        @media(min-width: 768px) { .cal-cell { height: 80px; } }
+        .cal-header { background-color: #ffffff; text-align: center; padding: 8px 0; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; }
+        .cal-time { font-size: 0.70rem; color: #9ca3af; text-align: center; transform: translateY(-50%); display: block; }
+        .event-pill { position: absolute; left: 2px; right: 2px; top: 4px; bottom: 4px; border-radius: 6px; padding: 4px; color: white; font-size: 0.70rem; font-weight: 500; box-shadow: 0 2px 6px rgba(0,0,0,0.15); z-index: 10; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-start; }
+        @media(min-width: 768px) { .event-pill { left: 4px; right: 4px; padding: 6px 8px; font-size: 0.75rem; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
+        .addon-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+        .addon-item:last-child { border-bottom: none; padding-bottom: 5px; }
+        .addon-info { display: flex; flex-direction: column; gap: 2px; }
+        .addon-name { font-weight: 600; font-size: 13px; color: #1f2937; max-width: 220px; line-height: 1.3; }
+        .addon-price { color: #b45309; font-weight: 700; font-size: 13px; }
+        .addon-ctrl { display: flex; align-items: center; gap: 8px; }
+        .addon-chk { width: 20px; height: 20px; accent-color: #d4af37; cursor: pointer; }
+        .bg-brand-gray { background-color: #374151; }
+    </style>
 </head>
-<body>
-<main class="app">
-  <nav class="topbar">
-    <div class="brand-logo">
-      <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Prime Club" class="logo-img">
-    </div>
-    <div class="public-nav">
-      <a href="#sobre">Sobre</a>
-      <a href="#servicos">Serviços</a>
-      <button onclick="document.getElementById('modalCursos').classList.add('active')">Cursos</button>
-      <a href="#agenda" class="highlight">Agendar Horário</a>
-    </div>
-  </nav>
+<body class="bg-brand-bg text-gray-800 font-sans h-screen flex overflow-hidden">
+    <!-- (Login removido) -->
 
-  <section class="hero" id="inicio">
-    <span class="eyebrow">Prime Club — Barbearia</span>
-    <h1>Experiência premium em cada corte</h1>
-    <p class="lead">Agende facilmente, escolha serviços adicionais e receba confirmação no WhatsApp.</p>
-  </section>
-
-  <section id="servicos">
-    <h2 class="section-title">Serviços</h2>
-    <div class="services-showcase" id="serviceGrid"></div>
-  </section>
-
-  <div id="agenda" style="scroll-margin-top: 40px;">
-    <h2 class="section-title">Agende o seu momento</h2>
-    <div class="booking-layout">
-      <form class="card" id="bookingForm">
-        <!-- formulário idêntico ao template funcional (calendário, seleção, dados e botão) -->
-        <!-- por brevidade, o HTML do formulário é o mesmo do template que você forneceu — cole o seu markup completo aqui -->
-        <!-- Certifique-se de que os IDs seguem: serviceGrid, calDays, calTitle, date, timeGrid, name, phone, paymentMethod, notes, btnBooking -->
-        <!-- resumo: sumService, sumDate, sumTime, sumNotes, sumPrice -->
-        <!-- Para não truncar, mantenho a estrutura funcional idêntica — se quiser eu envio o HTML completo com todo o markup aqui também -->
-        <!-- Placeholder simples caso queira testar rapidamente -->
-        <div style="padding:20px;">
-          <p>Formulário de agendamento (cole aqui o HTML completo do template funcional se preferir).</p>
-          <button type="submit" class="primary" id="btnBooking" disabled>Preencha os dados para confirmar</button>
+    <!-- Barra Lateral de Navegação -->
+    <aside id="sidebar" class="w-64 bg-brand-dark text-gray-300 flex-col hidden md:flex z-[200] shadow-2xl fixed md:relative h-full inset-y-0 left-0 transition-all border-r border-gray-800">
+        <div class="h-16 flex items-center justify-between px-6 border-b border-gray-800 bg-black">
+            <div class="flex items-center">
+                <div class="w-8 h-8 rounded-lg bg-black border border-brand-active text-brand-active flex flex-col items-center justify-center font-bold text-lg mr-3 shadow-lg">
+                    <span class="text-[8px] leading-none mt-0.5">PRIME</span>
+                </div>
+                <div><h1 class="text-white font-semibold text-sm">Painel de Gestão</h1><span class="text-xs text-brand-active">Prime Club</span></div>
+            </div>
+            <button onclick="toggleMenu()" class="md:hidden text-gray-400 hover:text-white p-1"><i data-lucide="x" class="w-6 h-6"></i></button>
         </div>
-      </form>
+        <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+            <button onclick="switchTab('dashboard', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl bg-brand-active text-black transition text-sm font-bold shadow-md shadow-brand-active/20"><i data-lucide="calendar-days" class="w-5 h-5"></i> Agendamentos</button>
+            <button onclick="switchTab('contactos', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="users" class="w-5 h-5"></i> Lista de Clientes</button>
+            <button onclick="switchTab('financeiro', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="dollar-sign" class="w-5 h-5"></i> Financeiro</button>
+            <button onclick="switchTab('ferias', this)" class="nav-item w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-800 transition text-sm text-left"><i data-lucide="calendar-off" class="w-5 h-5"></i> Bloquear Datas</button>
+        </nav>
+    </aside>
 
-      <aside class="card summary">
-        <h3>Resumo</h3>
-        <div class="summary-row"><span>Serviço</span><b id="sumService">-</b></div>
-        <div class="summary-row"><span>Data</span><b id="sumDate">Selecione</b></div>
-        <div class="summary-row"><span>Horário</span><b id="sumTime">Selecione</b></div>
-        <div class="summary-row"><span>Notas</span><b id="sumNotes">-</b></div>
-        <div class="summary-row" style="border:0;"><span>Total Estimado</span><b id="sumPrice" style="font-size:22px; color:var(--gold);">-</b></div>
-      </aside>
+    <!-- Conteúdo Principal -->
+    <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <header class="h-16 bg-white flex items-center justify-between px-4 lg:px-8 border-b border-gray-200 z-10 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMenu()" class="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"><i data-lucide="menu" class="w-6 h-6"></i></button>
+                <h2 class="text-xl font-bold text-gray-800 hidden sm:block">Dashboard</h2>
+                <div id="sync-status" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-xs font-bold border border-green-100">Sincronizado</div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="openAdminBookingModal()" class="bg-brand-dark hover:bg-black text-brand-active font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition shadow-lg shadow-black/20 flex items-center gap-1.5">
+                    <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                    <span>Novo Agendamento</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8 bg-brand-bg">
+            <!-- TAB: DASHBOARD / AGENDAMENTOS -->
+            <div id="tab-dashboard" class="tab-content active">
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <div class="xl:col-span-8 flex flex-col gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 lg:p-5">
+                            <div class="flex flex-wrap justify-between items-center mb-5 gap-4">
+                                <h3 id="calendar-month-title" class="text-lg lg:text-xl font-bold text-gray-800">Mês...</h3>
+                                <button onclick="fetchData()" class="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition"><i data-lucide="refresh-cw" class="w-4 h-4"></i></button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <div class="min-w-[500px] md:min-w-[600px]">
+                                    <div class="cal-grid bg-gray-50 rounded-t-lg" id="cal-headers"></div>
+                                    <div class="cal-grid" id="cal-body"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 lg:p-6 flex-1 flex flex-col">
+                            <h3 class="font-bold text-gray-800 mb-4 border-b border-gray-100 pb-3">Lista Completa</h3>
+                            <div id="lista-agendamentos" class="space-y-3 overflow-y-auto max-h-[400px] pr-2"></div>
+                        </div>
+                    </div>
+                    <div class="xl:col-span-4 flex flex-col gap-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-5">
+                                <span class="text-xs font-semibold text-gray-500">Total Marcações</span>
+                                <strong id="stat-agendamentos" class="block text-2xl lg:text-3xl font-black mt-1 text-brand-dark">0</strong>
+                            </div>
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-5">
+                                <span class="text-xs font-semibold text-gray-500">Receita Prevista</span>
+                                <strong id="stat-receita" class="block text-xl font-black mt-1 text-brand-darkGold">R$ 0,00</strong>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 lg:p-6 flex-1">
+                            <h3 class="font-bold text-gray-800 mb-5 border-b border-gray-100 pb-3">Clientes Ativos</h3>
+                            <div id="lista-clientes" class="space-y-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: LISTA DE CONTACTOS -->
+            <div id="tab-contactos" class="tab-content">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-gray-100 pb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">Histórico de Clientes</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Contactos guardados automaticamente a partir dos agendamentos.</p>
+                        </div>
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="searchContact" oninput="filterContacts()" placeholder="Pesquisar cliente..." class="w-full p-2.5 pl-9 text-sm border border-gray-200 rounded-xl outline-none focus:border-brand-active transition">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-200">
+                                <tr>
+                                    <th class="px-6 py-3">Cliente</th>
+                                    <th class="px-6 py-3">Telemóvel</th>
+                                    <th class="px-6 py-3 text-center">Cortes Confirmados</th>
+                                    <th class="px-6 py-3 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contacts-table-body" class="divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB: FINANCEIRO -->
+            <div id="tab-financeiro" class="tab-content">
+                <div class="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold mb-6">Registo Financeiro</h3>
+                    <form id="financeForm" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <input type="date" id="finDate" required class="p-3 border rounded-xl"><select id="finCat" required class="p-3 border rounded-xl"><option value="Entrada">Entrada (Caixa)</option><option value="Saida">Saída (Despesas)</option></select><input type="number" id="finValue" placeholder="Valor" required step="0.01" class="p-3 border rounded-xl"><input type="text" id="finDesc" placeholder="Descrição" required class="p-3 border rounded-xl md:col-span-2"><button type="submit" id="btnFin" class="md:col-span-5 bg-brand-dark text-brand-active font-bold p-3 rounded-xl hover:bg-black transition">Registar Transação</button>
+                    </form>
+                </div>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"><h3 class="font-bold mb-4">Histórico Transacional</h3><div id="lista-financeiro" class="space-y-3"></div></div>
+            </div>
+
+            <!-- TAB: BLOQUEIO DE FERIAS -->
+            <div id="tab-ferias" class="tab-content bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                <h3 class="text-xl font-bold mb-6">Bloquear Datas (Férias/Folgas)</h3>
+                <form id="blockDateForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-600">Data de Início</label>
+                        <input type="date" id="blockedDateStart" required class="p-3 border rounded-xl">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-gray-600">Data de Fim</label>
+                        <input type="date" id="blockedDateEnd" required class="p-3 border rounded-xl">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" id="btnBlock" class="w-full bg-brand-red text-white font-bold p-3 rounded-xl hover:bg-red-600 transition h-[48px]">Bloquear Período</button>
+                    </div>
+                </form>
+                <h4 class="font-bold text-gray-700 mb-3 border-t pt-4">Lista de Dias Bloqueados</h4>
+                <div id="lista-bloqueios" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3"></div>
+            </div>
+        </main>
     </div>
-  </div>
 
-  <footer style="text-align:center; margin-top:60px; padding-top:25px; border-top:1px solid var(--line); font-size:13px; color:var(--muted);">
-    Copyright &copy; Prime Club
-  </footer>
-</main>
+    <!-- MODAL: AGENDAMENTO MANUAL POR ADMIN -->
+    <div id="modalAdminBooking" class="fixed inset-0 bg-black/70 z-[300] hidden place-items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl relative animate-slideUp max-h-[95vh] overflow-y-auto">
+            <button onclick="closeAdminBookingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-10 h-10 bg-brand-lightGold text-brand-darkGold rounded-full flex items-center justify-center"><i data-lucide="calendar-plus" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Novo Agendamento</h3>
+                    <p class="text-xs text-gray-500">Registe o cliente na agenda Prime.</p>
+                </div>
+            </div>
+            
+            <form id="adminBookingForm" class="space-y-4">
+                <!-- Captura Inteligente -->
+                <div class="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                    <label class="block text-[11px] font-bold text-gray-600 mb-1 flex items-center gap-1">
+                        <i data-lucide="clipboard-paste" class="w-3.5 h-3.5"></i> Captura Rápida (Cole texto do WhatsApp)
+                    </label>
+                    <input type="text" id="admSmartPaste" oninput="executeSmartPaste(this.value)" placeholder="Cole texto com Nome e Número..." class="w-full p-2 text-xs border border-gray-300 rounded-lg outline-none focus:border-brand-active bg-white">
+                </div>
 
-<a href="#agenda" class="fab-button" id="fabBtn">📅 Agendar Agora</a>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Nome do Cliente</label>
+                        <input type="text" id="admClient" list="clientList" oninput="autoFillPhone()" required placeholder="Ex: João Silva" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                        <datalist id="clientList"></datalist>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">WhatsApp</label>
+                        <input type="tel" id="admPhone" required placeholder="(11) 99999-9999" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                    </div>
+                </div>
+                
+                <!-- Profissional Prime Club -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Barbeiro / Profissional</label>
+                    <select id="admPro" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                        <option value="Christiano barbosa">Christiano barbosa</option>
+                        <option value="Qualquer um">Qualquer um</option>
+                    </select>
+                </div>
 
-<!-- Modals (addons, cursos, toast) — cole como no template funcional -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="col-span-2">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Serviço Principal</label>
+                        <select id="admService" onchange="updateAdminPrice()" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                            <option value="Corte Masculino" data-price="40">Corte Masculino (R$ 40)</option>
+                            <option value="Barba" data-price="25">Barba (R$ 25)</option>
+                            <option value="Corte & barba" data-price="60">Corte & barba (R$ 60)</option>
+                            <option value="Corte, barba & sobrancelha" data-price="65">Corte, barba & sob. (R$ 65)</option>
+                            <option value="Platinado" data-price="120">Platinado (R$ 120)</option>
+                            <option value="Luzes" data-price="100">Luzes (R$ 100)</option>
+                            <option value="Alinhamento capilar" data-price="40">Alinhamento (R$ 40)</option>
+                        </select>
+                        
+                        <!-- BOTÃO DE EXTRAS NO ADMIN -->
+                        <button type="button" onclick="abrirAdminAddons()" class="w-full mt-2 bg-brand-lightGold text-brand-darkGold border border-dashed border-brand-active rounded-lg p-2 text-xs font-bold hover:bg-[#fde68a] transition flex items-center justify-center gap-1">
+                            <i data-lucide="plus-circle" class="w-3 h-3"></i> Adicionar Extras / Outros Serviços
+                        </button>
+                        <div id="admExtrasSummary" class="text-[11px] text-gray-500 mt-1 font-medium leading-tight"></div>
+                    </div>
+                    
+                    <div class="col-span-1">
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Total (R$)</label>
+                        <input type="number" id="admPrice" required value="40" step="0.01" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm font-bold text-brand-dark">
+                    </div>
+                </div>
 
-<div id="toast" class="toast">Mensagem</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Data</label>
+                        <input type="date" id="admDate" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Horário</label>
+                        <select id="admTime" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                            <option value="09:00">09:00</option>
+                            <option value="09:30">09:30</option>
+                            <option value="10:00">10:00</option>
+                            <option value="10:30">10:30</option>
+                            <option value="11:00">11:00</option>
+                            <option value="11:30">11:30</option>
+                            <option value="13:00">13:00</option>
+                            <option value="13:30">13:30</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="19:00">19:00</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Forma de Pagamento</label>
+                        <select id="admPayment" required class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                            <option value="No local">No local</option>
+                            <option value="PIX">PIX</option>
+                            <option value="Cartão">Cartão</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-1">Observações / Notas</label>
+                        <input type="text" id="admNotes" placeholder="Opcional..." class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-brand-lightGold focus:border-brand-active transition text-sm">
+                    </div>
+                </div>
+                <button type="submit" id="btnAdmSubmit" class="w-full bg-brand-dark text-brand-active font-bold p-3 rounded-xl mt-4 hover:bg-black transition shadow-lg shadow-black/20">Confirmar Agendamento</button>
+            </form>
+        </div>
+    </div>
 
-<script>
-// ==========================================
-// URL DO GOOGLE APPS SCRIPT (PRIME CLUB)
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
+    <!-- MODAL: ADDONS ADMIN (O "CARRINHO" DO PAINEL) -->
+    <div id="modalAdminAddons" class="fixed inset-0 bg-black/60 z-[400] hidden place-items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto border border-gray-200">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-lg font-bold text-gray-800">Adicionar Serviços & Extras</h2>
+                <button type="button" onclick="fecharAdminAddons()" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">Selecione mais serviços para este agendamento.</p>
+            
+            <div id="adminAdditionalServicesGrid" class="mb-4"></div>
+            <hr class="border-t border-dashed border-gray-200 my-4">
+            <div id="adminAddonsGrid"></div>
+            
+            <button type="button" onclick="confirmarAdminAddons()" class="w-full bg-brand-dark text-brand-active font-bold p-3 rounded-xl mt-6 hover:bg-black transition shadow-lg shadow-black/20">Confirmar Seleção</button>
+        </div>
+    </div>
 
-// Copie toda a lógica JavaScript do template funcional que você usou para Jéssica Franco,
-// garantindo que os IDs e nomes de variáveis correspondam (services, addonsList, renderServices, renderCalendarUI, fetchOccupiedTimes, updateSum, etc).
-// Abaixo incluo as funções mínimas essenciais (normalização de data e fetch inicial).
-const BRL = new Intl.NumberFormat("pt-BR", {style:"currency", currency:"BRL"});
-const $ = q => document.querySelector(q);
+    <!-- MODAL: VISUALIZADOR DE RECIBO -->
+    <div id="modalPDFPreview" class="fixed inset-0 bg-black/80 z-[500] hidden place-items-center p-2 sm:p-4">
+        <div class="bg-gray-100 rounded-2xl w-full max-w-md h-[90vh] shadow-2xl relative flex flex-col overflow-hidden animate-slideUp">
+            
+            <div class="bg-white p-3 border-b border-gray-200 flex justify-between items-center z-10 shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-5 h-5 text-gray-600"></i>
+                    Recibo
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button id="btnSharePDF" onclick="shareCurrentPDF()" class="bg-brand-dark hover:bg-black text-brand-active font-bold py-2 px-3 sm:px-4 rounded-xl flex items-center gap-2 transition shadow-lg shadow-black/30 text-sm">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Enviar
+                    </button>
+                    <button onclick="closePDFModal()" class="bg-gray-200 hover:bg-red-100 hover:text-red-600 text-gray-600 font-bold p-2 rounded-xl transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex-1 relative overflow-y-auto bg-gray-200 p-4 sm:p-8 flex justify-center items-start w-full">
+                <div id="receiptHTML" class="bg-white shadow-xl w-full max-w-[400px] relative overflow-hidden" style="min-height: 500px;">
+                    <!-- O Recibo HTML é injetado aqui pelo JS -->
+                </div>
+            </div>
+        </div>
+    </div>
 
-// Se quiser, eu injeto aqui o JS completo idêntico ao template funcional — quer que eu cole tudo agora?
-// Por enquanto, apenas chamadas iniciais:
-function showToast(msg, isErr) {
-  const t = document.getElementById('toast');
-  t.innerText = msg;
-  t.style.backgroundColor = isErr ? "#d32f2f" : "#187245";
-  t.className = "toast show";
-  setTimeout(()=> t.className = "toast", 5000);
-}
+    <!-- BIBLIOTECA PARA GERAR PDF NO FRONTEND CARREGADA NO FIM -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-async function fetchOccupiedTimes() {
-  try {
-    const res = await fetch(WEB_APP_URL + "?action=get_all");
-    const data = await res.json();
-    console.log("Dados do WebApp:", data);
-    showToast("Sincronizado com sucesso.");
-    // processe blocked/bookings conforme a lógica do template
-  } catch (e) {
-    showToast("Erro a ler horários.", true);
-    console.error(e);
-  }
-}
+    <script>
+        let allContacts = [];
+        let allBookings = [];
+        let globalBlockedDates = []; 
 
-// Inicialização básica
-document.addEventListener('DOMContentLoaded', function() {
-  fetchOccupiedTimes();
-  // chame outras inicializações do template: renderServices(), renderCalendarUI(), updateSum()
-});
-</script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
+
+        let currentPdfFilename = "";
+
+        // ==========================================
+        // LÓGICA DE MULTI-SERVIÇOS PARA A PRIME CLUB
+        // ==========================================
+        const baseAdminServices = [
+            { id: "corte-masc", name: "Corte Masculino", price: 40.00 },
+            { id: "barba", name: "Barba", price: 25.00 },
+            { id: "corte-barba", name: "Corte & barba", price: 60.00 },
+            { id: "corte-barba-sob", name: "Corte, barba & sobrancelha", price: 65.00 },
+            { id: "platinado", name: "Platinado", price: 120.00 },
+            { id: "luzes", name: "Luzes", price: 100.00 },
+            { id: "alinhamento", name: "Alinhamento capilar", price: 40.00 }
+        ];
+
+        const adminAddonsList = [
+            { id: "pezinho", name: "Pezinho de cabelo", price: 10.00, type: 'check' },
+            { id: "sobrancelha", name: "Sobrancelha", price: 10.00, type: 'check' },
+            { id: "depil-nariz", name: "Depilação de nariz", price: 20.00, type: 'check' },
+            { id: "depil-orelha", name: "Depilação de orelhas", price: 20.00, type: 'check' },
+            { id: "camuflagem", name: "Camuflagem de fios brancos", price: 30.00, type: 'check' },
+            { id: "limpeza", name: "Limpeza de pele e extração", price: 35.00, type: 'check' }
+        ];
+
+        let adminSelectedExtrasSvc = [];
+        let adminTempExtrasSvc = {};
+
+        let adminSelectedAddons = [];
+        let adminTempAddons = {};
+
+        function abrirAdminAddons() {
+            adminTempAddons = {};
+            adminSelectedAddons.forEach(a => adminTempAddons[a.id] = a.qty || (a.checked ? 1 : 0));
+
+            adminTempExtrasSvc = {};
+            adminSelectedExtrasSvc.forEach(s => adminTempExtrasSvc[s.id] = true);
+
+            const baseSvcName = document.getElementById('admService').value;
+
+            // Renderizar Outros Procedimentos
+            let extraSvcHtml = '<h3 class="font-bold text-sm text-gray-700 mb-2">Adicionar Outro Serviço Principal</h3>';
+            let hasOther = false;
+            
+            baseAdminServices.forEach(s => {
+                if (s.name !== baseSvcName) {
+                    hasOther = true;
+                    let isChecked = adminTempExtrasSvc[s.id] ? 'checked' : '';
+                    extraSvcHtml += `<div class="addon-item">
+                        <div class="addon-info">
+                            <span class="addon-name">${s.name}</span>
+                            <span class="addon-price">+ R$ ${s.price.toFixed(2)}</span>
+                        </div>
+                        <div class="addon-ctrl">
+                            <input type="checkbox" class="addon-chk" ${isChecked} onchange="toggleAdminTempSvc('${s.id}', this.checked)">
+                        </div>
+                    </div>`;
+                }
+            });
+            document.getElementById('adminAdditionalServicesGrid').innerHTML = hasOther ? extraSvcHtml : '';
+
+            // Renderizar Addons (Extras)
+            let htmlAddons = '<h3 class="font-bold text-sm text-gray-700 mb-2">Extras da Barbearia</h3>';
+            adminAddonsList.forEach(a => {
+                let val = adminTempAddons[a.id] || 0;
+                htmlAddons += `<div class="addon-item">
+                    <div class="addon-info">
+                        <span class="addon-name">${a.name}</span>
+                        <span class="addon-price">+ R$ ${a.price.toFixed(2)}</span>
+                    </div>
+                    <div class="addon-ctrl">
+                        <input type="checkbox" class="addon-chk" ${val ? 'checked' : ''} onchange="toggleAdminTempAddon('${a.id}', this.checked)">
+                    </div>
+                </div>`;
+            });
+            document.getElementById('adminAddonsGrid').innerHTML = htmlAddons;
+
+            const modal = document.getElementById('modalAdminAddons');
+            modal.classList.remove('hidden');
+            modal.classList.add('grid');
+        }
+
+        function toggleAdminTempSvc(id, isChecked) { adminTempExtrasSvc[id] = isChecked; }
+        function toggleAdminTempAddon(id, isChecked) { adminTempAddons[id] = isChecked ? 1 : 0; }
+
+        function fecharAdminAddons() {
+            const modal = document.getElementById('modalAdminAddons');
+            modal.classList.remove('grid');
+            modal.classList.add('hidden');
+        }
+
+        function confirmarAdminAddons() {
+            adminSelectedAddons = [];
+            adminAddonsList.forEach(a => {
+                let qty = adminTempAddons[a.id] || 0;
+                if(qty > 0) adminSelectedAddons.push({ ...a, qty: qty });
+            });
+
+            adminSelectedExtrasSvc = [];
+            const baseSvcName = document.getElementById('admService').value;
+            baseAdminServices.forEach(s => {
+                if (adminTempExtrasSvc[s.id] && s.name !== baseSvcName) {
+                    adminSelectedExtrasSvc.push(s);
+                }
+            });
+
+            fecharAdminAddons();
+            updateAdminPrice(); 
+        }
+
+        function updateAdminPrice() {
+            const select = document.getElementById('admService');
+            const basePrice = Number(select.options[select.selectedIndex].getAttribute('data-price'));
+            const baseName = select.value;
+
+            adminSelectedExtrasSvc = adminSelectedExtrasSvc.filter(s => s.name !== baseName);
+
+            let extraSvcTotal = adminSelectedExtrasSvc.reduce((sum, item) => sum + item.price, 0);
+            let addonsTotal = adminSelectedAddons.reduce((sum, item) => sum + item.price, 0);
+
+            const total = basePrice + extraSvcTotal + addonsTotal;
+            document.getElementById('admPrice').value = total.toFixed(2);
+
+            let extraTextArray = [];
+            adminSelectedExtrasSvc.forEach(s => extraTextArray.push(s.name));
+            adminSelectedAddons.forEach(a => extraTextArray.push(a.name));
+
+            const summaryDiv = document.getElementById('admExtrasSummary');
+            if (extraTextArray.length > 0) {
+                summaryDiv.innerHTML = `Com extras: <br><span class="text-brand-darkGold">+ ${extraTextArray.join(', ')}</span>`;
+            } else {
+                summaryDiv.innerHTML = '';
+            }
+        }
+
+        // ==========================================
+        // RESTANTE DO CÓDIGO (sem login)
+        // ==========================================
+
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('flex');
+        }
+
+        function openPDFPreview(client, phone, service, date, time, price, payment, notes, professional) {
+            document.getElementById('modalPDFPreview').classList.remove('hidden');
+            document.getElementById('modalPDFPreview').classList.add('flex');
+            
+            let displayDate = date.includes('-') ? date.split('-').reverse().join('/') : date;
+
+            const htmlContent = `
+                <div style="padding: 30px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; background: #fff; position: relative; width: 100%; box-sizing: border-box;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 10px; background: #0a0a0a;"></div>
+                    
+                    <div style="text-align: center; margin-bottom: 25px; margin-top: 15px;">
+                        <h2 style="color: #d4af37; margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; font-weight: 800;">PRIME CLUB</h2>
+                        <h3 style="color: #111; margin: 3px 0 0 0; font-size: 11px; letter-spacing: 4px; font-weight: 600;">BARBEARIA</h3>
+                    </div>
+
+                    <div style="background: #fafafa; border: 1px solid #eee; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: #0a0a0a; border-bottom: 1px solid #ddd; padding-bottom: 8px; font-size: 13px; text-transform: uppercase; font-weight: bold;">Detalhes do Agendamento</h4>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                            <tr><td style="padding: 8px 0; color: #666;">Cliente</td><td style="padding: 8px 0; text-align: right; font-weight: bold; color: #222;">${client}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Profissional</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; color: #222;">${professional}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Serviços</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; font-weight: bold; color: #b45309;">${service}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Data e Hora</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; color: #222;">${displayDate} às ${time}</td></tr>
+                            <tr><td style="padding: 8px 0; border-top: 1px dashed #ddd; color: #666;">Pagamento</td><td style="padding: 8px 0; border-top: 1px dashed #ddd; text-align: right; color: #222;">${payment || 'No local'}</td></tr>
+                        </table>
+                    </div>
+
+                    <div style="padding: 15px 20px; background: #0a0a0a; color: #d4af37; border-radius: 12px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="font-size: 14px; font-weight: 500; text-transform: uppercase;">Total</td>
+                                <td style="font-size: 20px; font-weight: bold; text-align: right;">R$ ${Number(price || 0).toFixed(2)}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    ${notes && notes.trim() !== '' && !notes.startsWith('Profissional:') ? `<div style="margin-top: 20px; padding: 12px; border-left: 3px solid #d4af37; background: #fef3c7; font-size: 12px; color: #555;"><strong>Obs:</strong> ${notes}</div>` : ''}
+
+                    <div style="margin-top: 30px; text-align: center; font-size: 11px; color: #888;">
+                        <p style="margin: 0;">Obrigado por escolher a Prime Club!</p>
+                        <p style="margin: 4px 0 0 0;">Pedimos que chegue 5 minutos antes do seu horário.</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('receiptHTML').innerHTML = htmlContent;
+            currentPdfFilename = `Recibo_PrimeClub_${client.replace(/\s+/g, '_')}.pdf`;
+        }
+
+        function closePDFModal() {
+            document.getElementById('modalPDFPreview').classList.remove('flex');
+            document.getElementById('modalPDFPreview').classList.add('hidden');
+        }
+
+        function shareCurrentPDF() {
+            const btn = document.getElementById('btnSharePDF');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Aguarde...`;
+            lucide.createIcons();
+            
+            const elementToConvert = document.getElementById('receiptHTML');
+
+            var opt = { 
+                margin: 0, 
+                filename: currentPdfFilename, 
+                image: { type: 'jpeg', quality: 0.98 }, 
+                html2canvas: { scale: 2 }, 
+                jsPDF: { unit: 'in', format: 'a5', orientation: 'portrait' } 
+            };
+
+            html2pdf().set(opt).from(elementToConvert).outputPdf('blob').then(function(pdfBlob) {
+                btn.innerHTML = originalHTML;
+                lucide.createIcons();
+
+                var file = new File([pdfBlob], currentPdfFilename, { type: 'application/pdf' });
+                var shareData = { title: 'Recibo Prime Club', files: [file] };
+
+                if (navigator.canShare && navigator.canShare(shareData)) {
+                    navigator.share(shareData).catch(function(err) {
+                        forceDownloadPDF(pdfBlob);
+                    });
+                } else {
+                    forceDownloadPDF(pdfBlob);
+                }
+            });
+        }
+
+        function forceDownloadPDF(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentPdfFilename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert("O seu dispositivo bloqueou a partilha direta. O PDF foi transferido.");
+        }
+
+        function executeSmartPaste(val) {
+            if (!val || val.trim() === "") return;
+            let phoneMatch = val.replace(/\s+/g, '').match(/\+?\d{8,15}/) || val.match(/\d[\d\s\-\(\)]{7,}\d/);
+            let extractedPhone = phoneMatch ? phoneMatch[0].replace(/\D/g, '') : '';
+            let extractedName = val;
+            if (phoneMatch) {
+                extractedName = val.replace(phoneMatch[0], '');
+            }
+            extractedName = extractedName.replace(/[\-\:\,\;\n\r\t\*\_]/g, ' ').replace(/\s+/g, ' ').trim();
+            if (extractedName.length > 1) {
+                document.getElementById('admClient').value = extractedName;
+            }
+            if (extractedPhone.length >= 8) {
+                document.getElementById('admPhone').value = extractedPhone;
+            }
+        }
+
+        function autoFillPhone() {
+            const inputName = document.getElementById('admClient').value;
+            const foundContact = allContacts.find(c => c.name === inputName);
+            if (foundContact) {
+                document.getElementById('admPhone').value = foundContact.phone;
+            }
+        }
+
+        function copyToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try { document.execCommand('copy'); } catch (err) {}
+            document.body.removeChild(textArea);
+        }
+
+        function shareBooking(client, phone, service, date, time) {
+            let displayDate = date;
+            if(date.includes('-')) {
+                const [y, m, d] = date.split('-');
+                displayDate = `${d}/${m}/${y}`;
+            }
+
+            const message = `Fala mestre *${client}*! \nO seu agendamento na *Prime Club Barbearia* está confirmado! ✂️\n\n💈 *Serviço:* ${service}\n📅 *Data:* ${displayDate}\n⏰ *Hora:* ${time}\n\nPedimos que chegue 5 minutinhos antes. Se precisar de desmarcar, dá-nos um toque com antecedência. Tamo junto! 👊`;
+            
+            copyToClipboard(message);
+            
+            let cleanPhone = String(phone).replace(/\D/g, '');
+            if(cleanPhone.length === 9) { cleanPhone = "351" + cleanPhone; } 
+            else if (cleanPhone.length === 11) { cleanPhone = "55" + cleanPhone; }
+
+            const url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        async function deleteBooking(dateStr, timeStr) {
+            if(!confirm(`Eliminar permanentemente o agendamento de ${dateStr} às ${timeStr}?`)) return;
+            try {
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'delete_booking', date: dateStr, time: timeStr })
+                });
+                const json = await res.json();
+                if(json.status === "success") {
+                    alert("Agendamento eliminado.");
+                    fetchData();
+                } else {
+                    alert("Erro ao eliminar agendamento.");
+                }
+            } catch(e) {
+                alert("Erro de ligação.");
+            }
+        }
+
+        function openAdminBookingModal(name = '', phone = '') {
+            document.getElementById('admSmartPaste').value = '';
+            document.getElementById('admClient').value = name;
+            document.getElementById('admPhone').value = phone;
+            document.getElementById('admNotes').value = '';
+            document.getElementById('admDate').value = new Date().toISOString().split('T')[0];
+            
+            adminSelectedAddons = [];
+            adminSelectedExtrasSvc = [];
+            document.getElementById('admExtrasSummary').innerHTML = '';
+            
+            updateAdminPrice();
+            
+            const modal = document.getElementById('modalAdminBooking');
+            modal.classList.remove('hidden');
+            modal.classList.add('grid');
+        }
+
+        function closeAdminBookingModal() {
+            const modal = document.getElementById('modalAdminBooking');
+            modal.classList.remove('grid');
+            modal.classList.add('hidden');
+        }
+
+        function buildContactsList(bookings) {
+            if(!bookings) return;
+            const contactsMap = {};
+            bookings.forEach(b => {
+                const phone = String(b['Telefone']).trim();
+                const name = String(b['Cliente']).trim();
+                if(!phone) return;
+                if(!contactsMap[phone]) { contactsMap[phone] = { name: name, phone: phone, visits: 0 }; }
+                if (b['Status'] === 'Confirmado') { contactsMap[phone].visits += 1; }
+            });
+            allContacts = Object.values(contactsMap).sort((a,b) => a.name.localeCompare(b.name));
+            renderContactsTable(allContacts);
+
+            const datalist = document.getElementById('clientList');
+            if (datalist) {
+                datalist.innerHTML = allContacts.map(c => `<option value="${c.name}"></option>`).join('');
+            }
+        }
+
+        function renderContactsTable(contacts) {
+            const tbody = document.getElementById('contacts-table-body');
+            if(contacts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-400">Nenhum cliente encontrado.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = contacts.map(c => `
+                <tr class="hover:bg-gray-50/50">
+                    <td class="px-6 py-4 font-bold text-gray-800">${c.name}</td>
+                    <td class="px-6 py-4">${c.phone}</td>
+                    <td class="px-6 py-4 text-center"><span class="bg-gray-100 text-brand-darkGold px-2 py-1 rounded-full text-xs font-black">${c.visits}</span></td>
+                    <td class="px-6 py-4 text-right flex justify-end gap-2">
+                        <button onclick="openAdminBookingModal('${c.name}', '${c.phone}')" class="p-2 text-brand-darkGold hover:bg-gray-100 rounded-lg transition" title="Agendar Novo">
+                            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function filterContacts() {
+            const q = document.getElementById('searchContact').value.toLowerCase();
+            const filtered = allContacts.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+            renderContactsTable(filtered);
+        }
+
+        // SUBMETER NOVO AGENDAMENTO NO ADMIN
+        document.getElementById('adminBookingForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const client = document.getElementById('admClient').value;
+            const phone = document.getElementById('admPhone').value;
+            const serviceSelect = document.getElementById('admService');
+            const pro = document.getElementById('admPro').value;
+            const price = document.getElementById('admPrice').value; 
+            const date = document.getElementById('admDate').value;
+            const time = document.getElementById('admTime').value;
+            const paymentMethod = document.getElementById('admPayment').value;
+            const notesRaw = document.getElementById('admNotes').value;
+            const btn = document.getElementById('btnAdmSubmit');
+
+            btn.disabled = true;
+            btn.innerText = "A guardar...";
+
+            let extraTextArray = [];
+            adminSelectedExtrasSvc.forEach(s => extraTextArray.push(s.name));
+            adminSelectedAddons.forEach(a => extraTextArray.push(a.name));
+
+            const addonsTextStr = extraTextArray.join(', ');
+            const finalServiceString = serviceSelect.value + (addonsTextStr ? ` (+ ${addonsTextStr})` : '');
+            
+            // Juntar o profissional nas notas para manter a estrutura da DB
+            const finalNotes = `Profissional: ${pro}` + (notesRaw ? ` | Obs: ${notesRaw}` : '');
+
+            const payload = {
+                type: 'booking',
+                client,
+                phone,
+                service: finalServiceString,
+                date,
+                time,
+                price: Number(price), 
+                paymentMethod,
+                notes: finalNotes
+            };
+
+            try {
+                const res = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if(json.status === "error") {
+                    alert("Ops! O horário já está reservado ou bloqueado.");
+                } else {
+                    closeAdminBookingModal();
+                    fetchData(); 
+                    if(confirm("Agendamento guardado! Gerar PDF do recibo?")) {
+                        openPDFPreview(client, phone, finalServiceString, date, time, price, paymentMethod, notesRaw, pro);
+                    } else if(confirm("Enviar WhatsApp de confirmação?")) {
+                        shareBooking(client, phone, finalServiceString, date, time);
+                    }
+                }
+            } catch(err) {
+                alert("Erro ao registar.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Confirmar Agendamento";
+            }
+        };
+
+        document.getElementById('blockDateForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const start = document.getElementById('blockedDateStart').value;
+            const end = document.getElementById('blockedDateEnd').value;
+            const btn = document.getElementById('btnBlock');
+            btn.disabled = true;
+            btn.innerText = "A guardar...";
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'block_range', startDate: start, endDate: end })
+                });
+                document.getElementById('blockedDateStart').value = "";
+                document.getElementById('blockedDateEnd').value = "";
+                fetchData();
+            } catch (err) { alert("Erro ao bloquear período."); }
+            btn.disabled = false;
+            btn.innerText = "Bloquear Período";
+        };
+
+        async function unblockDate(dateStr) {
+            if(!confirm(`Desbloquear o dia ${dateStr}?`)) return;
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ type: 'unblock_date', date: dateStr })
+                });
+                fetchData();
+            } catch(e) { alert("Erro ao comunicar."); }
+        }
+
+        // ========== INICIALIZAÇÃO AUTOMÁTICA ==========
+
+        // Chama ícones do Lucide
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            // Iniciar painel sem login
+            fetchData();
+            setInterval(fetchData, 20000);
+            // marca data do formulário financeiro
+            document.getElementById('finDate').value = new Date().toISOString().slice(0,10);
+        });
+    </script>
 </body>
 </html>

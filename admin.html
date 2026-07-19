@@ -14,17 +14,17 @@
                     fontFamily: { sans: ['Inter', 'sans-serif'] }, 
                     colors: { 
                         brand: { 
-                            dark: '#0a0a0a', 
-                            active: '#d4af37', /* Dourado */
-                            bg: '#f4f6f8', 
-                            blue: '#4c8ee8', 
-                            red: '#ef4444', 
-                            green: '#10b981', 
-                            lightGold: '#fef3c7', 
-                            darkGold: '#b45309' 
-                        } 
-                    } 
-                } 
+                            dark: '#0a0a0a',
+                            active: '#d4af37',
+                            bg: '#f4f6f8',
+                            blue: '#4c8ee8',
+                            red: '#ef4444',
+                            green: '#10b981',
+                            lightGold: '#fef3c7',
+                            darkGold: '#b45309'
+                        }
+                    }
+                }
             }
         }
     </script>
@@ -44,8 +44,6 @@
         @media(min-width: 768px) { .event-pill { left: 4px; right: 4px; padding: 6px 8px; font-size: 0.75rem; } }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-slideUp { animation: slideUp 0.3s ease-out forwards; }
-        
-        /* Estilos para o Modal de Addons no Admin */
         .addon-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
         .addon-item:last-child { border-bottom: none; padding-bottom: 5px; }
         .addon-info { display: flex; flex-direction: column; gap: 2px; }
@@ -53,25 +51,11 @@
         .addon-price { color: #b45309; font-weight: 700; font-size: 13px; }
         .addon-ctrl { display: flex; align-items: center; gap: 8px; }
         .addon-chk { width: 20px; height: 20px; accent-color: #d4af37; cursor: pointer; }
-        
         .bg-brand-gray { background-color: #374151; }
     </style>
 </head>
 <body class="bg-brand-bg text-gray-800 font-sans h-screen flex overflow-hidden">
-    <!-- Ecrã de Login -->
-    <div id="login-screen" class="fixed inset-0 bg-brand-dark flex flex-col items-center justify-center z-[100]">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-11/12 max-w-sm border border-gray-800">
-            <div class="w-16 h-16 bg-black text-brand-active rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-active">
-                <i data-lucide="scissors" class="w-8 h-8"></i>
-            </div>
-            <h2 class="text-brand-dark font-bold text-2xl mb-2">Acesso Restrito</h2>
-            <p class="text-xs text-gray-500 mb-5">Painel de Gestão Prime Club</p>
-            <form id="loginForm">
-                <input type="password" id="adminPwd" placeholder="Palavra-passe" required class="w-full p-4 rounded-xl border border-gray-200 mb-5 text-center text-lg outline-none focus:border-brand-active focus:ring-2 focus:ring-brand-lightGold transition">
-                <button type="submit" id="btnLogin" class="w-full bg-brand-active text-black font-bold p-4 rounded-xl hover:bg-brand-darkGold hover:text-white transition shadow-lg shadow-brand-active/30">Entrar no Painel</button>
-            </form>
-        </div>
-    </div>
+    <!-- (Login removido) -->
 
     <!-- Barra Lateral de Navegação -->
     <aside id="sidebar" class="w-64 bg-brand-dark text-gray-300 flex-col hidden md:flex z-[200] shadow-2xl fixed md:relative h-full inset-y-0 left-0 transition-all border-r border-gray-800">
@@ -515,7 +499,7 @@
         }
 
         // ==========================================
-        // RESTANTE DO CÓDIGO
+        // RESTANTE DO CÓDIGO (sem login)
         // ==========================================
 
         function toggleMenu() {
@@ -863,194 +847,17 @@
             } catch(e) { alert("Erro ao comunicar."); }
         }
 
-        // --- LOGIN ---
-        document.getElementById('loginForm').onsubmit = async function(e) {
-            e.preventDefault(); 
-            const pwd = document.getElementById('adminPwd').value; 
-            const btn = document.getElementById('btnLogin');
-            
-            const originalText = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin mx-auto"></i>`;
+        // ========== INICIALIZAÇÃO AUTOMÁTICA ==========
+
+        // Chama ícones do Lucide
+        document.addEventListener('DOMContentLoaded', function() {
             lucide.createIcons();
-
-            try {
-                const res = await fetch(WEB_APP_URL + "?action=login&pwd=" + encodeURIComponent(pwd));
-                const json = await res.json();
-                
-                if(json.status === "success") { 
-                    document.getElementById('login-screen').style.display = 'none'; 
-                    try{playLoudNotification();}catch(err){} 
-                    fetchData(); 
-                    setInterval(fetchData, 20000); 
-                } else { 
-                    alert('Palavra-passe incorreta!'); 
-                    btn.innerHTML = originalText; 
-                }
-            } catch (error) {
-                alert('Erro de ligação. Certifique-se de que publicou o script.');
-                btn.innerHTML = originalText;
-            }
-        };
-
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('bg-brand-active', 'text-black', 'shadow-md'); n.classList.add('hover:bg-gray-800', 'text-gray-300'); });
-            el.classList.remove('hover:bg-gray-800', 'text-gray-300'); el.classList.add('bg-brand-active', 'text-black', 'shadow-md');
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active')); document.getElementById('tab-' + tabId).classList.add('active');
-            
-            if (window.innerWidth < 768) {
-                const sidebar = document.getElementById('sidebar');
-                if (!sidebar.classList.contains('hidden')) {
-                    sidebar.classList.add('hidden');
-                    sidebar.classList.remove('flex');
-                }
-            }
-        }
-
-        const workHours = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "13:00", "13:30", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
-        const dayNames = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-        function getWeekDates() {
-            let curr = new Date(); let dayOfWeek = curr.getDay(); let diff = curr.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-            let monday = new Date(curr.setDate(diff)); let week = [];
-            for (let i = 0; i < 6; i++) { let nextDay = new Date(monday); nextDay.setDate(monday.getDate() + i); week.push(nextDay); }
-            return week;
-        }
-
-        function toLocalISOString(date) { 
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-        
-        function getColorForService(service) { 
-            const s = String(service).toLowerCase(); 
-            if(s.includes("platinado") || s.includes("luzes")) return "bg-gray-800"; 
-            if(s.includes("barba")) return "bg-brand-darkGold"; 
-            return "bg-black"; 
-        }
-
-        function renderDynamicCalendar(bookings) {
-            const weekDates = getWeekDates();
-            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            document.getElementById('calendar-month-title').innerText = `${monthNames[weekDates[0].getMonth()]} ${weekDates[0].getFullYear()}`;
-            
-            let headersHTML = `<div class="cal-header border-t border-e border-gray-200"></div>`;
-            const todayStr = toLocalISOString(new Date());
-            
-            weekDates.forEach((date, i) => {
-                const dateStr = toLocalISOString(date); 
-                const dayNum = String(date.getDate()).padStart(2, '0');
-                if (dateStr === todayStr) headersHTML += `<div class="cal-header border-t border-gray-200 bg-brand-lightGold"><span class="text-brand-darkGold text-[10px] uppercase block font-bold">${dayNames[i]}</span><span class="text-sm md:text-lg text-white font-bold bg-brand-darkGold w-6 h-6 md:w-8 md:h-8 rounded-full flex items-center justify-center mx-auto mt-0.5">${dayNum}</span></div>`;
-                else headersHTML += `<div class="cal-header border-t border-gray-200"><span class="text-gray-400 text-[10px] uppercase block">${dayNames[i]}</span><span class="text-sm md:text-lg text-gray-800">${dayNum}</span></div>`;
-            });
-            document.getElementById('cal-headers').innerHTML = headersHTML;
-            
-            let bookingMap = {};
-            if(bookings) bookings.forEach(b => { bookingMap[`${b['Data Agendamento']}_${b['Hora']}`] = b; });
-            
-            let bodyHTML = '';
-            workHours.forEach(hour => {
-                bodyHTML += `<div class="cal-cell flex items-start justify-center pt-2"><span class="cal-time">${hour}</span></div>`;
-                weekDates.forEach((date, index) => {
-                    const dateStr = toLocalISOString(date); 
-                    const b = bookingMap[`${dateStr}_${hour}`];
-                    const bgClass = (dateStr === todayStr) ? 'bg-brand-lightGold/30' : '';
-                    
-                    const isBlockedDate = globalBlockedDates.includes(dateStr);
-
-                    if (isBlockedDate) {
-                        bodyHTML += `<div class="cal-cell bg-gray-100/80 flex items-center justify-center"><span class="text-[10px] text-gray-400 font-bold">Folga/Férias</span></div>`;
-                    } else if (b && b['Status'] !== 'Cancelado') { 
-                        const initials = String(b['Cliente']).substring(0,2).toUpperCase(); 
-                        bodyHTML += `<div class="cal-cell ${bgClass}"><div class="event-pill ${getColorForService(b['Servico'])} hover:opacity-90 border border-brand-active/20" title="${b['Cliente']} - ${b['Servico']}"><div class="font-bold text-[10px] md:text-xs text-brand-active">${initials}</div><div class="truncate text-[9px] md:text-[11px] mt-1 hidden sm:block text-gray-300">${b['Servico']}</div></div></div>`; 
-                    } else { 
-                        bodyHTML += `<div class="cal-cell ${bgClass}"></div>`; 
-                    }
-                });
-            });
-            document.getElementById('cal-body').innerHTML = bodyHTML;
-        }
-
-        let lastTotalItems = -1;
-        function playLoudNotification() { const ctx = new (window.AudioContext || window.webkitAudioContext)(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.connect(gain); gain.connect(ctx.destination); osc.type = 'sawtooth'; osc.frequency.setValueAtTime(800, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.5); gain.gain.setValueAtTime(1, ctx.currentTime); osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 1.2); osc.stop(ctx.currentTime + 1.2); }
-
-        async function fetchData() {
-            const syncUI = document.getElementById('sync-status'); syncUI.innerText = "A atualizar...";
-            try {
-                const res = await fetch(WEB_APP_URL + "?action=get_all"); const data = await res.json();
-                allBookings = data.bookings || [];
-
-                buildContactsList(allBookings);
-
-                if (data.blocked) {
-                    globalBlockedDates = data.blocked.map(b => String(b['DataBloqueio']).trim());
-                }
-
-                if (data.bookings) { data.bookings = data.bookings.map(b => { let dataStr = String(b['Data Agendamento']); if (dataStr.includes('T')) b['Data Agendamento'] = dataStr.split('T')[0]; let horaStr = String(b['Hora']); let timeMatch = horaStr.match(/\d{1,2}:\d{2}/); if (timeMatch) b['Hora'] = timeMatch[0]; return b; }); }
-                const currentTotalItems = (data.bookings ? data.bookings.length : 0);
-                if (lastTotalItems !== -1 && currentTotalItems > lastTotalItems) { playLoudNotification(); }
-                lastTotalItems = currentTotalItems;
-                
-                renderDynamicCalendar(data.bookings);
-                
-                const bookingsList = document.getElementById('lista-agendamentos');
-                if(!data.bookings || data.bookings.length === 0) bookingsList.innerHTML = `<div class="text-center py-5 text-gray-400">Nenhum registo.</div>`;
-                else bookingsList.innerHTML = data.bookings.reverse().map(b => {
-                    const isConfirmed = b['Status'] === 'Confirmado'; const statusColor = isConfirmed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700';
-                    const obs = b['Observações'] || b['Observacoes'] || '';
-                    const obsHtml = obs ? `<p class="text-xs text-gray-500 mt-1 italic bg-gray-50 p-2 rounded border border-gray-100">"${obs}"</p>` : '';
-                    
-                    const safeObs = obs.replace(/['"]/g, " ");
-                    
-                    return `
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-gray-100 hover:border-brand-active hover:shadow-md transition bg-white gap-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-full bg-brand-lightGold text-brand-darkGold flex items-center justify-center font-bold border border-[#fde68a]"><span class="text-sm">${b['Hora']}</span></div>
-                                <div>
-                                    <h4 class="font-bold text-gray-800 text-sm md:text-lg">${b['Cliente']}</h4>
-                                    <p class="text-xs text-gray-500 mt-1">${b['Servico']} · ${b['Telefone']}</p>
-                                    ${obsHtml}
-                                </div>
-                            </div>
-                            <div class="flex sm:flex-col items-end justify-between sm:justify-start gap-1">
-                                <span class="px-2 py-1 rounded-full text-[10px] md:text-xs font-bold ${statusColor}">${b['Status']}</span>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[10px] text-gray-400">${b['Data Agendamento']}</span>
-                                    
-                                    <button onclick="shareBooking('${b['Cliente']}', '${b['Telefone']}', '${b['Servico']}', '${b['Data Agendamento']}', '${b['Hora']}')" class="p-1 text-green-600 hover:bg-green-50 rounded-lg transition" title="Partilhar Texto">
-                                        <i data-lucide="share-2" class="w-5 h-5"></i>
-                                    </button>
-                                    
-                                    <button onclick="deleteBooking('${b['Data Agendamento']}', '${b['Hora']}')" class="p-1 text-red-500 hover:bg-red-50 rounded-lg transition" title="Eliminar Agendamento">
-                                        <i data-lucide="trash-2" class="w-5 h-5"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>`;
-                }).join('');
-
-                const bloqueiosList = document.getElementById('lista-bloqueios');
-                if(!data.blocked || data.blocked.length === 0) {
-                    bloqueiosList.innerHTML = `<p class="text-gray-400 italic text-sm col-span-full">Nenhum dia bloqueado atualmente.</p>`;
-                } else {
-                    bloqueiosList.innerHTML = data.blocked.map(b => `
-                        <div class="flex items-center justify-between p-2.5 bg-red-50 text-red-800 rounded-xl border border-red-100 text-xs">
-                            <span class="font-bold">${b['DataBloqueio']}</span>
-                            <button onclick="unblockDate('${b['DataBloqueio']}')" class="text-red-600 hover:text-red-800 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    `).join('');
-                }
-
-                document.getElementById('stat-agendamentos').innerText = data.bookings ? data.bookings.length : 0;
-                let receita = 0; const clientesMap = new Map();
-                if(data.bookings) data.bookings.forEach(b => { if(b['Status'] === 'Confirmado' && b['Valor']) receita += Number(b['Valor']); if(!clientesMap.has(b['Telefone'])) clientesMap.set(b['Telefone'], b['Cliente']); });
-                document.getElementById('stat-receita').innerText = new Intl.NumberFormat('pt-BR', {style: 'currency', currency: 'BRL'}).format(receita);
-                document.getElementById('lista-clientes').innerHTML = Array.from(clientesMap, ([phone, name]) => ({phone, name})).slice(0,5).map(c => `<div class="flex items-center justify-between p-2"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-600">${String(c.name).substring(0,2).toUpperCase()}</div><div><p class="text-sm font-bold">${c.name}</p><p class="text-xs text-gray-400">${c.phone}</p></div></div></div>`).join('');
-                syncUI.innerText = "Sincronizado";
-                lucide.createIcons();
-            } catch (error) { syncUI.innerText = "Erro de Ligação"; }
-        }
-        document.getElementById('finDate').value = new Date().toISOString().slice(0,10);
+            // Iniciar painel sem login
+            fetchData();
+            setInterval(fetchData, 20000);
+            // marca data do formulário financeiro
+            document.getElementById('finDate').value = new Date().toISOString().slice(0,10);
+        });
     </script>
 </body>
 </html>

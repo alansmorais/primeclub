@@ -153,9 +153,9 @@
             try {
                 const res = await fetch(`${WEB_APP_URL}?action=get_all`);
                 const data = await res.json();
-                allData = { 
-                    bookings: data.bookings || [], 
-                    blockedDates: data.blocked || [], 
+                allData = {
+                    bookings: data.bookings || [],
+                    blockedDates: data.blocked || [],
                     blockedNumbers: data.blockedNumbers || [],
                     finance: data.finance || []
                 };
@@ -169,16 +169,17 @@
 
         function switchTab(id, el) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('tab-title').textContent = id.toUpperCase();
+            const target = document.getElementById(id);
+            if (target) target.classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active', 'bg-brand-active', 'text-black', 'font-semibold'));
+            if (el) el.classList.add('active', 'bg-brand-active', 'text-black', 'font-semibold');
+            document.getElementById('tab-title').textContent = id === 'dashboard' ? 'Dashboard' : id === 'calendar' ? 'Agenda' : id === 'finance' ? 'Financeiro' : 'Bloqueios';
         }
 
         function renderDashboard() {
             const today = new Date().toISOString().split('T')[0];
             const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-            
+
             const todayBookings = allData.bookings.filter(b => (b["Data Agendamento"] || b.Data || "") === today);
             const tomorrowBookings = allData.bookings.filter(b => (b["Data Agendamento"] || b.Data || "") === tomorrow);
             const totalRev = todayBookings.reduce((acc, curr) => acc + parseFloat(curr.Valor || curr.Preco || 0), 0);
@@ -195,7 +196,7 @@
                 const time = b.Hora || b.time || "";
                 const val = b.Valor || b.Preco || "0";
                 const whatsMsg = encodeURIComponent(`Olá ${b.Cliente}, confirmamos seu horário na Prime Club dia ${date} às ${time}. Até lá!`);
-                
+
                 return `
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 text-xs font-bold text-gray-500">${date}<br><span class="text-brand-dark text-sm">${time}</span></td>
@@ -234,16 +235,19 @@
         }
 
         function renderBlocks() {
-            document.getElementById('blocked-phones-list').innerHTML = allData.blockedNumbers.map(n => `
+            const phones = document.getElementById('blocked-phones-list');
+            phones.innerHTML = allData.blockedNumbers.length ? allData.blockedNumbers.map(n => `
                 <li class="flex justify-between items-center py-2">
                     <span class="font-bold">${n}</span>
                     <button onclick="removeBlockPhone('${n}')" class="text-red-600 text-xs font-bold">REMOVER</button>
-                </li>`).join('');
+                </li>`).join('') : '<li class="text-sm text-gray-400 py-2">Nenhum número bloqueado.</li>';
 
-            document.getElementById('blocked-dates-list').innerHTML = allData.blockedDates.map(d => `
-                <span class="bg-brand-dark text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-2">
-                    ${d.DataBloqueio || d} <button onclick="unblockDate('${d.DataBloqueio || d}')" class="font-bold">×</button>
-                </span>`).join('');
+            const dates = document.getElementById('blocked-dates-list');
+            const blockedDates = allData.blockedDates.map(d => (typeof d === 'string' ? d : (d.DataBloqueio || d.Data || d))).filter(Boolean);
+            dates.innerHTML = blockedDates.length ? blockedDates.map(d => `
+                <button onclick="showUnblockModal('date', '${d}')" class="bg-brand-dark text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-2">
+                    ${d} <span class="font-bold">×</span>
+                </button>`).join('') : '<div class="text-sm text-gray-400">Nenhuma data bloqueada.</div>';
         }
 
         async function postJSON(payload) {
@@ -252,11 +256,19 @@
         }
 
         async function addBlockedPhone() {
-            const num = document.getElementById('new-block-phone').value.replace(/\D/g, '');
-            if(!num) return;
-            await postJSON({ action: 'add_blocked_number', number: num });
-            document.getElementById('new-block-phone').value = '';
-            fetchData();
+            const raw = document.getElementById('new-block-phone').value;
+            const num = raw.replace(/\D/g, '');
+            if (!num) return alert('Digite um número válido com DDD.');
+            const confirmMsg = `Confirmar bloqueio do número ${raw.trim()}? Este cliente exigirá 50% de sinal.`;
+            if (!confirm(confirmMsg)) return;
+            const result = await postJSON({ action: 'add_blocked_number', number: num });
+            if (result && result.status === 'success') {
+                document.getElementById('new-block-phone').value = '';
+                showToast('Número bloqueado com sucesso.');
+                fetchData();
+            } else {
+                alert((result && result.message) || 'Não foi possível bloquear o número.');
+            }
         }
 
         async function removeBlockPhone(num) {
@@ -268,9 +280,18 @@
         async function blockDateRange() {
             const s = document.getElementById('block-date-start').value;
             const e = document.getElementById('block-date-end').value || s;
-            if(!s) return;
-            await postJSON({ action: 'block_range', startDate: s, endDate: e });
-            fetchData();
+            if (!s) return alert('Escolha a data inicial.');
+            const confirmMsg = e && e !== s
+                ? `Confirmar bloqueio de ${s} até ${e}?`
+                : `Confirmar bloqueio da data ${s}?`;
+            if (!confirm(confirmMsg)) return;
+            const result = await postJSON({ action: 'block_range', startDate: s, endDate: e });
+            if (result && result.status === 'success') {
+                showToast('Data bloqueada com sucesso.');
+                fetchData();
+            } else {
+                alert((result && result.message) || 'Não foi possível bloquear a data.');
+            }
         }
 
         async function unblockDate(d) {
@@ -292,7 +313,7 @@
             const phone = document.getElementById('book-phone').value.replace(/\D/g, '');
             const isRestricted = allData.blockedNumbers.includes(phone);
             const svc = document.getElementById('book-service').value.split('|');
-            
+
             const payload = {
                 type: 'booking',
                 client: document.getElementById('book-client').value,

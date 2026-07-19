@@ -39,6 +39,21 @@
     .hook-text{white-space:pre-line;line-height:1.6}
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 28px;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+      z-index: 9999;
+      display: none;
+    }
+    .toast.show { display: block; animation: fadein .2s ease; }
+    @keyframes fadein { from { opacity: 0; transform: translate(-50%, 10px);} to { opacity:1; transform: translate(-50%,0);} }
     @media(min-width:1024px){.title{font-size:4.5rem}}
   </style>
 </head>
@@ -192,6 +207,8 @@
     <p class="text-neutral-600 text-sm tracking-widest uppercase">© 2026 Prime Club Barbearia | Todos os direitos reservados</p>
   </footer>
 
+  <div id="toast" class="toast"></div>
+
   <script>
     // ==========================================
     // 1. DADOS DOS SERVIÇOS
@@ -215,9 +232,8 @@
     // ==========================================
     // 2. LISTA NEGRA (NÚMEROS COM RESTRIÇÃO)
     // ==========================================
-    // Insira aqui os WhatsApps (apenas números, com DDD) que precisam pagar 50% adiantado.
     const numerosRestritos = [
-      "27999999999", 
+      "27999999999",
       "11988888888"
     ];
 
@@ -237,284 +253,12 @@
     const whatsappInput = document.getElementById('whatsapp');
     const datesContainer = document.getElementById('dates-container');
     const timesContainer = document.getElementById('times-container');
-    
-    // ==========================================
-    // 4. INICIALIZAÇÃO DA INTERFACE
-    // ==========================================
-    function init() {
-      renderServices();
-      renderDates();
-      fetchAvailability(); // Busca horários ocupados na planilha
-    }
+    const summaryService = document.getElementById('summary-service');
+    const summaryBarber = document.getElementById('summary-barber');
+    const summaryDatetime = document.getElementById('summary-datetime');
+    const summaryPrice = document.getElementById('summary-price');
 
-    // Injeta os serviços na grade e no Select
-    function renderServices() {
-      const grid = document.getElementById('services-grid');
-      grid.innerHTML = '';
-      serviceSelect.innerHTML = '';
-
-      servicesList.forEach((srv, index) => {
-        // Popula Select
-        const opt = document.createElement('option');
-        opt.value = srv.name;
-        opt.dataset.price = srv.price;
-        serviceSelect.appendChild(opt);
-
-        // Popula Grade
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div>
-            <h3 class="text-xl font-bold mb-2">${srv.name}</h3>
-          </div>
-          <div class="flex justify-between items-center text-[#D4AF37] mt-6">
-            <span class="text-xs bg-neutral-900 px-3 py-1 rounded-full text-gray-400"><i class="far fa-clock mr-1"></i> ${srv.duration}</span>
-            <span class="text-2xl font-bold">R$${srv.price.toFixed(2)}</span>
-          </div>
-        `;
-        
-        // Ao clicar no card, seleciona o serviço e rola para o agendamento
-        card.onclick = () => {
-          serviceSelect.selectedIndex = index;
-          updateSummary();
-          document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
-        };
-        
-        grid.appendChild(card);
-      });
-    }
-
-    // Gera o carrossel dos próximos 14 dias
-    function renderDates() {
-      datesContainer.innerHTML = '';
-      const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      const hoje = new Date();
-
-      for (let i = 0; i < 14; i++) {
-        let data = new Date(hoje);
-        data.setDate(hoje.getDate() + i);
-        
-        // Formato YYYY-MM-DD para o banco de dados
-        let isoDate = data.getFullYear() + "-" + String(data.getMonth() + 1).padStart(2, '0') + "-" + String(data.getDate()).padStart(2, '0');
-        
-        let diaNome = i === 0 ? 'Hoje' : diasSemana[data.getDay()];
-        let diaNumero = data.getDate();
-
-        const btn = document.createElement('div');
-        btn.className = 'date-card snap-start';
-        btn.innerHTML = `<div class="text-xs text-gray-400 mb-1">${diaNome}</div><div class="text-xl">${diaNumero}</div>`;
-        
-        // Seleciona o primeiro dia automaticamente
-        if (i === 0) {
-          btn.classList.add('selected');
-          selectedDateISO = isoDate;
-        }
-
-        btn.onclick = () => {
-          document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedDateISO = isoDate;
-          selectedTime = null; // Reseta horário ao mudar de data
-          renderTimes(); // Recarrega horários (verificando duplicidade)
-        };
-        
-        datesContainer.appendChild(btn);
-      }
-    }
-
-    // ==========================================
-    // 5. LÓGICA DE PREVENÇÃO DE DUPLICIDADE
-    // ==========================================
-    
-    // Busca dados da planilha (roda invisível ao carregar o site)
-    function fetchAvailability() {
-      document.getElementById('loading-times').classList.remove('hidden');
-      fetch(googleScriptURL + '?action=get_all')
-        .then(res => res.json())
-        .then(data => {
-          allBookings = data.bookings || [];
-          document.getElementById('loading-times').classList.add('hidden');
-          renderTimes(); // Atualiza a grade de horários agora que sabemos o que está ocupado
-        })
-        .catch(err => {
-          console.error("Erro ao buscar horários", err);
-          document.getElementById('loading-times').classList.add('hidden');
-          renderTimes();
-        });
-    }
-
-    // Gera os botões de horário
-    function renderTimes() {
-      timesContainer.innerHTML = '';
-      updateSummary();
-
-      // Horários padrão de funcionamento (09:00 as 19:00 a cada 30 min)
-      const horariosPadrao = [
-        "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", 
-        "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", 
-        "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"
-      ];
-
-      const barber = barberSelect.value;
-
-      horariosPadrao.forEach(hora => {
-        // Verifica se este horário já existe no allBookings para a data e barbeiro selecionado
-        const estaOcupado = allBookings.some(booking => {
-          // Extrai apenas a data (YYYY-MM-DD)
-          let bookingDate = booking["Data Agendamento"];
-          if(bookingDate && bookingDate.includes('T')) bookingDate = bookingDate.split('T')[0];
-
-          // Extrai o horário (HH:mm)
-          let bookingTime = booking["Hora"] ? booking["Hora"].substring(0,5) : "";
-
-          // Verifica se bate Data, Hora e Barbeiro (e não está cancelado)
-          let dataBate = (bookingDate === selectedDateISO);
-          let horaBate = (bookingTime === hora);
-          let barbeiroBate = barber === "Qualquer profissional" ? true : (booking["Servico"] && booking["Servico"].includes(barber));
-          let ativo = (booking["Status"] !== 'Cancelado');
-
-          return dataBate && horaBate && barbeiroBate && ativo;
-        });
-
-        const btn = document.createElement('button');
-        btn.className = 'time';
-        btn.textContent = hora;
-        
-        if (estaOcupado) {
-          btn.disabled = true;
-          btn.title = "Horário já reservado";
-        } else {
-          btn.onclick = (e) => {
-            document.querySelectorAll('.time').forEach(b => b.classList.remove('selected'));
-            e.currentTarget.classList.add('selected');
-            selectedTime = hora;
-            updateSummary();
-          };
-        }
-        
-        timesContainer.appendChild(btn);
-      });
-    }
-
-    // ==========================================
-    // 6. ATUALIZAÇÃO DE RESUMO & LISTA NEGRA
-    // ==========================================
-    function updateSummary(){
-      const opt = serviceSelect.options[serviceSelect.selectedIndex];
-      summaryService.textContent = opt.value;
-      summaryBarber.textContent = barberSelect.value;
-      
-      let precoReal = parseFloat(opt.dataset.price);
-      
-      // Verifica Lista Negra enquanto digita o WhatsApp
-      const currentPhone = whatsappInput.value.replace(/\D/g, '');
-      const isRestricted = numerosRestritos.includes(currentPhone);
-      
-      if(isRestricted) {
-        document.getElementById('restriction-warning').classList.remove('hidden');
-        precoReal = precoReal / 2; // Cobra 50%
-        summaryPrice.innerHTML = `<span class="text-sm text-gray-500 line-through mr-2">R$${opt.dataset.price}</span> R$${precoReal.toFixed(2)} <span class="text-xs text-orange-500 block">(Sinal 50%)</span>`;
-      } else {
-        document.getElementById('restriction-warning').classList.add('hidden');
-        summaryPrice.textContent = 'R$' + precoReal.toFixed(2);
-      }
-
-      if(selectedDateISO && selectedTime) {
-        const parts = selectedDateISO.split('-');
-        summaryDatetime.textContent = parts[2]+'/'+parts[1]+'/'+parts[0] + ' às ' + selectedTime;
-      } else {
-        summaryDatetime.textContent = 'Selecione data e horário';
-      }
-    }
-
-    // Monitores de eventos para atualizar interface
-    serviceSelect.addEventListener('change', updateSummary);
-    barberSelect.addEventListener('change', renderTimes); // Mudar barbeiro altera horários ocupados!
-    whatsappInput.addEventListener('input', updateSummary);
-
-    // ==========================================
-    // 7. ENVIO PARA O GOOGLE SCRIPT (BOTÃO AGENDAR)
-    // ==========================================
-    document.getElementById('proceedBtn').addEventListener('click', () => {
-      const name = document.getElementById('name').value.trim();
-      const phone = whatsappInput.value.replace(/\D/g,'');
-      const res = document.getElementById('result');
-      const btn = document.getElementById('proceedBtn');
-      
-      if(!name || !phone || !selectedDateISO || !selectedTime){
-        res.textContent = 'Preencha seu nome, whatsapp e escolha um horário.';
-        res.className = 'mt-4 text-center font-bold text-orange-500';
-        return;
-      }
-
-      const isRestricted = numerosRestritos.includes(phone);
-      const opt = serviceSelect.options[serviceSelect.selectedIndex];
-      const precoOriginal = parseFloat(opt.dataset.price);
-      const precoFinal = isRestricted ? precoOriginal / 2 : precoOriginal;
-      const notas = isRestricted ? "AGUARDANDO PIX (Restrição 50% Adiantado)" : "Agendado via Site Prime Club";
-
-      btn.disabled = true;
-      btn.textContent = 'Enviando...';
-      res.textContent = '';
-
-      const payload = {
-        type: 'booking',
-        client: name,
-        phone: phone,
-        service: serviceSelect.value + ' (Com ' + barberSelect.value + ')',
-        date: selectedDateISO,
-        time: selectedTime,
-        price: precoFinal.toString(),
-        paymentMethod: "No Local",
-        notes: notas
-      };
-
-      fetch(googleScriptURL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      })
-      .then(response => response.json())
-      .then(data => {
-        btn.disabled = false;
-        btn.textContent = 'Agendar Novamente';
-
-        if(data.status === 'success') {
-          // Mensagem personalizada se estiver bloqueado
-          let msg;
-          if (isRestricted) {
-            msg = `Olá Prime Club! Gostaria de agendar:\n\n📍 Serviço: ${serviceSelect.value}\n💈 Barbeiro: ${barberSelect.value}\n📅 Data: ${selectedDateISO.split('-').reverse().join('/')} às ${selectedTime}\n\n*Meu número possui restrição no sistema, então estou enviando abaixo o comprovante do PIX de R$${precoFinal.toFixed(2)} (50% do valor) para confirmar minha vaga.*`;
-          } else {
-            msg = `Olá! Acabei de agendar pelo site:\n\n📍 Serviço: ${serviceSelect.value}\n💈 Barbeiro: ${barberSelect.value}\n📅 Data: ${selectedDateISO.split('-').reverse().join('/')} às ${selectedTime}\n👤 Cliente: ${name}`;
-          }
-          
-          const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`;
-          
-          res.innerHTML = `
-            <div class="text-green-500 mb-2">Reserva registrada na barbearia! ✅</div>
-            <div class="text-sm text-gray-400 mb-4">Finalize o processo clicando abaixo:</div>
-            <a href="${whatsappUrl}" target="_blank" class="text-[#D4AF37] underline border border-[#D4AF37] px-6 py-3 rounded-xl inline-block hover:bg-[#D4AF37] hover:text-black transition">
-              ${isRestricted ? 'Enviar Comprovante no WhatsApp <i class="fab fa-whatsapp"></i>' : 'Confirmar no WhatsApp <i class="fab fa-whatsapp"></i>'}
-            </a>
-          `;
-          res.className = 'mt-6 text-center font-bold';
-          
-          // Força recarregar os horários para bloquear o que acabou de ser agendado
-          fetchAvailability(); 
-        } else {
-          res.textContent = data.message || 'Horário não está mais disponível. Escolha outro.';
-          res.className = 'mt-4 text-center font-bold text-red-500';
-        }
-      }).catch(error => {
-        btn.disabled = false;
-        btn.textContent = 'Agendar';
-        res.textContent = 'Erro ao conectar com a barbearia. Tente novamente.';
-        res.className = 'mt-4 text-center font-bold text-red-500';
-      });
-    });
-
-    // Inicia tudo ao carregar a página
-    window.onload = init;
-  </script>
-</body>
-</html>
+    // Toast util
+    function showToast(text, isError=false){
+      const t = document.getElementById('toast');
+      t

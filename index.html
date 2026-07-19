@@ -5,16 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Prime Club Barbearia</title>
     <link rel="icon" type="image/png" href="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png">
+    
+    <!-- Tailwind & Fontes -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Ícones de Interface (Lucide) e Ícones de Marcas Oficiais (FontAwesome) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        brand: { black: '#0a0a0a', gold: '#d4af37', lightGold: '#fdf6e3', darkGold: '#b45309', bg: '#ffffff', green: '#0f9d58' }
+                        brand: { black: '#0a0a0a', gold: '#d4af37', lightGold: '#fdf6e3', darkGold: '#b45309', bg: '#ffffff', green: '#25D366' }
                     }
                 }
             }
@@ -41,7 +47,7 @@
         .date-card.selected span { color: #ffffff !important; }
         .time-btn.selected { background-color: #d4af37; color: #0a0a0a; border-color: #d4af37; font-weight: 800; transform: scale(1.02); }
 
-        .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 80px; background: rgba(10,10,10,0.95); color: #d4af37; padding: 14px 24px; border-radius: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; z-index: 200; white-space: nowrap; font-weight: 600; font-size: 13px; border: 1px solid rgba(212,175,55,0.2);}
+        .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 90px; background: rgba(10,10,10,0.95); color: #d4af37; padding: 14px 24px; border-radius: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; z-index: 200; white-space: nowrap; font-weight: 600; font-size: 13px; border: 1px solid rgba(212,175,55,0.2);}
         .toast.show { display: block; animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes popIn { 0% { transform: translate(-50%, 20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
     </style>
@@ -53,40 +59,60 @@
         
         <!-- HEADER PROFILE -->
         <header class="bg-white px-5 pt-8 pb-6 flex flex-col items-center sticky top-0 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.03)] shrink-0">
-            <div class="w-24 h-24 bg-black rounded-full flex items-center justify-center overflow-hidden mb-4 shadow-lg border-[3px] border-brand-gold relative group">
-                <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-20 h-20 object-contain group-hover:scale-110 transition duration-500">
+            <div class="w-[120px] h-[120px] bg-black rounded-full flex items-center justify-center overflow-hidden mb-4 shadow-lg border-[3px] border-brand-gold relative group">
+                <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-[100px] h-[100px] object-contain group-hover:scale-110 transition duration-500">
             </div>
             <div class="text-center w-full">
                 <p class="text-[9px] text-brand-gold font-black uppercase tracking-[0.3em] mb-1">Bem-vindo ao clube</p>
                 <h1 class="text-2xl font-black text-gray-900 tracking-tight">Prime Club</h1>
-                <p class="text-gray-500 text-[12px] font-medium leading-relaxed mt-2 bg-gray-50 py-2 px-4 rounded-2xl mx-auto inline-block">
+                <p class="text-gray-500 text-[12px] font-medium leading-relaxed mt-2 bg-gray-50 py-2 px-4 rounded-2xl mx-auto inline-block border border-gray-100">
                     ✂️ Corte na régua | 💈 Barba alinhada
                 </p>
             </div>
         </header>
 
-        <!-- LISTA DE SERVIÇOS -->
-        <main class="flex-1 overflow-y-auto pb-24 bg-white relative">
+        <!-- LISTA DE SERVIÇOS & MAPA -->
+        <main class="flex-1 overflow-y-auto pb-32 bg-white relative hide-scrollbar">
             <div class="px-6 py-4 bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Serviços Premium</h3>
             </div>
-            <div id="services-list" class="flex flex-col">
-                <!-- Injetado por JS -->
+            
+            <div id="services-list" class="flex flex-col"></div>
+
+            <div class="mt-8 px-6 pb-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 bg-brand-lightGold rounded-full flex items-center justify-center">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-brand-darkGold"></i>
+                    </div>
+                    <h3 class="text-xs font-black text-gray-800 uppercase tracking-widest">Nossa Localização</h3>
+                </div>
+                <div class="w-full h-[200px] bg-gray-100 rounded-[24px] overflow-hidden border border-gray-200 shadow-sm relative">
+                    <iframe src="https://maps.google.com/maps?q=Rua+elizeu+xavier+nunes+874,+Espírito+Santo,+Brazil&hl=pt-BR&z=15&output=embed" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+                <p class="text-xs text-gray-500 mt-4 font-medium text-center leading-relaxed">
+                    Rua Elizeu Xavier Nunes, 874<br>Espírito Santo, ES - CEP: 29285-000
+                </p>
             </div>
         </main>
 
-        <!-- FOOTER NAV -->
-        <nav class="absolute bottom-0 left-0 right-0 bg-white/90 border-t border-gray-200 flex justify-around p-3 z-40 backdrop-blur-xl pb-6 sm:pb-3">
-            <a href="https://instagram.com/prime_club_barbearia" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold transition-colors">
-                <i data-lucide="instagram" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wider">INSTAGRAM</span>
+        <!-- FOOTER NAV COM LOGOS OFICIAIS -->
+        <nav class="absolute bottom-0 left-0 right-0 bg-white/95 border-t border-gray-200 flex justify-around p-3 z-40 backdrop-blur-xl pb-6 sm:pb-4 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+            <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-[#E1306C] transition-colors group">
+                <div class="w-11 h-11 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full group-hover:bg-[#E1306C]/10 group-hover:border-[#E1306C]/20 transition-colors">
+                    <i class="fab fa-instagram text-xl group-hover:text-[#E1306C] transition-colors"></i>
+                </div>
+                <span class="text-[9px] font-black tracking-widest">INSTAGRAM</span>
             </a>
-            <!-- Link do Whats corrigido para usar a constante da Barbearia -->
-            <a id="nav-wa-link" href="#" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold transition-colors">
-                <i data-lucide="message-circle" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wider">WHATSAPP</span>
+            
+            <a id="nav-wa-link" href="#" target="_blank" class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-[#25D366] transition-colors group">
+                <div class="w-11 h-11 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full group-hover:bg-[#25D366]/10 group-hover:border-[#25D366]/20 transition-colors">
+                    <i class="fab fa-whatsapp text-xl group-hover:text-[#25D366] transition-colors"></i>
+                </div>
+                <span class="text-[9px] font-black tracking-widest">WHATSAPP</span>
             </a>
         </nav>
 
-        <!-- BOOKING MODAL (FLUXO DE AGENDAMENTO) -->
+        <!-- BOOKING MODAL -->
         <div id="booking-modal">
             
             <!-- STEP 2: ESCOLHER DADOS -->
@@ -180,7 +206,6 @@
                                 <input type="tel" id="client-phone" required placeholder="Ex: 27999999999" class="w-full px-5 py-4 bg-white border-2 border-gray-100 rounded-2xl outline-none focus:border-brand-gold transition text-[14px] font-medium placeholder:font-normal">
                             </div>
                             
-                            <!-- Aviso discreto do PIX (se restrito) -->
                             <div id="inline-pix-warning" class="hidden flex gap-3 bg-orange-50 border border-orange-100 p-4 rounded-2xl items-center mt-2">
                                 <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="alert-circle" class="w-4 h-4 text-orange-500"></i></div>
                                 <p class="text-orange-800 text-[11px] font-bold leading-tight">Este número exige pagamento de 50% de sinal para aprovação.</p>
@@ -204,11 +229,11 @@
                         <i data-lucide="check" class="w-12 h-12 stroke-[3]"></i>
                     </div>
                     <h2 id="success-title" class="text-2xl font-black mb-3 text-gray-900 tracking-tight">Tudo Certo!</h2>
-                    <p id="success-desc" class="text-gray-500 mb-8 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada com sucesso em nossa agenda.</p>
+                    <p id="success-desc" class="text-gray-500 mb-10 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada com sucesso em nossa agenda.</p>
                     
-                    <!-- Botão de Comprovante (Apenas aparecerá se for número restrito) -->
                     <a id="btn-success-wa" href="#" target="_blank" class="hidden w-full bg-brand-green hover:bg-green-700 text-white font-black py-4 rounded-2xl text-[13px] uppercase tracking-wider transition-colors items-center justify-center gap-2 mb-3 shadow-lg shadow-green-200">
-                        <i data-lucide="message-circle" class="w-5 h-5"></i> Enviar Comprovante
+                        <!-- Usando o logo real do whatsapp aqui também -->
+                        <i class="fab fa-whatsapp text-lg"></i> Enviar Comprovante
                     </a>
 
                     <button onclick="location.reload()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded-2xl text-[13px] uppercase tracking-wider transition-colors">Voltar ao Início</button>
@@ -247,9 +272,8 @@
     <script>
         lucide.createIcons();
         
-        // Configurações Globais
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
-        const BARBEARIA_WHATSAPP = "27999999999"; // <-- COLOQUE AQUI O SEU NÚMERO COM DDD (Para onde o Pix será enviado)
+        const BARBEARIA_WHATSAPP = "27999999999"; 
         
         document.getElementById('nav-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
 
@@ -347,7 +371,7 @@
                 let textColor = (iso === state.dateStr) ? "text-white" : "text-gray-900";
                 let dayColor = (iso === state.dateStr) ? "text-gray-200" : "text-gray-400";
                 
-                html += `<div onclick="selectDate('${iso}','${display}')" class="date-card ${isSelected} snap-start shrink-0 w-[70px] h-[85px] bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-sm hover:border-brand-gold">
+                html += `<div onclick="selectDate('${iso}','${display}')" id="date-${iso}" class="date-card ${isSelected} snap-start shrink-0 w-[70px] h-[85px] bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-sm hover:border-brand-gold">
                     <span class="text-[9px] font-black ${dayColor} uppercase mb-1">${days[d.getDay()]}</span>
                     <span class="text-[22px] font-black ${textColor}">${d.getDate()}</span>
                 </div>`;
@@ -371,7 +395,6 @@
             const container = document.getElementById('times-container');
             const noTimesMsg = document.getElementById('no-times-msg');
             
-            // FILTRO CORRIGIDO: Lendo b.Data com exatidão e removendo completamente o botão.
             const booked = allBookings.filter(b => {
                 let bDate = b.Data || '';
                 if(bDate.includes('T')) bDate = bDate.split('T')[0];

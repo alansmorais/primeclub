@@ -560,7 +560,7 @@
                     btnWa.classList.remove('hidden'); btnWa.classList.add('flex');
                     let msg = `Olá! Agendei pelo site:\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n👤 Nome: ${currentName}`;
                     btnWa.href = `https://wa.me/55${currentPhone}?text=${encodeURIComponent(msg)}`;
-                    btnWa.innerHTML = '<i class="fab fa-whatsapp text-xl"></i> Confirmar no WhatsApp';
+                    
                 }
 
                 document.getElementById('step-success').classList.add('active'); document.getElementById('step-3').classList.remove('active');

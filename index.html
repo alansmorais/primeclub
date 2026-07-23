@@ -267,18 +267,22 @@
             </section>
 
             <!-- TELA 3: SUCESSO -->
-            <section id="step-success" class="screen justify-center items-center text-center p-8 bg-white relative overflow-hidden">
-                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=')] opacity-50"></div>
-                <div class="relative z-10 flex flex-col items-center w-full">
-                    <div id="success-icon" class="w-20 h-20 bg-green-50 text-brand-green rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
-                        <i data-lucide="check" class="w-10 h-10 stroke-[3]"></i>
-                    </div>
-                    <h2 id="success-title" class="text-2xl font-black mb-3 text-gray-900 tracking-tight">Tudo Certo!</h2>
-                    <p id="success-desc" class="text-gray-500 mb-10 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada.</p>
-                    
-                    <button onclick="location.reload()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-[12px] uppercase tracking-wider transition">Voltar ao Início</button>
+        <section id="step-success" class="screen justify-center items-center text-center p-8 bg-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=')] opacity-50"></div>
+            <div class="relative z-10 flex flex-col items-center w-full">
+                <div id="success-icon" class="w-20 h-20 bg-green-50 text-brand-green rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
+                    <i data-lucide="check" class="w-10 h-10 stroke-[3]"></i>
                 </div>
-            </section>
+                <h2 id="success-title" class="text-2xl font-black mb-3 text-gray-900 tracking-tight">Tudo Certo!</h2>
+                <p id="success-desc" class="text-gray-500 mb-10 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada com sucesso em nossa agenda. Te esperamos lá!</p>
+                
+                <a id="btn-success-wa" href="#" target="_blank" class="hidden w-full bg-brand-green text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-wider transition hover:bg-green-700 items-center justify-center gap-2 mb-3 shadow-lg shadow-green-200">
+                    <i class="fab fa-whatsapp text-lg"></i> Enviar Comprovante
+                </a>
+
+                <button onclick="location.reload()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-[12px] uppercase tracking-wider transition">Voltar ao Início</button>
+            </div>
+        </section>
 
         </div>
     </div>
@@ -553,14 +557,11 @@
                 } else {
                     document.getElementById('success-title').textContent = "Tudo Certo!";
                     document.getElementById('success-desc').textContent = "Sua reserva foi confirmada com sucesso em nossa agenda. Te esperamos lá!";
-                    btnWa.classList.remove('hidden'); btnWa.classList.add('flex');
-                    let msg = `Olá! Agendei pelo site:\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n👤 Nome: ${currentName}`;
-                    btnWa.href = `https://wa.me/55${currentPhone}?text=${encodeURIComponent(msg)}`;
-                    
+                    btnWa.classList.remove('flex'); btnWa.classList.add('hidden');
                 }
 
                 document.getElementById('step-success').classList.add('active'); document.getElementById('step-3').classList.remove('active');
-            } catch(err) { showToast('Erro na conexão.'); btn.disabled = false; btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> Concluir Reserva'; lucide.createIcons(); }
+            } catch(err) { showToast('Erro na conexão.'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i> Concluir Reserva'; }
         }
     </script>
 </body>

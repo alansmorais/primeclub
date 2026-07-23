@@ -35,7 +35,7 @@
         .admin-input:focus { border-color: #D4AF37; }
 
         /* Tabela Customizada */
-        table { w-full; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; }
         th { background: #0a0a0a; color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 16px; text-align: left; font-weight: 700; border-bottom: 1px solid #1f1f1f; white-space: nowrap; }
         td { padding: 16px; border-bottom: 1px solid #1f1f1f; font-size: 13px; color: #d1d5db; white-space: nowrap; }
         tr:hover td { background: #161616; }
@@ -45,15 +45,17 @@
         .btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
         .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: bold; uppercase tracking-widest transition: 0.2s; cursor: pointer; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; cursor: pointer; }
         .btn-danger:hover { background: #ef4444; color: white; }
 
-        /* Toast de Sucesso/Erro */
+        /* Toast & Loader */
         .toast { position: fixed; right: 20px; top: 20px; background: #D4AF37; color: #000; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 999; display: none; font-weight: 700; font-size: 14px; animation: slideInRight 0.3s ease-out; }
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        /* Loading Overlay */
         #global-loader { position: fixed; inset: 0; background: rgba(5,5,5,0.9); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        /* Tabs Menu */
+        .tab-btn { white-space: nowrap; padding: 14px 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid transparent; transition: 0.3s; }
+        .tab-btn:hover { color: #D4AF37; }
     </style>
 </head>
 <body class="bg-[#050505]">
@@ -80,247 +82,432 @@
         </div>
     </nav>
 
-    <main class="max-w-7xl mx-auto px-5 py-10 space-y-10">
+    <!-- TABS MENU -->
+    <div class="bg-[#0a0a0a] border-b border-[#1f1f1f] sticky top-[73px] z-30 overflow-x-auto hide-scrollbar">
+        <div class="flex max-w-7xl mx-auto px-5 gap-2">
+            <button id="tab-dashboard" class="tab-btn text-[#D4AF37] border-[#D4AF37]" onclick="switchTab('dashboard')"><i class="fas fa-calendar-check mr-1"></i> Agenda & Bloqueios</button>
+            <button id="tab-financeiro" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('financeiro')"><i class="fas fa-chart-line mr-1"></i> Financeiro</button>
+            <button id="tab-clientes" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('clientes')"><i class="fas fa-users mr-1"></i> Lista de Clientes</button>
+            <button id="tab-cursos" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('cursos')"><i class="fas fa-graduation-cap mr-1"></i> Cursos</button>
+            <button id="tab-unidades" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('unidades')"><i class="fas fa-store mr-1"></i> Unidades</button>
+            <button id="tab-funcionarios" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('funcionarios')"><i class="fas fa-id-badge mr-1"></i> Funcionários</button>
+            <button id="tab-promocoes" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('promocoes')"><i class="fas fa-tags mr-1"></i> Promoções</button>
+        </div>
+    </div>
 
-        <!-- SESSÃO 1: RESUMO -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div class="glass-card flex items-center gap-5 border-l-4 border-l-[#D4AF37]">
-                <div class="w-14 h-14 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full flex items-center justify-center text-2xl"><i class="fas fa-calendar-check"></i></div>
-                <div>
-                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Total de Reservas</p>
-                    <h3 class="text-3xl font-black text-white" id="stat-bookings">0</h3>
-                </div>
-            </div>
-            <div class="glass-card flex items-center gap-5 border-l-4 border-l-red-500">
-                <div class="w-14 h-14 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-phone-slash"></i></div>
-                <div>
-                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Números Restritos</p>
-                    <h3 class="text-3xl font-black text-white" id="stat-numbers">0</h3>
-                </div>
-            </div>
-            <div class="glass-card flex items-center gap-5 border-l-4 border-l-blue-500">
-                <div class="w-14 h-14 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-calendar-times"></i></div>
-                <div>
-                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Datas Bloqueadas</p>
-                    <h3 class="text-3xl font-black text-white" id="stat-dates">0</h3>
-                </div>
-            </div>
-        </section>
+    <main class="max-w-7xl mx-auto px-5 py-8">
 
-        <!-- SESSÃO 2: AGENDA DE RESERVAS -->
-        <section class="glass-card overflow-hidden !p-0">
-            <div class="p-6 border-b border-[#1f1f1f] flex justify-between items-center bg-[#0a0a0a]">
-                <h2 class="text-lg font-bold text-white"><i class="fas fa-list text-[#D4AF37] mr-2"></i> Agendamentos Recentes</h2>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr>
-                            <th>Data/Hora</th>
-                            <th>Cliente</th>
-                            <th>WhatsApp</th>
-                            <th>Serviço</th>
-                            <th>Pagamento</th>
-                            <th>Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bookings-table-body">
-                        <!-- Preenchido pelo JS -->
-                    </tbody>
-                </table>
-                <div id="no-bookings" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">
-                    Nenhum agendamento encontrado.
-                </div>
-            </div>
-        </section>
-
-        <!-- SESSÃO 3: BLOQUEIOS (NÚMEROS E DATAS) -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-            
-            <!-- CONTROLE DE CALOTEIROS (PIX 50%) -->
-            <div class="glass-card flex flex-col h-full">
-                <h2 class="text-lg font-bold text-white mb-2"><i class="fas fa-user-lock text-red-500 mr-2"></i> Números Restritos (Sinal 50%)</h2>
-                <p class="text-xs text-gray-400 mb-6 leading-relaxed">Números nesta lista serão obrigados a pagar 50% via Pix para concluir a reserva no site.</p>
-                
-                <form id="form-block-number" class="flex gap-3 mb-6">
-                    <input type="tel" id="input-block-number" class="admin-input flex-1" placeholder="DDD + Número (Ex: 27999999999)" required>
-                    <button type="submit" class="btn-gold"><i class="fas fa-plus"></i> Bloquear</button>
-                </form>
-
-                <div class="flex-1 bg-[#0a0a0a] rounded-xl border border-[#1f1f1f] p-4 overflow-y-auto max-h-[300px]">
-                    <ul id="list-blocked-numbers" class="space-y-2">
-                        <!-- Preenchido pelo JS -->
-                    </ul>
-                    <div id="no-numbers" class="hidden text-center py-5 text-gray-600 text-xs font-bold uppercase tracking-widest">Lista vazia.</div>
-                </div>
-            </div>
-
-            <!-- CONTROLE DE FOLGAS (DATAS FECHADAS) -->
-            <div class="glass-card flex flex-col h-full">
-                <h2 class="text-lg font-bold text-white mb-2"><i class="fas fa-calendar-minus text-blue-500 mr-2"></i> Bloquear Período/Datas</h2>
-                <p class="text-xs text-gray-400 mb-6 leading-relaxed">Selecione um intervalo de datas para fechar a agenda. Clientes não poderão agendar nestes dias.</p>
-                
-                <form id="form-block-date" class="flex flex-col gap-3 mb-6">
-                    <div class="flex gap-3">
-                        <div class="flex-1">
-                            <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Início</label>
-                            <input type="date" id="input-block-start" class="admin-input" required>
-                        </div>
-                        <div class="flex-1">
-                            <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Fim (Opcional)</label>
-                            <input type="date" id="input-block-end" class="admin-input">
-                        </div>
+        <!-- ================= SEÇÃO 1: DASHBOARD (AGENDA E BLOQUEIOS) ================= -->
+        <div id="sec-dashboard" class="tab-content space-y-10">
+            <!-- RESUMO -->
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="glass-card flex items-center gap-5 border-l-4 border-l-[#D4AF37]">
+                    <div class="w-14 h-14 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full flex items-center justify-center text-2xl"><i class="fas fa-calendar-check"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Total de Reservas</p>
+                        <h3 class="text-3xl font-black text-white" id="stat-bookings">0</h3>
                     </div>
-                    <button type="submit" class="btn-gold w-full mt-2"><i class="fas fa-lock"></i> Fechar Agenda no Período</button>
-                </form>
+                </div>
+                <div class="glass-card flex items-center gap-5 border-l-4 border-l-red-500">
+                    <div class="w-14 h-14 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-phone-slash"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Números Restritos</p>
+                        <h3 class="text-3xl font-black text-white" id="stat-numbers">0</h3>
+                    </div>
+                </div>
+                <div class="glass-card flex items-center gap-5 border-l-4 border-l-blue-500">
+                    <div class="w-14 h-14 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-calendar-times"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Datas Bloqueadas</p>
+                        <h3 class="text-3xl font-black text-white" id="stat-dates">0</h3>
+                    </div>
+                </div>
+            </section>
 
-                <div class="flex-1 bg-[#0a0a0a] rounded-xl border border-[#1f1f1f] p-4 overflow-y-auto max-h-[300px]">
-                    <ul id="list-blocked-dates" class="space-y-2">
-                        <!-- Preenchido pelo JS -->
-                    </ul>
-                    <div id="no-dates" class="hidden text-center py-5 text-gray-600 text-xs font-bold uppercase tracking-widest">Nenhuma data bloqueada.</div>
+            <!-- AGENDA DE RESERVAS -->
+            <section class="glass-card overflow-hidden !p-0">
+                <div class="p-6 border-b border-[#1f1f1f] flex justify-between items-center bg-[#0a0a0a]">
+                    <h2 class="text-lg font-bold text-white"><i class="fas fa-list text-[#D4AF37] mr-2"></i> Agendamentos Recentes</h2>
+                    <button onclick="openAdminBooking()" class="btn-gold !py-2 !px-4 !text-[10px]"><i class="fas fa-plus"></i> Nova Reserva</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Cliente</th>
+                                <th>WhatsApp</th>
+                                <th>Serviço</th>
+                                <th>Pagamento</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookings-table-body">
+                            <!-- Preenchido pelo JS -->
+                        </tbody>
+                    </table>
+                    <div id="no-bookings" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">
+                        Nenhum agendamento encontrado.
+                    </div>
+                </div>
+            </section>
+
+            <!-- BLOQUEIOS -->
+            <section class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div class="glass-card flex flex-col h-full">
+                    <h2 class="text-lg font-bold text-white mb-2"><i class="fas fa-user-lock text-red-500 mr-2"></i> Números Restritos (Sinal 50%)</h2>
+                    <p class="text-xs text-gray-400 mb-6 leading-relaxed">Números nesta lista serão obrigados a pagar 50% via Pix para concluir a reserva.</p>
+                    
+                    <form id="form-block-number" class="flex gap-3 mb-6">
+                        <input type="tel" id="input-block-number" class="admin-input flex-1" placeholder="DDD + Número" required>
+                        <button type="submit" class="btn-gold"><i class="fas fa-plus"></i> Bloquear</button>
+                    </form>
+
+                    <div class="flex-1 bg-[#0a0a0a] rounded-xl border border-[#1f1f1f] p-4 overflow-y-auto max-h-[300px]">
+                        <ul id="list-blocked-numbers" class="space-y-2"></ul>
+                        <div id="no-numbers" class="hidden text-center py-5 text-gray-600 text-xs font-bold uppercase tracking-widest">Lista vazia.</div>
+                    </div>
+                </div>
+
+                <div class="glass-card flex flex-col h-full">
+                    <h2 class="text-lg font-bold text-white mb-2"><i class="fas fa-calendar-minus text-blue-500 mr-2"></i> Bloquear Período/Datas</h2>
+                    <p class="text-xs text-gray-400 mb-6 leading-relaxed">Selecione um intervalo de datas para fechar a agenda (Feriados/Folgas).</p>
+                    
+                    <form id="form-block-date" class="flex flex-col gap-3 mb-6">
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Início</label>
+                                <input type="date" id="input-block-start" class="admin-input" required>
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Fim (Opcional)</label>
+                                <input type="date" id="input-block-end" class="admin-input">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-gold w-full mt-2"><i class="fas fa-lock"></i> Fechar Agenda no Período</button>
+                    </form>
+
+                    <div class="flex-1 bg-[#0a0a0a] rounded-xl border border-[#1f1f1f] p-4 overflow-y-auto max-h-[300px]">
+                        <ul id="list-blocked-dates" class="space-y-2"></ul>
+                        <div id="no-dates" class="hidden text-center py-5 text-gray-600 text-xs font-bold uppercase tracking-widest">Nenhuma data bloqueada.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ================= SEÇÃO 2: FINANCEIRO ================= -->
+        <div id="sec-financeiro" class="tab-content hidden space-y-6">
+            <div class="glass-card overflow-hidden !p-0">
+                <div class="p-6 border-b border-[#1f1f1f] bg-[#0a0a0a]">
+                    <h2 class="text-lg font-bold text-white"><i class="fas fa-chart-line text-[#D4AF37] mr-2"></i> Relatório Financeiro</h2>
+                    <p class="text-xs text-gray-500 mt-1">Lançamentos registrados na aba "Financeiro" da planilha.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Categoria</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="financeiro-table-body">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                    <div id="no-financeiro" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">Nenhum registro financeiro.</div>
                 </div>
             </div>
+        </div>
 
-        </section>
+        <!-- ================= SEÇÃO 3: CLIENTES ================= -->
+        <div id="sec-clientes" class="tab-content hidden space-y-6">
+            <div class="glass-card overflow-hidden !p-0">
+                <div class="p-6 border-b border-[#1f1f1f] bg-[#0a0a0a]">
+                    <h2 class="text-lg font-bold text-white"><i class="fas fa-users text-[#D4AF37] mr-2"></i> Base de Clientes</h2>
+                    <p class="text-xs text-gray-500 mt-1">Lista gerada automaticamente com base nos agendamentos (números únicos).</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Nome Registrado</th>
+                                <th>WhatsApp</th>
+                                <th>Último Serviço</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientes-table-body">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                    <div id="no-clientes" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">Nenhum cliente registrado.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SEÇÃO 4: CURSOS ================= -->
+        <div id="sec-cursos" class="tab-content hidden space-y-6">
+            <div class="glass-card overflow-hidden !p-0">
+                <div class="p-6 border-b border-[#1f1f1f] bg-[#0a0a0a]">
+                    <h2 class="text-lg font-bold text-white"><i class="fas fa-graduation-cap text-[#D4AF37] mr-2"></i> Inscrições em Cursos</h2>
+                    <p class="text-xs text-gray-500 mt-1">Lista de alunos e inscrições registrados na aba "Cursos".</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Data Registro</th>
+                                <th>Nome do Aluno</th>
+                                <th>WhatsApp</th>
+                                <th>Nível/Detalhes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cursos-table-body">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                    <div id="no-cursos" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">Nenhuma inscrição encontrada.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SEÇÕES EM BREVE (FUNCIONÁRIOS E PROMOÇÕES) ================= -->
+        <div id="sec-funcionarios" class="tab-content hidden h-[400px]">
+            <div class="glass-card h-full flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 bg-neutral-900 text-gray-600 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-tools"></i></div>
+                <h2 class="text-2xl font-bold text-white mb-2">Gestão de Funcionários</h2>
+                <p class="text-gray-500 max-w-sm">Este módulo está em desenvolvimento e será disponibilizado em atualizações futuras.</p>
+            </div>
+        </div>
+        <div id="sec-promocoes" class="tab-content hidden h-[400px]">
+            <div class="glass-card h-full flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 bg-neutral-900 text-[#D4AF37]/50 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-bullhorn"></i></div>
+                <h2 class="text-2xl font-bold text-white mb-2">Central de Promoções</h2>
+                <p class="text-gray-500 max-w-sm">Em breve você poderá criar cupons de desconto e pacotes promocionais por aqui.</p>
+            </div>
+        </div>
+        <div id="sec-unidades" class="tab-content hidden h-[400px]">
+            <div class="glass-card h-full flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 bg-neutral-900 text-[#D4AF37]/50 rounded-full flex items-center justify-center text-4xl mb-4"><i class="fas fa-store"></i></div>
+                <h2 class="text-2xl font-bold text-white mb-2">Gestão de Unidades</h2>
+                <p class="text-gray-500 max-w-sm">Módulo em desenvolvimento. Aqui você poderá gerenciar múltiplas barbearias, filiais, horários de funcionamento e muito mais.</p>
+            </div>
+        </div>
+
     </main>
 
-    <div id="toast" class="toast">Ação concluída com sucesso!</div>
+    <!-- MODAL NOVA RESERVA (ADMIN) -->
+    <div id="admin-booking-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-5 backdrop-blur-sm">
+        <div class="bg-[#111] border border-[#1f1f1f] rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4 border-b border-[#1f1f1f] pb-3">
+                <h3 class="text-lg font-black text-[#D4AF37]"><i class="fas fa-calendar-plus mr-2"></i> Nova Reserva Admin</h3>
+                <button onclick="closeAdminBooking()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="admin-booking-form" class="space-y-4">
+                <input type="text" id="ab-client" placeholder="Nome do Cliente" required class="admin-input">
+                <input type="tel" id="ab-phone" placeholder="WhatsApp (apenas números)" required class="admin-input">
+                <input type="text" id="ab-service" placeholder="Serviço (ex: Corte com Christiano)" required class="admin-input">
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Data</label>
+                        <input type="date" id="ab-date" required class="admin-input">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Hora</label>
+                        <input type="time" id="ab-time" required class="admin-input">
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <input type="number" id="ab-price" placeholder="Valor (R$)" class="admin-input flex-1" step="0.01">
+                    <select id="ab-payment" class="admin-input flex-1">
+                        <option value="Balcão">Balcão</option>
+                        <option value="PIX">PIX</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-gold w-full mt-2"><i class="fas fa-check"></i> Agendar e Salvar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
 
     <script>
         // ================= CONFIGURAÇÃO =================
-        // O MESMO URL DO SEU SITE PRINCIPAL
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
         
-        let state = { bookings: [], blockedDates: [], blockedNumbers: [] };
+        let state = { bookings: [], blockedDates: [], blockedNumbers: [], financeiro: [], cursos: [] };
 
-        // Mostrar Toast Message
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.style.background = isError ? '#ef4444' : '#D4AF37';
-            t.style.color = isError ? '#fff' : '#000';
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            t.textContent = msg; t.style.background = isError ? '#ef4444' : '#D4AF37'; t.style.color = isError ? '#fff' : '#000';
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        // Mostrar/Ocultar Loader
-        function setLoader(active) {
-            document.getElementById('global-loader').style.display = active ? 'flex' : 'none';
+        function setLoader(active) { document.getElementById('global-loader').style.display = active ? 'flex' : 'none'; }
+
+        // Troca de Abas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('text-[#D4AF37]', 'border-[#D4AF37]');
+                el.classList.add('text-gray-500', 'border-transparent');
+            });
+            document.getElementById('sec-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.remove('text-gray-500', 'border-transparent');
+            document.getElementById('tab-' + tabId).classList.add('text-[#D4AF37]', 'border-[#D4AF37]');
         }
 
-        // ================= FETCH INICIAL =================
-        async function fetchData() {
-            setLoader(true);
+        // ================= FETCH DE DADOS =================
+        async function fetchData(silent = false) {
+            if(!silent) setLoader(true);
             try {
                 const response = await fetch(WEB_APP_URL + '?action=get_all');
                 const data = await response.json();
                 
-                // Salvar na memória
                 state.bookings = data.bookings || [];
                 state.blockedDates = data.blockedDates || [];
                 state.blockedNumbers = data.blockedNumbers || [];
+                state.financeiro = data.financeiro || [];
+                state.cursos = data.cursos || [];
 
-                // Atualizar Interface
                 updateDashboard();
             } catch (err) {
-                console.error(err);
-                showToast('Erro ao sincronizar com a planilha.', true);
+                console.error(err); if(!silent) showToast('Erro ao sincronizar dados.', true);
             } finally {
-                setLoader(false);
+                if(!silent) setLoader(false);
             }
         }
 
-        // ================= RENDERIZAR INTERFACE =================
+        // ================= RENDERIZAR INTERFACES =================
         function updateDashboard() {
-            // Atualizar contadores
-            document.getElementById('stat-bookings').textContent = state.bookings.length;
-            document.getElementById('stat-numbers').textContent = state.blockedNumbers.length;
-            document.getElementById('stat-dates').textContent = state.blockedDates.length;
+            renderAgenda();
+            renderBloqueios();
+            renderFinanceiro();
+            renderCursos();
+            renderClientes();
+        }
 
-            // Renderizar Agendamentos (Do mais recente para o mais antigo)
-            const tbody = document.getElementById('bookings-table-body');
-            tbody.innerHTML = '';
-            
-            // Reverter a array para mostrar os últimos agendamentos criados no topo
+        function renderAgenda() {
+            document.getElementById('stat-bookings').textContent = state.bookings.length;
+            const tbody = document.getElementById('bookings-table-body'); tbody.innerHTML = '';
             const reversedBookings = [...state.bookings].reverse();
             
-            if(reversedBookings.length === 0) {
-                document.getElementById('no-bookings').classList.remove('hidden');
-            } else {
+            if(reversedBookings.length === 0) document.getElementById('no-bookings').classList.remove('hidden');
+            else {
                 document.getElementById('no-bookings').classList.add('hidden');
                 reversedBookings.forEach(b => {
-                    const tr = document.createElement('tr');
-                    
-                    // Formata a data (se existir)
-                    let formattedDate = b.Data || '';
-                    if(formattedDate.includes('-')) {
-                        formattedDate = formattedDate.split('-').reverse().join('/');
-                    }
-
-                    // Define Badge de Pagamento
+                    let formattedDate = b.Data || ''; if(formattedDate.includes('-')) formattedDate = formattedDate.split('-').reverse().join('/');
                     let paymentBadge = `<span class="bg-gray-800 text-gray-300 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${b.TipoPagamento || 'Balcão'}</span>`;
-                    if(b.TipoPagamento === 'PIX' || (b.Observacoes && b.Observacoes.includes('PIX'))) {
-                        paymentBadge = `<span class="bg-orange-500/20 text-orange-500 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-orange-500/30">Sinal 50%</span>`;
-                    }
+                    if(b.TipoPagamento === 'PIX' || (b.Observacoes && b.Observacoes.includes('PIX'))) paymentBadge = `<span class="bg-orange-500/20 text-orange-500 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-orange-500/30">Sinal 50%</span>`;
 
+                    let wppConfirmText = encodeURIComponent(`Olá ${b.Cliente}!\nSua reserva na *Prime Club Barbearia* está confirmada:\n\n📍 Serviço: ${b.Servico}\n📅 Data: ${formattedDate} às ${b.Hora}\n\nTe esperamos!`);
+                    let wppChargeText = encodeURIComponent(`Olá ${b.Cliente}!\nSua reserva de *${b.Servico}* para ${formattedDate} às ${b.Hora} está pendente.\n\nPara confirmar, realize o pagamento do sinal de 50% via PIX.\n\n🔑 Chave PIX: 12345678910`);
+
+                    const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td>
-                            <strong class="text-white block">${formattedDate}</strong>
-                            <span class="text-[#D4AF37] font-bold text-xs">${b.Hora || '--:--'}</span>
-                        </td>
+                        <td><strong class="text-white block">${formattedDate}</strong><span class="text-[#D4AF37] font-bold text-xs">${b.Hora || '--:--'}</span></td>
                         <td class="font-bold text-white">${b.Cliente}</td>
-                        <td>
-                            <a href="https://wa.me/55${b.Telefone}" target="_blank" class="text-[#25D366] hover:underline font-medium">
-                                <i class="fab fa-whatsapp"></i> ${b.Telefone}
-                            </a>
-                        </td>
-                        <td class="text-xs w-[250px] whitespace-normal leading-relaxed">${b.Servico}</td>
+                        <td><a href="https://wa.me/55${b.Telefone}" target="_blank" class="text-[#25D366] hover:underline font-medium"><i class="fab fa-whatsapp"></i> ${b.Telefone}</a></td>
+                        <td class="text-xs whitespace-normal">${b.Servico}</td>
                         <td>${paymentBadge}</td>
                         <td>
-                            <button onclick="deleteBooking('${b.ID}')" class="btn-danger" title="Cancelar Agendamento">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <div class="flex gap-2 items-center">
+                                <a href="https://wa.me/55${b.Telefone}?text=${wppConfirmText}" target="_blank" class="bg-green-600/20 text-green-500 hover:bg-green-600 hover:text-white border border-green-600/30 p-2 rounded-lg transition" title="Enviar Confirmação"><i class="fas fa-check-double"></i></a>
+                                <a href="https://wa.me/55${b.Telefone}?text=${wppChargeText}" target="_blank" class="bg-orange-500/20 text-orange-500 hover:bg-orange-500 hover:text-white border border-orange-500/30 p-2 rounded-lg transition" title="Cobrar Sinal"><i class="fas fa-file-invoice-dollar"></i></a>
+                                <button onclick="deleteBooking('${b.ID}')" class="btn-danger !p-2" title="Cancelar Agendamento"><i class="fas fa-trash"></i></button>
+                            </div>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
+        }
 
-            // Renderizar Números Bloqueados
-            const ulNum = document.getElementById('list-blocked-numbers');
-            ulNum.innerHTML = '';
+        function renderBloqueios() {
+            document.getElementById('stat-numbers').textContent = state.blockedNumbers.length;
+            document.getElementById('stat-dates').textContent = state.blockedDates.length;
+
+            const ulNum = document.getElementById('list-blocked-numbers'); ulNum.innerHTML = '';
             if(state.blockedNumbers.length === 0) document.getElementById('no-numbers').classList.remove('hidden');
             else {
                 document.getElementById('no-numbers').classList.add('hidden');
                 state.blockedNumbers.forEach(num => {
-                    const li = document.createElement('li');
-                    li.className = 'flex justify-between items-center bg-[#111] p-3 rounded-lg border border-[#1f1f1f]';
-                    li.innerHTML = `
-                        <span class="font-mono text-gray-300 tracking-wider text-sm"><i class="fas fa-phone-alt text-gray-600 mr-2"></i> ${num}</span>
-                        <button onclick="removeBlockedNumber('${num}')" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-times"></i></button>
-                    `;
-                    ulNum.appendChild(li);
+                    ulNum.innerHTML += `<li class="flex justify-between items-center bg-[#111] p-3 rounded-lg border border-[#1f1f1f]"><span class="font-mono text-gray-300 text-sm"><i class="fas fa-phone-alt text-gray-600 mr-2"></i> ${num}</span><button onclick="removeBlockedNumber('${num}')" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-times"></i></button></li>`;
                 });
             }
 
-            // Renderizar Datas Bloqueadas
-            const ulDates = document.getElementById('list-blocked-dates');
-            ulDates.innerHTML = '';
+            const ulDates = document.getElementById('list-blocked-dates'); ulDates.innerHTML = '';
             if(state.blockedDates.length === 0) document.getElementById('no-dates').classList.remove('hidden');
             else {
                 document.getElementById('no-dates').classList.add('hidden');
-                // Ordernar datas da mais antiga para mais nova
-                const sortedDates = [...state.blockedDates].sort();
-                sortedDates.forEach(date => {
+                [...state.blockedDates].sort().forEach(date => {
                     const displayDate = date.split('-').reverse().join('/');
-                    const li = document.createElement('li');
-                    li.className = 'flex justify-between items-center bg-[#111] p-3 rounded-lg border border-[#1f1f1f]';
-                    li.innerHTML = `
-                        <span class="font-bold text-gray-300 tracking-widest text-sm"><i class="far fa-calendar-times text-gray-600 mr-2"></i> ${displayDate}</span>
-                        <button onclick="removeBlockedDate('${date}')" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-times"></i></button>
-                    `;
-                    ulDates.appendChild(li);
+                    ulDates.innerHTML += `<li class="flex justify-between items-center bg-[#111] p-3 rounded-lg border border-[#1f1f1f]"><span class="font-bold text-gray-300 text-sm"><i class="far fa-calendar-times text-gray-600 mr-2"></i> ${displayDate}</span><button onclick="removeBlockedDate('${date}')" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-times"></i></button></li>`;
+                });
+            }
+        }
+
+        function renderFinanceiro() {
+            const tbody = document.getElementById('financeiro-table-body'); tbody.innerHTML = '';
+            if(!state.financeiro || state.financeiro.length === 0) document.getElementById('no-financeiro').classList.remove('hidden');
+            else {
+                document.getElementById('no-financeiro').classList.add('hidden');
+                [...state.financeiro].reverse().forEach(f => {
+                    // Colunas esperadas: Data Transacao, Categoria, Valor, Descricao
+                    let val = parseFloat(f['Valor'] || 0).toFixed(2);
+                    let isIncome = parseFloat(val) >= 0;
+                    tbody.innerHTML += `<tr>
+                        <td class="font-bold text-white">${f['Data Transacao'] || '--'}</td>
+                        <td><span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-[10px] uppercase tracking-widest">${f['Categoria'] || 'Geral'}</span></td>
+                        <td class="text-xs">${f['Descricao'] || '--'}</td>
+                        <td class="font-black ${isIncome ? 'text-green-500' : 'text-red-500'}">R$ ${val}</td>
+                    </tr>`;
+                });
+            }
+        }
+
+        function renderCursos() {
+            const tbody = document.getElementById('cursos-table-body'); tbody.innerHTML = '';
+            if(!state.cursos || state.cursos.length === 0) document.getElementById('no-cursos').classList.remove('hidden');
+            else {
+                document.getElementById('no-cursos').classList.add('hidden');
+                [...state.cursos].reverse().forEach(c => {
+                    // Colunas: Data Registro, Nome, Telefone, Nivel
+                    tbody.innerHTML += `<tr>
+                        <td class="text-gray-400 text-xs">${c['Data Registro'] || '--'}</td>
+                        <td class="font-bold text-white">${c['Nome'] || '--'}</td>
+                        <td><a href="https://wa.me/55${c['Telefone']}" target="_blank" class="text-[#25D366] hover:underline"><i class="fab fa-whatsapp"></i> ${c['Telefone']}</a></td>
+                        <td><span class="bg-[#D4AF37]/10 text-[#D4AF37] px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${c['Nivel'] || 'Iniciante'}</span></td>
+                    </tr>`;
+                });
+            }
+        }
+
+        function renderClientes() {
+            const tbody = document.getElementById('clientes-table-body'); tbody.innerHTML = '';
+            // Extrai lista única de clientes baseada no número de telefone
+            const mapClientes = {};
+            state.bookings.forEach(b => {
+                if(b.Telefone && b.Telefone.length > 5) {
+                    if(!mapClientes[b.Telefone] || new Date(b.Data) > new Date(mapClientes[b.Telefone].Data)) {
+                        mapClientes[b.Telefone] = b; // Salva o agendamento mais recente deste número
+                    }
+                }
+            });
+            const uniqueClients = Object.values(mapClientes).sort((a, b) => a.Cliente.localeCompare(b.Cliente));
+
+            if(uniqueClients.length === 0) document.getElementById('no-clientes').classList.remove('hidden');
+            else {
+                document.getElementById('no-clientes').classList.add('hidden');
+                uniqueClients.forEach(c => {
+                    tbody.innerHTML += `<tr>
+                        <td class="font-bold text-white"><i class="fas fa-user-circle text-gray-600 mr-2 text-lg align-middle"></i> ${c.Cliente}</td>
+                        <td class="font-mono text-gray-400">${c.Telefone}</td>
+                        <td class="text-xs text-gray-500">${c.Servico}</td>
+                        <td><a href="https://wa.me/55${c.Telefone}" target="_blank" class="bg-neutral-800 hover:bg-[#25D366] hover:text-white text-gray-400 px-3 py-1.5 rounded transition text-xs font-bold uppercase tracking-widest"><i class="fab fa-whatsapp"></i> Conversar</a></td>
+                    </tr>`;
                 });
             }
         }
@@ -329,81 +516,52 @@
         async function apiPost(payload, successMsg) {
             setLoader(true);
             try {
-                // Envia dados como text/plain para evitar erro de CORS
-                await fetch(WEB_APP_URL, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload) 
-                });
-                showToast(successMsg);
-                await fetchData(); // Atualiza a tela puxando tudo denovo
-            } catch (err) {
-                console.error(err);
-                showToast('Erro ao processar a ação.', true);
-                setLoader(false);
-            }
+                await fetch(WEB_APP_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, mode: 'no-cors', body: JSON.stringify(payload) });
+                showToast(successMsg); await fetchData(); 
+            } catch (err) { showToast('Erro ao processar a ação.', true); setLoader(false); }
         }
 
-        // 1. Excluir Agendamento
-        function deleteBooking(id) {
-            if(confirm('Tem certeza que deseja apagar este agendamento da planilha?')) {
-                apiPost({ action: 'delete_booking', id: id }, 'Agendamento deletado!');
-            }
-        }
+        function deleteBooking(id) { if(confirm('Apagar agendamento definitivamente?')) apiPost({ action: 'delete_booking', id: id }, 'Agendamento deletado!'); }
 
-        // 2. Adicionar Número Restrito
         document.getElementById('form-block-number').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = document.getElementById('input-block-number');
-            const phone = input.value.replace(/\D/g, ''); // limpa pra deixar só números
-            if(phone.length < 10) { showToast('Digite um número de telefone válido.', true); return; }
-            apiPost({ action: 'add_blocked_number', phone: phone }, 'Número restrito adicionado!');
-            input.value = '';
+            e.preventDefault(); const input = document.getElementById('input-block-number');
+            const phone = input.value.replace(/\D/g, ''); 
+            if(phone.length < 10) return showToast('Telefone inválido.', true);
+            apiPost({ action: 'add_blocked_number', phone: phone }, 'Número restrito adicionado!'); input.value = '';
         });
 
-        // 3. Remover Número Restrito
-        function removeBlockedNumber(phone) {
-            if(confirm('Remover restrição deste número?')) {
-                apiPost({ action: 'remove_blocked_number', phone: phone }, 'Restrição removida!');
-            }
-        }
+        function removeBlockedNumber(phone) { if(confirm('Remover restrição deste número?')) apiPost({ action: 'remove_blocked_number', phone: phone }, 'Restrição removida!'); }
 
-        // 4. Adicionar Data Bloqueada
         document.getElementById('form-block-date').addEventListener('submit', (e) => {
             e.preventDefault();
-            const startInput = document.getElementById('input-block-start');
-            const endInput = document.getElementById('input-block-end');
-            
-            const startDate = startInput.value;
-            let endDate = endInput.value;
-            
-            if(!startDate) return;
-            
-            // Se não preencheu data final, bloqueia apenas 1 dia
-            if(!endDate) endDate = startDate;
-
-            // Validação simples
-            if(new Date(startDate) > new Date(endDate)) {
-                showToast('A data inicial não pode ser depois da data final.', true);
-                return;
-            }
-
-            apiPost({ action: 'block_range', startDate: startDate, endDate: endDate }, 'Período bloqueado com sucesso!');
-            
-            // Limpa os campos
-            startInput.value = '';
-            endInput.value = '';
+            const startDate = document.getElementById('input-block-start').value;
+            let endDate = document.getElementById('input-block-end').value;
+            if(!startDate) return; if(!endDate) endDate = startDate;
+            if(new Date(startDate) > new Date(endDate)) return showToast('Data inicial maior que final.', true);
+            apiPost({ action: 'block_range', startDate: startDate, endDate: endDate }, 'Período bloqueado!');
+            document.getElementById('input-block-start').value = ''; document.getElementById('input-block-end').value = '';
         });
 
-        // 5. Remover Data Bloqueada
-        function removeBlockedDate(date) {
-            if(confirm('Reabrir a agenda neste dia?')) {
-                apiPost({ action: 'unblock_date', date: date }, 'Agenda reaberta na data!');
-            }
-        }
+        function removeBlockedDate(date) { if(confirm('Reabrir a agenda neste dia?')) apiPost({ action: 'unblock_date', date: date }, 'Agenda reaberta na data!'); }
 
-        // ================= INICIALIZAÇÃO =================
-        window.onload = fetchData;
+        function openAdminBooking() { document.getElementById('admin-booking-modal').classList.remove('hidden'); }
+        function closeAdminBooking() { document.getElementById('admin-booking-modal').classList.add('hidden'); }
+        
+        document.getElementById('admin-booking-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const payload = {
+                action: 'booking', client: document.getElementById('ab-client').value, phone: document.getElementById('ab-phone').value.replace(/\D/g, ''),
+                service: document.getElementById('ab-service').value, date: document.getElementById('ab-date').value, time: document.getElementById('ab-time').value,
+                price: document.getElementById('ab-price').value, status: 'Confirmado', paymentMethod: document.getElementById('ab-payment').value, notes: 'Agendado via Admin'
+            };
+            apiPost(payload, 'Reserva criada!'); closeAdminBooking(); e.target.reset();
+        });
+
+        // INICIALIZAÇÃO E AUTO-REFRESH
+        window.onload = () => {
+            fetchData();
+            setInterval(() => fetchData(true), 60000); // 1 MINUTO
+        };
     </script>
 </body>
 </html>

@@ -1,495 +1,409 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Prime Club Barbearia</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <title>Painel Admin | Prime Club</title>
+    
     <link rel="icon" type="image/png" href="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png">
+    
+    <!-- Tailwind CSS & FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        brand: { black: '#0a0a0a', gold: '#d4af37', lightGold: '#fdf6e3', darkGold: '#b45309', bg: '#ffffff', green: '#0f9d58' }
-                    }
+                    colors: { brand: { gold: '#D4AF37', black: '#050505', dark: '#111111', border: '#1f1f1f' } }
                 }
             }
         }
     </script>
+
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
+        body { background-color: #050505; color: #ffffff; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        #booking-modal { display: none; position: absolute; inset: 0; z-index: 100; background: #fafafa; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        #booking-modal.active { display: flex; }
-        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .screen { display: none; flex-direction: column; height: 100%; width: 100%; background: #ffffff; }
-        .screen.active { display: flex; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Glassmorphism Cards */
+        .glass-card { background: #111111; border: 1px solid #1f1f1f; border-radius: 24px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* Inputs Customizados */
+        .admin-input { width: 100%; background: #0a0a0a; border: 1px solid #1f1f1f; border-radius: 12px; padding: 14px 16px; color: white; font-size: 14px; outline: none; transition: 0.3s; }
+        .admin-input:focus { border-color: #D4AF37; }
 
-        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+        /* Tabela Customizada */
+        table { w-full; border-collapse: collapse; }
+        th { background: #0a0a0a; color: #6b7280; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; padding: 16px; text-align: left; font-weight: 700; border-bottom: 1px solid #1f1f1f; white-space: nowrap; }
+        td { padding: 16px; border-bottom: 1px solid #1f1f1f; font-size: 13px; color: #d1d5db; white-space: nowrap; }
+        tr:hover td { background: #161616; }
 
-        .pro-card.selected { border-color: #d4af37; background-color: #fdf6e3; box-shadow: 0 4px 12px rgba(212,175,55,0.15); }
-        .date-card.selected { border-color: #d4af37; background-color: #0a0a0a; color: #ffffff; transform: scale(1.05); }
-        .date-card.selected span { color: #ffffff !important; }
-        .time-btn.selected { background-color: #d4af37; color: #0a0a0a; border-color: #d4af37; font-weight: 800; transform: scale(1.02); }
+        /* Botões */
+        .btn-gold { background: #D4AF37; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-gold:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
+        .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: bold; uppercase tracking-widest transition: 0.2s; cursor: pointer; }
+        .btn-danger:hover { background: #ef4444; color: white; }
 
-        .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 80px; background: rgba(10,10,10,0.95); color: #d4af37; padding: 14px 24px; border-radius: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; z-index: 200; white-space: nowrap; font-weight: 600; font-size: 13px; border: 1px solid rgba(212,175,55,0.2);}
-        .toast.show { display: block; animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes popIn { 0% { transform: translate(-50%, 20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+        /* Toast de Sucesso/Erro */
+        .toast { position: fixed; right: 20px; top: 20px; background: #D4AF37; color: #000; padding: 16px 24px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 999; display: none; font-weight: 700; font-size: 14px; animation: slideInRight 0.3s ease-out; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Loading Overlay */
+        #global-loader { position: fixed; inset: 0; background: rgba(5,5,5,0.9); z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
+<body class="bg-[#050505]">
 
-<body class="bg-[#050505] sm:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] sm:from-gray-800 sm:via-neutral-900 sm:to-black min-h-screen flex items-center justify-center">
-
-    <div class="w-full h-screen sm:h-[850px] sm:max-h-[92vh] sm:max-w-[400px] sm:rounded-[40px] sm:border-[8px] sm:border-neutral-900 sm:shadow-[0_0_60px_rgba(212,175,55,0.1)] relative flex flex-col bg-gray-50 overflow-hidden">
-        
-        <!-- HEADER PROFILE -->
-        <header class="bg-white px-5 pt-8 pb-6 flex flex-col items-center sticky top-0 z-40 shadow-[0_4px_20px_rgba(0,0,0,0.03)] shrink-0">
-            <div class="w-24 h-24 bg-black rounded-full flex items-center justify-center overflow-hidden mb-4 shadow-lg border-[3px] border-brand-gold relative group">
-                <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-20 h-20 object-contain group-hover:scale-110 transition duration-500">
-            </div>
-            <div class="text-center w-full">
-                <p class="text-[9px] text-brand-gold font-black uppercase tracking-[0.3em] mb-1">Bem-vindo ao clube</p>
-                <h1 class="text-2xl font-black text-gray-900 tracking-tight">Prime Club</h1>
-                <p class="text-gray-500 text-[12px] font-medium leading-relaxed mt-2 bg-gray-50 py-2 px-4 rounded-2xl mx-auto inline-block">
-                    ✂️ Corte na régua | 💈 Barba alinhada
-                </p>
-            </div>
-        </header>
-
-        <!-- LISTA DE SERVIÇOS -->
-        <main class="flex-1 overflow-y-auto pb-24 bg-white relative">
-            <div class="px-6 py-4 bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Serviços Premium</h3>
-            </div>
-            <div id="services-list" class="flex flex-col">
-                <!-- Injetado por JS -->
-            </div>
-        </main>
-
-        <!-- FOOTER NAV -->
-        <nav class="absolute bottom-0 left-0 right-0 bg-white/90 border-t border-gray-200 flex justify-around p-3 z-40 backdrop-blur-xl pb-6 sm:pb-3">
-            <a href="https://instagram.com/prime_club_barbearia" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold transition-colors">
-                <i data-lucide="instagram" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wider">INSTAGRAM</span>
-            </a>
-            <!-- Link do Whats corrigido para usar a constante da Barbearia -->
-            <a id="nav-wa-link" href="#" target="_blank" class="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-gold transition-colors">
-                <i data-lucide="message-circle" class="w-5 h-5"></i><span class="text-[9px] font-bold tracking-wider">WHATSAPP</span>
-            </a>
-        </nav>
-
-        <!-- BOOKING MODAL (FLUXO DE AGENDAMENTO) -->
-        <div id="booking-modal">
-            
-            <!-- STEP 2: ESCOLHER DADOS -->
-            <section id="step-2" class="screen">
-                <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm relative">
-                    <button onclick="closeBooking()" class="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-                    <div class="absolute left-1/2 -translate-x-1/2 text-center w-3/5">
-                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Etapa 1/2</p>
-                        <p id="lbl-selected-service" class="text-[13px] font-black text-gray-900 truncate"></p>
-                    </div>
-                    <div class="w-10"></div>
-                </header>
-
-                <div class="scroll-area bg-gray-50 space-y-2 p-0">
-                    <div class="bg-white p-6 pb-8 border-b border-gray-100">
-                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4 text-brand-gold"></i> Profissional</h4>
-                        <div class="flex gap-4 overflow-x-auto hide-scrollbar px-1">
-                            <div onclick="selectPro('Christiano')" id="pro-Christiano" class="pro-card selected shrink-0 w-[110px] bg-white border-2 border-transparent rounded-[24px] p-4 flex flex-col items-center gap-3 transition-all cursor-pointer shadow-sm">
-                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl">🧔🏻</div>
-                                <span class="text-xs font-bold text-gray-800">Christiano</span>
-                            </div>
-                            <div onclick="selectPro('Alessandro')" id="pro-Alessandro" class="pro-card opacity-50 hover:opacity-100 shrink-0 w-[110px] bg-white border-2 border-transparent rounded-[24px] p-4 flex flex-col items-center gap-3 transition-all cursor-pointer shadow-sm">
-                                <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-xl">🧔🏽‍♂️</div>
-                                <span class="text-xs font-bold text-gray-800">Alessandro</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 pb-8 border-b border-gray-100">
-                        <div class="flex justify-between items-end mb-4">
-                            <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-brand-gold"></i> Data</h4>
-                            <h4 id="lbl-month" class="text-[10px] font-black text-brand-gold uppercase tracking-[0.2em] bg-brand-lightGold px-3 py-1 rounded-full"></h4>
-                        </div>
-                        <div id="dates-container" class="flex gap-3 overflow-x-auto hide-scrollbar px-1 pb-2"></div>
-                    </div>
-
-                    <div class="bg-white p-6 min-h-[300px]">
-                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4 flex justify-between items-center">
-                            <span class="flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-brand-gold"></i> Horário</span>
-                            <span id="time-loader" class="text-brand-gold text-[9px] animate-pulse hidden bg-brand-lightGold px-2 py-1 rounded-full font-bold">Buscando...</span>
-                        </h4>
-                        <div id="times-container" class="grid grid-cols-3 gap-3"></div>
-                        <div id="no-times-msg" class="hidden flex-col items-center justify-center text-center p-6 bg-red-50 rounded-2xl border border-red-100 mt-2">
-                            <i data-lucide="calendar-x" class="w-8 h-8 text-red-400 mb-2"></i>
-                            <p class="text-xs text-red-600 font-bold">Agenda cheia neste dia.</p>
-                            <p class="text-[10px] text-red-400 mt-1">Por favor, selecione outra data.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="shrink-0 p-5 bg-white border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] pb-8 sm:pb-5">
-                    <button id="btn-to-step3" disabled onclick="goToStep(3)" class="w-full bg-brand-black hover:bg-neutral-800 text-white py-4 rounded-2xl font-black disabled:opacity-30 disabled:bg-gray-300 transition-all text-[13px] uppercase tracking-[0.1em] shadow-lg flex items-center justify-center gap-2">
-                        Continuar <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- STEP 3: RESUMO E FORMULÁRIO -->
-            <section id="step-3" class="screen">
-                <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm relative">
-                    <button onclick="goToStep(2)" class="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600 transition"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-                    <div class="absolute left-1/2 -translate-x-1/2 text-center w-3/5">
-                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Etapa 2/2</p>
-                        <p class="text-[13px] font-black text-gray-900">Finalizar</p>
-                    </div>
-                    <div class="w-10"></div>
-                </header>
-
-                <div class="scroll-area bg-gray-50 space-y-2 p-0">
-                    <div class="bg-white p-6">
-                        <div class="bg-gray-50 p-5 rounded-[20px] border border-gray-100 relative overflow-hidden">
-                            <div class="absolute top-0 left-0 w-1.5 h-full bg-brand-gold"></div>
-                            <h3 id="sum-service" class="font-black text-base text-gray-900 mb-4"></h3>
-                            <div class="space-y-3 text-[13px] text-gray-600 font-medium">
-                                <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i data-lucide="calendar" class="w-4 h-4 text-brand-gold"></i></div> <span id="sum-datetime"></span></div>
-                                <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i data-lucide="user" class="w-4 h-4 text-brand-gold"></i></div> <span id="sum-pro"></span></div>
-                                <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center"><i data-lucide="wallet" class="w-4 h-4 text-brand-green"></i></div> <span id="sum-price" class="font-black text-lg text-gray-900"></span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 flex-1 min-h-[350px]">
-                        <h4 class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">Seus Dados</h4>
-                        <form id="booking-form" class="space-y-5">
-                            <div class="relative">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 bg-white px-1 absolute -top-2 left-3">Nome Completo</label>
-                                <input type="text" id="client-name" required placeholder="Ex: João Silva" class="w-full px-5 py-4 bg-white border-2 border-gray-100 rounded-2xl outline-none focus:border-brand-gold transition text-[14px] font-medium placeholder:font-normal">
-                            </div>
-                            <div class="relative">
-                                <label class="text-[10px] font-bold text-gray-400 uppercase ml-2 bg-white px-1 absolute -top-2 left-3">WhatsApp (DDD)</label>
-                                <input type="tel" id="client-phone" required placeholder="Ex: 27999999999" class="w-full px-5 py-4 bg-white border-2 border-gray-100 rounded-2xl outline-none focus:border-brand-gold transition text-[14px] font-medium placeholder:font-normal">
-                            </div>
-                            
-                            <!-- Aviso discreto do PIX (se restrito) -->
-                            <div id="inline-pix-warning" class="hidden flex gap-3 bg-orange-50 border border-orange-100 p-4 rounded-2xl items-center mt-2">
-                                <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center shrink-0"><i data-lucide="alert-circle" class="w-4 h-4 text-orange-500"></i></div>
-                                <p class="text-orange-800 text-[11px] font-bold leading-tight">Este número exige pagamento de 50% de sinal para aprovação.</p>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <div class="shrink-0 p-5 bg-white border-t border-gray-100 pb-8 sm:pb-5">
-                    <button type="submit" form="booking-form" id="btn-submit" class="w-full bg-brand-green hover:bg-green-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-green-200 uppercase tracking-[0.1em] text-[13px] transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i> Concluir Agendamento
-                    </button>
-                </div>
-            </section>
-
-            <!-- STEP SUCCESS -->
-            <section id="step-success" class="screen justify-center items-center text-center p-8 bg-white relative overflow-hidden">
-                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=')] opacity-50"></div>
-                <div class="relative z-10 flex flex-col items-center w-full">
-                    <div id="success-icon" class="w-24 h-24 bg-green-50 text-brand-green rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
-                        <i data-lucide="check" class="w-12 h-12 stroke-[3]"></i>
-                    </div>
-                    <h2 id="success-title" class="text-2xl font-black mb-3 text-gray-900 tracking-tight">Tudo Certo!</h2>
-                    <p id="success-desc" class="text-gray-500 mb-8 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada com sucesso em nossa agenda.</p>
-                    
-                    <!-- Botão de Comprovante (Apenas aparecerá se for número restrito) -->
-                    <a id="btn-success-wa" href="#" target="_blank" class="hidden w-full bg-brand-green hover:bg-green-700 text-white font-black py-4 rounded-2xl text-[13px] uppercase tracking-wider transition-colors items-center justify-center gap-2 mb-3 shadow-lg shadow-green-200">
-                        <i data-lucide="message-circle" class="w-5 h-5"></i> Enviar Comprovante
-                    </a>
-
-                    <button onclick="location.reload()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded-2xl text-[13px] uppercase tracking-wider transition-colors">Voltar ao Início</button>
-                </div>
-            </section>
-        </div>
-
-        <!-- MODAL DE COBRANÇA PIX -->
-        <div id="pix-modal" class="hidden absolute inset-0 bg-black/60 z-[200] flex items-center justify-center p-5 backdrop-blur-sm">
-            <div class="bg-white rounded-[32px] p-8 w-full max-w-[340px] text-center shadow-2xl relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-2 bg-orange-400"></div>
-                <div class="w-20 h-20 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-5 border-4 border-white shadow-sm mt-2">
-                    <i data-lucide="lock" class="w-8 h-8"></i>
-                </div>
-                <h3 class="text-xl font-black text-gray-900 mb-3 tracking-tight">Pagamento Antecipado</h3>
-                <p class="text-[13px] text-gray-500 mb-6 leading-relaxed">
-                    Identificamos uma restrição.<br>Sua reserva ficará <strong class="text-orange-500">PENDENTE</strong>.<br>Para garantir a vaga, é obrigatório o pagamento de <strong>50% via PIX</strong> agora.
-                </p>
-                
-                <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 mb-8 relative">
-                    <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Chave Celular</p>
-                    <p class="text-2xl font-black text-gray-900 tracking-widest">12345678910</p>
-                    <p class="text-[10px] text-red-500 font-bold mt-2">* Sem estorno em caso de cancelamento.</p>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button type="button" onclick="closePixModal()" class="flex-1 bg-white border-2 border-gray-100 text-gray-500 font-bold py-4 rounded-2xl text-[11px] uppercase tracking-wider transition hover:bg-gray-50">Cancelar</button>
-                    <button type="button" onclick="confirmPixAndSubmit()" class="flex-1 bg-brand-gold text-black font-black py-4 rounded-2xl text-[11px] uppercase tracking-wider transition hover:brightness-110 shadow-xl shadow-yellow-100/50">Estou ciente</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="toast" class="toast"></div>
+    <!-- LOADER GLOBAL -->
+    <div id="global-loader">
+        <div class="w-16 h-16 border-4 border-neutral-800 border-t-[#D4AF37] rounded-full animate-spin mb-4"></div>
+        <p class="text-[#D4AF37] font-bold tracking-widest text-sm uppercase">Sincronizando Sistema...</p>
     </div>
 
-    <script>
-        lucide.createIcons();
-        
-        // Configurações Globais
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
-        const BARBEARIA_WHATSAPP = "27999999999"; // <-- COLOQUE AQUI O SEU NÚMERO COM DDD (Para onde o Pix será enviado)
-        
-        document.getElementById('nav-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
+    <!-- NAVBAR ADMIN -->
+    <nav class="bg-[#0a0a0a] border-b border-[#1f1f1f] sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-5 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-10 h-10 object-contain rounded-full border border-[#D4AF37]">
+                <div>
+                    <h1 class="text-white font-black text-sm uppercase tracking-widest">Painel Administrativo</h1>
+                    <p class="text-[#D4AF37] text-[10px] uppercase font-bold tracking-widest">Gestão Prime Club</p>
+                </div>
+            </div>
+            <button onclick="fetchData()" class="text-gray-400 hover:text-white transition p-2 bg-[#111] rounded-lg border border-neutral-800" title="Atualizar Dados">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </nav>
 
-        const services = [
-            { id: "c-masc", name: "Corte Masculino", duration: "30min", price: 40.00 },
-            { id: "barba", name: "Barba", duration: "20min", price: 25.00 },
-            { id: "c-barba", name: "Corte & barba", duration: "45min", price: 60.00 },
-            { id: "c-barba-sob", name: "Corte, barba & sobrancelha", duration: "45min", price: 65.00 },
-            { id: "c-b-s-l", name: "Corte, barba, sobrancelha & limpeza", duration: "1h:00min", price: 90.00 },
-            { id: "c-pig", name: "Corte & pigmentação", duration: "45min", price: 60.00 },
-            { id: "plat", name: "Platinado", duration: "30min", price: 120.00 },
-            { id: "luzes", name: "Luzes", duration: "30min", price: 100.00 },
-            { id: "alin", name: "Alinhamento capilar", duration: "20min", price: 40.00 },
-            { id: "camu", name: "Camuflagem de fios brancos", duration: "10min", price: 30.00 },
-            { id: "limp", name: "Limpeza de pele e extração", duration: "30min", price: 35.00 },
-            { id: "nariz", name: "Depilação de nariz", duration: "10min", price: 20.00 },
-            { id: "pez", name: "Pezinho de cabelo", duration: "05min", price: 10.00 }
-        ];
+    <main class="max-w-7xl mx-auto px-5 py-10 space-y-10">
 
-        let state = { service: null, professional: "Christiano", date: null, time: null, dateStr: null };
-        let allBookings = []; let blockedDates = []; let blockedNumbers = [];
-        let pendingPayload = null; let currentClientName = ""; let currentClientPhone = ""; let currentPrice = 0; let isClientRestricted = false;
+        <!-- SESSÃO 1: RESUMO -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="glass-card flex items-center gap-5 border-l-4 border-l-[#D4AF37]">
+                <div class="w-14 h-14 bg-[#D4AF37]/10 text-[#D4AF37] rounded-full flex items-center justify-center text-2xl"><i class="fas fa-calendar-check"></i></div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Total de Reservas</p>
+                    <h3 class="text-3xl font-black text-white" id="stat-bookings">0</h3>
+                </div>
+            </div>
+            <div class="glass-card flex items-center gap-5 border-l-4 border-l-red-500">
+                <div class="w-14 h-14 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-phone-slash"></i></div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Números Restritos</p>
+                    <h3 class="text-3xl font-black text-white" id="stat-numbers">0</h3>
+                </div>
+            </div>
+            <div class="glass-card flex items-center gap-5 border-l-4 border-l-blue-500">
+                <div class="w-14 h-14 bg-blue-500/10 text-blue-500 rounded-full flex items-center justify-center text-2xl"><i class="fas fa-calendar-times"></i></div>
+                <div>
+                    <p class="text-xs text-gray-400 font-bold uppercase tracking-widest mb-1">Datas Bloqueadas</p>
+                    <h3 class="text-3xl font-black text-white" id="stat-dates">0</h3>
+                </div>
+            </div>
+        </section>
 
-        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+        <!-- SESSÃO 2: AGENDA DE RESERVAS -->
+        <section class="glass-card overflow-hidden !p-0">
+            <div class="p-6 border-b border-[#1f1f1f] flex justify-between items-center bg-[#0a0a0a]">
+                <h2 class="text-lg font-bold text-white"><i class="fas fa-list text-[#D4AF37] mr-2"></i> Agendamentos Recentes</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Cliente</th>
+                            <th>WhatsApp</th>
+                            <th>Serviço</th>
+                            <th>Pagamento</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-table-body">
+                        <!-- Preenchido pelo JS -->
+                    </tbody>
+                </table>
+                <div id="no-bookings" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">
+                    Nenhum agendamento encontrado.
+                </div>
+            </div>
+        </section>
 
-        function renderServices() {
-            const container = document.getElementById('services-list');
-            container.innerHTML = services.map(s => `
-                <div class="flex items-center justify-between px-6 py-5 border-b border-gray-50 bg-white hover:bg-gray-50 transition cursor-pointer group" onclick="chooseService('${s.id}')">
-                    <div class="flex-1 pr-4">
-                        <h4 class="font-bold text-[14px] text-gray-900 group-hover:text-brand-darkGold transition-colors">${s.name}</h4>
-                        <div class="flex items-center gap-4 text-[11px] font-black text-gray-400 mt-2">
-                            <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md"><i data-lucide="clock" class="w-3 h-3"></i> ${s.duration}</span>
-                            <span class="text-brand-darkGold bg-brand-lightGold px-2 py-1 rounded-md">R$ ${s.price.toFixed(2)}</span>
+        <!-- SESSÃO 3: BLOQUEIOS (NÚMEROS E DATAS) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            
+            <!-- CONTROLE DE CALOTEIROS (PIX 50%) -->
+            <div class="glass-card flex flex-col h-full">
+                <h2 class="text-lg font-bold text-white mb-2"><i class="fas fa-user-lock text-red-500 mr-2"></i> Números Restritos (Sinal 50%)</h2>
+                <p class="text-xs text-gray-400 mb-6 leading-relaxed">Números nesta lista serão obrigados a pagar 50% via Pix para concluir a reserva no site.</p>
+                
+                <form id="form-block-number" class="flex gap-3 mb-6">
+                    <input type="tel" id="input-block-number" class="admin-input flex-1" placeholder="DDD + Número (Ex: 27999999999)" required>
+                    <button type="submit" class="btn-gold"><i class="fas fa-plus"></i> Bloquear</button>
+                </form>
+
+                <div class="flex-1 bg-[#0a0a0a] rounded-xl border border-[#1f1f1f] p-4 overflow-y-auto max-h-[300px]">
+                    <ul id="list-blocked-numbers" class="space-y-2">
+                        <!-- Preenchido pelo JS -->
+                    </ul>
+                    <div id="no-numbers" class="hidden text-center py-5 text-gray-600 text-xs font-bold uppercase tracking-widest">Lista vazia.</div>
+                </div>
+            </div>
+
+            <!-- CONTROLE DE FOLGAS (DATAS FECHADAS) -->
+            <div class="glass-card flex flex-col h-full">
+                <h2 class="text-lg font-bold text-white mb-2"><i class="fas fa-calendar-minus text-blue-500 mr-2"></i> Bloquear Período/Datas</h2>
+                <p class="text-xs text-gray-400 mb-6 leading-relaxed">Selecione um intervalo de datas para fechar a agenda. Clientes não poderão agendar nestes dias.</p>
+                
+                <form id="form-block-date" class="flex flex-col gap-3 mb-6">
+                    <div class="flex gap-3">
+                        <div class="flex-1">
+                            <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Início</label>
+                            <input type="date" id="input-block-start" class="admin-input" required>
+                        </div>
+                        <div class="flex-1">
+                            <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Fim (Opcional)</label>
+                            <input type="date" id="input-block-end" class="admin-input">
                         </div>
                     </div>
-                    <button class="bg-brand-black text-white text-[10px] font-bold px-5 py-3 rounded-full uppercase tracking-wider shrink-0 shadow-md group-hover:bg-brand-gold transition-colors">Agendar</button>
+                    <button type="submit" class="btn-gold w-full mt-2"><i class="fas fa-lock"></i> Fechar Agenda no Período</button>
+                </form>
+
+                <div class="flex-1 bg-[#0a0a0a] rounded-xl border border-[#1f1f1f] p-4 overflow-y-auto max-h-[300px]">
+                    <ul id="list-blocked-dates" class="space-y-2">
+                        <!-- Preenchido pelo JS -->
+                    </ul>
+                    <div id="no-dates" class="hidden text-center py-5 text-gray-600 text-xs font-bold uppercase tracking-widest">Nenhuma data bloqueada.</div>
                 </div>
-            `).join('');
-            lucide.createIcons();
+            </div>
+
+        </section>
+    </main>
+
+    <div id="toast" class="toast">Ação concluída com sucesso!</div>
+
+    <script>
+        // ================= CONFIGURAÇÃO =================
+        // O MESMO URL DO SEU SITE PRINCIPAL
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
+        
+        let state = { bookings: [], blockedDates: [], blockedNumbers: [] };
+
+        // Mostrar Toast Message
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = isError ? '#ef4444' : '#D4AF37';
+            t.style.color = isError ? '#fff' : '#000';
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
 
-        function fetchAvailability() {
-            document.getElementById('time-loader').classList.remove('hidden');
-            fetch(WEB_APP_URL + '?action=get_all')
-            .then(r => r.json())
-            .then(data => { 
-                allBookings = data.bookings || []; blockedDates = data.blockedDates || []; blockedNumbers = data.blockedNumbers || [];
-                document.getElementById('time-loader').classList.add('hidden');
-                if(document.getElementById('booking-modal').classList.contains('active')){ renderCalendar(); }
-            }).catch(err => console.error(err));
+        // Mostrar/Ocultar Loader
+        function setLoader(active) {
+            document.getElementById('global-loader').style.display = active ? 'flex' : 'none';
         }
 
-        function openBooking() { document.getElementById('booking-modal').classList.add('active'); }
-        function closeBooking() { document.getElementById('booking-modal').classList.remove('active'); }
-
-        function goToStep(step) {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            document.getElementById(`step-${step}`).classList.add('active');
-            if(step === 2) renderCalendar();
-            if(step === 3) updateSummary();
-        }
-
-        function chooseService(id) {
-            state.service = services.find(s => s.id === id);
-            document.getElementById('lbl-selected-service').textContent = state.service.name;
-            state.date = null; state.time = null; state.dateStr = null;
-            document.getElementById('btn-to-step3').disabled = true;
-            document.getElementById('times-container').innerHTML = '';
-            fetchAvailability(); openBooking(); goToStep(2);
-        }
-
-        function selectPro(name) {
-            state.professional = name;
-            document.querySelectorAll('.pro-card').forEach(c => c.classList.add('opacity-50'));
-            document.getElementById(`pro-${name}`).classList.remove('opacity-50');
-            state.time = null; document.getElementById('btn-to-step3').disabled = true;
-            if(state.dateStr) renderTimes();
-        }
-
-        function renderCalendar() {
-            const container = document.getElementById('dates-container');
-            const today = new Date(); const days = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"];
-            const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
-            document.getElementById('lbl-month').textContent = `${months[today.getMonth()]} ${today.getFullYear()}`;
-
-            let html = ''; let validDaysCount = 0;
-            for(let i=0; i<30; i++){
-                let d = new Date(); d.setDate(today.getDate() + i);
-                let iso = d.toISOString().split('T')[0];
-                let display = d.toLocaleDateString('pt-BR');
-                if(blockedDates.includes(iso)) continue;
-                
-                let isSelected = (iso === state.dateStr) ? "selected" : "";
-                let textColor = (iso === state.dateStr) ? "text-white" : "text-gray-900";
-                let dayColor = (iso === state.dateStr) ? "text-gray-200" : "text-gray-400";
-                
-                html += `<div onclick="selectDate('${iso}','${display}')" class="date-card ${isSelected} snap-start shrink-0 w-[70px] h-[85px] bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-sm hover:border-brand-gold">
-                    <span class="text-[9px] font-black ${dayColor} uppercase mb-1">${days[d.getDay()]}</span>
-                    <span class="text-[22px] font-black ${textColor}">${d.getDate()}</span>
-                </div>`;
-                validDaysCount++;
-                if(validDaysCount >= 14) break;
-            }
-            container.innerHTML = html;
-            if(state.dateStr) renderTimes();
-        }
-
-        function selectDate(iso, display) {
-            state.dateStr = iso; state.date = display; state.time = null;
-            renderCalendar(); 
-            document.getElementById('btn-to-step3').disabled = true;
-            renderTimes();
-        }
-
-        function renderTimes() {
-            if(!state.dateStr) return;
-            const times = ["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"];
-            const container = document.getElementById('times-container');
-            const noTimesMsg = document.getElementById('no-times-msg');
-            
-            // FILTRO CORRIGIDO: Lendo b.Data com exatidão e removendo completamente o botão.
-            const booked = allBookings.filter(b => {
-                let bDate = b.Data || '';
-                if(bDate.includes('T')) bDate = bDate.split('T')[0];
-                let bTime = b.Hora ? b.Hora.substring(0,5) : '';
-                let isSamePro = b.Servico && b.Servico.includes(state.professional);
-                let isActive = b.Status !== 'Cancelado';
-                return bDate === state.dateStr && isSamePro && isActive;
-            }).map(b => b.Hora ? b.Hora.substring(0,5) : '');
-
-            let html = ''; let timesAvailable = 0;
-            times.forEach(t => {
-                if(!booked.includes(t)) {
-                    html += `<button onclick="selectTime('${t}', this)" class="time-btn bg-white border border-gray-200 py-3.5 rounded-[16px] text-[13px] font-black text-gray-700 transition-all shadow-sm hover:border-brand-gold hover:text-brand-gold">${t}</button>`;
-                    timesAvailable++;
-                }
-            });
-
-            container.innerHTML = html;
-            noTimesMsg.classList.toggle('hidden', timesAvailable > 0);
-            container.classList.toggle('hidden', timesAvailable === 0);
-        }
-
-        function selectTime(t, el) {
-            state.time = t;
-            document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('selected', 'bg-brand-gold', 'text-black', 'border-brand-gold'));
-            el.classList.add('selected', 'bg-brand-gold', 'text-black', 'border-brand-gold');
-            document.getElementById('btn-to-step3').disabled = false;
-        }
-
-        function updateSummary() {
-            document.getElementById('sum-service').textContent = state.service.name;
-            document.getElementById('sum-datetime').textContent = `${state.date} às ${state.time}`;
-            document.getElementById('sum-pro').textContent = `Com ${state.professional}`;
-            checkPhoneRestriction(document.getElementById('client-phone').value);
-        }
-
-        function checkPhoneRestriction(phoneVal) {
-            const phone = phoneVal.replace(/\D/g,'');
-            const isRestricted = blockedNumbers.includes(phone);
-            const inlineWarning = document.getElementById('inline-pix-warning');
-            const priceEl = document.getElementById('sum-price');
-            
-            if(isRestricted) {
-                inlineWarning.classList.remove('hidden');
-                priceEl.innerHTML = `<span class="line-through text-gray-400 text-xs mr-2 font-medium">R$ ${state.service.price.toFixed(2)}</span> <span class="text-orange-600">R$ ${(state.service.price/2).toFixed(2)}</span> <span class="text-[9px] text-orange-600 uppercase ml-1 block mt-0.5 leading-none">Sinal</span>`;
-            } else {
-                inlineWarning.classList.add('hidden');
-                priceEl.textContent = `R$ ${state.service.price.toFixed(2)}`;
-            }
-        }
-
-        document.getElementById('client-phone').addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/\D/g,'');
-            checkPhoneRestriction(e.target.value);
-        });
-
-        document.getElementById('booking-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            currentClientName = document.getElementById('client-name').value.trim();
-            currentClientPhone = document.getElementById('client-phone').value.replace(/\D/g,'');
-            
-            if(!currentClientName || !currentClientPhone || !state.dateStr || !state.time){ showToast('Preencha os dados.'); return; }
-
-            isClientRestricted = blockedNumbers.includes(currentClientPhone);
-            currentPrice = isClientRestricted ? (state.service.price/2) : state.service.price;
-            
-            pendingPayload = { 
-                type: 'booking', client: currentClientName, phone: currentClientPhone, 
-                service: `${state.service.name} (Com ${state.professional})`, 
-                date: state.dateStr, time: state.time, price: currentPrice.toString(), 
-                status: isClientRestricted ? 'Pendente' : 'Confirmado', 
-                paymentMethod: isClientRestricted ? 'PIX' : 'Balcão', 
-                notes: isClientRestricted ? 'AGUARDANDO PIX (50%)' : 'Site Prime Club' 
-            };
-
-            if(isClientRestricted) document.getElementById('pix-modal').classList.remove('hidden');
-            else executeBooking();
-        });
-
-        function closePixModal() { document.getElementById('pix-modal').classList.add('hidden'); }
-        function confirmPixAndSubmit() { closePixModal(); executeBooking(); }
-
-        async function executeBooking() {
-            const btn = document.getElementById('btn-submit');
-            btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando...'; lucide.createIcons();
-
+        // ================= FETCH INICIAL =================
+        async function fetchData() {
+            setLoader(true);
             try {
-                await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(pendingPayload) });
+                const response = await fetch(WEB_APP_URL + '?action=get_all');
+                const data = await response.json();
                 
-                const successIcon = document.getElementById('success-icon');
-                const successTitle = document.getElementById('success-title');
-                const successDesc = document.getElementById('success-desc');
-                const btnWa = document.getElementById('btn-success-wa');
+                // Salvar na memória
+                state.bookings = data.bookings || [];
+                state.blockedDates = data.blockedDates || [];
+                state.blockedNumbers = data.blockedNumbers || [];
 
-                if(isClientRestricted) {
-                    successIcon.className = "w-24 h-24 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mb-6 shadow-inner border border-orange-100";
-                    successTitle.textContent = "Quase lá!";
-                    successDesc.innerHTML = "Sua reserva está <strong class='text-orange-600'>PENDENTE</strong>. Envie o comprovante do PIX no botão abaixo para confirmar sua vaga.";
-                    btnWa.classList.remove('hidden'); btnWa.classList.add('flex');
-                    
-                    let msgPix = `Olá Prime Club!\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateStr.split('-').reverse().join('/')} às ${state.time}\n\n*Estou ciente do sinal e envio abaixo o comprovante do PIX (R$${currentPrice.toFixed(2)}) para confirmar.*`;
-                    btnWa.href = `https://wa.me/55${BARBEARIA_WHATSAPP}?text=${encodeURIComponent(msgPix)}`;
-                } else {
-                    successIcon.className = "w-24 h-24 bg-green-50 text-brand-green rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100";
-                    successTitle.textContent = "Tudo Certo!";
-                    successDesc.textContent = "Sua reserva foi confirmada com sucesso em nossa agenda.";
-                    btnWa.classList.add('hidden'); btnWa.classList.remove('flex');
-                }
-
-                document.getElementById('step-success').classList.add('active'); 
-                document.getElementById('step-3').classList.remove('active');
-            } catch(err) { 
-                showToast('Erro na conexão. Tente novamente.'); 
-                btn.disabled = false; btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> Concluir Agendamento'; lucide.createIcons();
+                // Atualizar Interface
+                updateDashboard();
+            } catch (err) {
+                console.error(err);
+                showToast('Erro ao sincronizar com a planilha.', true);
+            } finally {
+                setLoader(false);
             }
         }
 
-        window.onload = () => { renderServices(); fetchAvailability(); };
+        // ================= RENDERIZAR INTERFACE =================
+        function updateDashboard() {
+            // Atualizar contadores
+            document.getElementById('stat-bookings').textContent = state.bookings.length;
+            document.getElementById('stat-numbers').textContent = state.blockedNumbers.length;
+            document.getElementById('stat-dates').textContent = state.blockedDates.length;
+
+            // Renderizar Agendamentos (Do mais recente para o mais antigo)
+            const tbody = document.getElementById('bookings-table-body');
+            tbody.innerHTML = '';
+            
+            // Reverter a array para mostrar os últimos agendamentos criados no topo
+            const reversedBookings = [...state.bookings].reverse();
+            
+            if(reversedBookings.length === 0) {
+                document.getElementById('no-bookings').classList.remove('hidden');
+            } else {
+                document.getElementById('no-bookings').classList.add('hidden');
+                reversedBookings.forEach(b => {
+                    const tr = document.createElement('tr');
+                    
+                    // Formata a data (se existir)
+                    let formattedDate = b.Data || '';
+                    if(formattedDate.includes('-')) {
+                        formattedDate = formattedDate.split('-').reverse().join('/');
+                    }
+
+                    // Define Badge de Pagamento
+                    let paymentBadge = `<span class="bg-gray-800 text-gray-300 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${b.TipoPagamento || 'Balcão'}</span>`;
+                    if(b.TipoPagamento === 'PIX' || (b.Observacoes && b.Observacoes.includes('PIX'))) {
+                        paymentBadge = `<span class="bg-orange-500/20 text-orange-500 px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-orange-500/30">Sinal 50%</span>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td>
+                            <strong class="text-white block">${formattedDate}</strong>
+                            <span class="text-[#D4AF37] font-bold text-xs">${b.Hora || '--:--'}</span>
+                        </td>
+                        <td class="font-bold text-white">${b.Cliente}</td>
+                        <td>
+                            <a href="https://wa.me/55${b.Telefone}" target="_blank" class="text-[#25D366] hover:underline font-medium">
+                                <i class="fab fa-whatsapp"></i> ${b.Telefone}
+                            </a>
+                        </td>
+                        <td class="text-xs w-[250px] whitespace-normal leading-relaxed">${b.Servico}</td>
+                        <td>${paymentBadge}</td>
+                        <td>
+                            <button onclick="deleteBooking('${b.ID}')" class="btn-danger" title="Cancelar Agendamento">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Renderizar Números Bloqueados
+            const ulNum = document.getElementById('list-blocked-numbers');
+            ulNum.innerHTML = '';
+            if(state.blockedNumbers.length === 0) document.getElementById('no-numbers').classList.remove('hidden');
+            else {
+                document.getElementById('no-numbers').classList.add('hidden');
+                state.blockedNumbers.forEach(num => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-[#111] p-3 rounded-lg border border-[#1f1f1f]';
+                    li.innerHTML = `
+                        <span class="font-mono text-gray-300 tracking-wider text-sm"><i class="fas fa-phone-alt text-gray-600 mr-2"></i> ${num}</span>
+                        <button onclick="removeBlockedNumber('${num}')" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-times"></i></button>
+                    `;
+                    ulNum.appendChild(li);
+                });
+            }
+
+            // Renderizar Datas Bloqueadas
+            const ulDates = document.getElementById('list-blocked-dates');
+            ulDates.innerHTML = '';
+            if(state.blockedDates.length === 0) document.getElementById('no-dates').classList.remove('hidden');
+            else {
+                document.getElementById('no-dates').classList.add('hidden');
+                // Ordernar datas da mais antiga para mais nova
+                const sortedDates = [...state.blockedDates].sort();
+                sortedDates.forEach(date => {
+                    const displayDate = date.split('-').reverse().join('/');
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center bg-[#111] p-3 rounded-lg border border-[#1f1f1f]';
+                    li.innerHTML = `
+                        <span class="font-bold text-gray-300 tracking-widest text-sm"><i class="far fa-calendar-times text-gray-600 mr-2"></i> ${displayDate}</span>
+                        <button onclick="removeBlockedDate('${date}')" class="text-red-500 hover:text-red-400 p-2"><i class="fas fa-times"></i></button>
+                    `;
+                    ulDates.appendChild(li);
+                });
+            }
+        }
+
+        // ================= FUNÇÕES DE AÇÃO (POST) =================
+        async function apiPost(payload, successMsg) {
+            setLoader(true);
+            try {
+                // Envia dados como text/plain para evitar erro de CORS
+                await fetch(WEB_APP_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload) 
+                });
+                showToast(successMsg);
+                await fetchData(); // Atualiza a tela puxando tudo denovo
+            } catch (err) {
+                console.error(err);
+                showToast('Erro ao processar a ação.', true);
+                setLoader(false);
+            }
+        }
+
+        // 1. Excluir Agendamento
+        function deleteBooking(id) {
+            if(confirm('Tem certeza que deseja apagar este agendamento da planilha?')) {
+                apiPost({ action: 'delete_booking', id: id }, 'Agendamento deletado!');
+            }
+        }
+
+        // 2. Adicionar Número Restrito
+        document.getElementById('form-block-number').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('input-block-number');
+            const phone = input.value.replace(/\D/g, ''); // limpa pra deixar só números
+            if(phone.length < 10) { showToast('Digite um número de telefone válido.', true); return; }
+            apiPost({ action: 'add_blocked_number', phone: phone }, 'Número restrito adicionado!');
+            input.value = '';
+        });
+
+        // 3. Remover Número Restrito
+        function removeBlockedNumber(phone) {
+            if(confirm('Remover restrição deste número?')) {
+                apiPost({ action: 'remove_blocked_number', phone: phone }, 'Restrição removida!');
+            }
+        }
+
+        // 4. Adicionar Data Bloqueada
+        document.getElementById('form-block-date').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const startInput = document.getElementById('input-block-start');
+            const endInput = document.getElementById('input-block-end');
+            
+            const startDate = startInput.value;
+            let endDate = endInput.value;
+            
+            if(!startDate) return;
+            
+            // Se não preencheu data final, bloqueia apenas 1 dia
+            if(!endDate) endDate = startDate;
+
+            // Validação simples
+            if(new Date(startDate) > new Date(endDate)) {
+                showToast('A data inicial não pode ser depois da data final.', true);
+                return;
+            }
+
+            apiPost({ action: 'block_range', startDate: startDate, endDate: endDate }, 'Período bloqueado com sucesso!');
+            
+            // Limpa os campos
+            startInput.value = '';
+            endInput.value = '';
+        });
+
+        // 5. Remover Data Bloqueada
+        function removeBlockedDate(date) {
+            if(confirm('Reabrir a agenda neste dia?')) {
+                apiPost({ action: 'unblock_date', date: date }, 'Agenda reaberta na data!');
+            }
+        }
+
+        // ================= INICIALIZAÇÃO =================
+        window.onload = fetchData;
     </script>
 </body>
 </html>

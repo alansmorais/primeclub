@@ -1,249 +1,686 @@
-// CONFIGURAÇÕES - PRIME CLUB
-var EMAIL_DESTINO = "alanpkmorais@gmail.com";
-var EMAIL_REMETENTE = "kontakt@alansmsolutions.com";
-var SPREADSHEET_ID = "1apbCIxxlQaDkOYeqVLnAZB7LDsFsdEVlzPVePMvajh0";
-
-// Normaliza datas vindas da planilha
-function cleanSheetDate(val) {
-  if (!val) return "";
-  if (val instanceof Date) return Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
-  var s = String(val || "").trim();
-  if (s.indexOf('T') !== -1) return s.split('T')[0];
-  var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return m[3] + "-" + m[2].padStart(2,'0') + "-" + m[1].padStart(2,'0');
-  return s;
-}
-
-function getOrCreateSheet(ss, sheetName) {
-  var sheet = ss.getSheetByName(sheetName);
-  if (!sheet) {
-    sheet = ss.insertSheet(sheetName);
-    var headers = {
-      "Agendamentos": ["ID","Data Registro", "Cliente", "Telefone", "Servico", "Data", "Hora", "Status", "Preco", "Tipo Pagamento", "Observacoes"],
-      "Cursos": ["Data Registro", "Nome", "Telefone", "Nivel"],
-      "Financeiro": ["Data Transacao", "Categoria", "Valor", "Descricao"],
-      "Bloqueios": ["DataBloqueio"],
-      "NumerosBloqueados": ["Telefone"],
-      // NOVAS ABAS ADICIONADAS AQUI
-      "Lista de Cliente": ["Nome", "Telefone", "Último Serviço", "Data de Registro"],
-      "Unidades": ["Nome da Unidade", "Endereço", "Telefone", "Status"],
-      "Funcionários": ["Nome", "Cargo", "Telefone", "Status"],
-      "Promoções": ["Nome da Promoção", "Regras/Desconto", "Validade", "Status"]
-    };
-    if (headers[sheetName]) sheet.appendRow(headers[sheetName]);
-  }
-  return sheet;
-}
-
-function getSheetData(ss, sheetName) {
-  var sheet = getOrCreateSheet(ss, sheetName);
-  var vals = sheet.getDataRange().getDisplayValues();
-  if (vals.length <= 1) return [];
-  var header = vals[0];
-  var rows = vals.slice(1);
-  return rows.map(function(r, idx) {
-    var obj = {};
-    header.forEach(function(h, i) { obj[h] = r[i]; });
-    // keep raw rowIndex for possible deletion later
-    obj._rowIndex = idx + 2; // 1-based including header
-    // normalize common date fields
-    if (obj.Data) obj.Data = cleanSheetDate(obj.Data);
-    if (obj.DataAgendamento) obj.DataAgendamento = cleanSheetDate(obj.DataAgendamento);
-    if (obj.DataBloqueio) obj.DataBloqueio = cleanSheetDate(obj.DataBloqueio);
-    return obj;
-  });
-}
-
-function appendUniquePhone(ss, phone) {
-  var sheet = getOrCreateSheet(ss, "NumerosBloqueados");
-  var data = sheet.getDataRange().getDisplayValues();
-  // check existing (ignore header)
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][0]).replace(/\D/g,'') === String(phone).replace(/\D/g,'')) return false;
-  }
-  sheet.appendRow([phone]);
-  return true;
-}
-
-function removePhone(ss, phone) {
-  var sheet = getOrCreateSheet(ss, "NumerosBloqueados");
-  var data = sheet.getDataRange().getValues();
-  var normalized = String(phone).replace(/\D/g,'');
-  // iterate bottom-up
-  for (var i = data.length - 1; i >= 1; i--) {
-    if (String(data[i][0]).replace(/\D/g,'') === normalized) sheet.deleteRow(i+1);
-  }
-}
-
-function appendBlockedDates(ss, dates) {
-  if (!Array.isArray(dates) || dates.length === 0) return 0;
-  var sheet = getOrCreateSheet(ss, "Bloqueios");
-  var data = sheet.getDataRange().getDisplayValues().slice(1).map(function(r){ return cleanSheetDate(r[0]) });
-  var count = 0;
-  dates.forEach(function(d) {
-    var dd = cleanSheetDate(d);
-    if (!dd) return;
-    if (data.indexOf(dd) === -1) {
-      sheet.appendRow([dd]);
-      data.push(dd);
-      count++;
-    }
-  });
-  return count;
-}
-
-function removeBlockedDate(ss, date) {
-  var sheet = getOrCreateSheet(ss, "Bloqueios");
-  var vals = sheet.getDataRange().getDisplayValues();
-  var norm = cleanSheetDate(date);
-  for (var i = vals.length - 1; i >= 1; i--) {
-    if (cleanSheetDate(vals[i][0]) === norm) sheet.deleteRow(i+1);
-  }
-}
-
-function generateDatesBetween(startIso, endIso) {
-  var res = [];
-  var s = new Date(startIso + "T00:00:00");
-  var e = new Date(endIso + "T00:00:00");
-  if (isNaN(s) || isNaN(e)) return res;
-  while (s <= e) {
-    res.push(Utilities.formatDate(s, Session.getScriptTimeZone(), "yyyy-MM-dd"));
-    s.setDate(s.getDate() + 1);
-  }
-  return res;
-}
-
-function doPost(e) {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var resp = { status: "error", message: "Parâmetro inválido" };
-  try {
-    var payload = {};
-    if (e.postData && e.postData.contents) {
-      payload = JSON.parse(e.postData.contents);
-    } else if (e.parameter) {
-      payload = e.parameter;
-    }
-
-    var action = payload.action || payload.type; 
-    var phone = payload.phone || payload.number || payload.telefone || payload.Telefone;
-
-    if (action === "add_blocked_number") {
-      if (!phone) throw "Número ausente";
-      appendUniquePhone(ss, String(phone).replace(/\D/g,''));
-      resp = { status: "success", message: "Número bloqueado" };
-    }
-    else if (action === "remove_blocked_number") {
-      if (!phone) throw "Número ausente";
-      removePhone(ss, phone);
-      resp = { status: "success", message: "Número desbloqueado" };
-    }
-    else if (action === "block_range") {
-      var dates = [];
-      if (Array.isArray(payload.dates) && payload.dates.length) {
-        dates = payload.dates.map(cleanSheetDate);
-      } else if (payload.startDate && payload.endDate) {
-        dates = generateDatesBetween(payload.startDate, payload.endDate);
-      } else if (payload.startDate) {
-        dates = [cleanSheetDate(payload.startDate)];
-      } else if (payload.endDate) {
-        dates = [cleanSheetDate(payload.endDate)];
-      }
-      var added = appendBlockedDates(ss, dates);
-      resp = { status: "success", message: "Datas bloqueadas", added: added };
-    }
-    else if (action === "unblock_date") {
-      var date = payload.date || payload.DataBloqueio || payload.data;
-      if (!date) throw "Data ausente";
-      removeBlockedDate(ss, date);
-      resp = { status: "success", message: "Data desbloqueada" };
-    }
-    else if (action === "booking" || payload.type === "booking") {
-      var sheet = getOrCreateSheet(ss, "Agendamentos");
-      var id = "BK" + (new Date()).getTime();
-      var now = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm:ss");
-      var cliente = payload.client || payload.Cliente || "";
-      var telefone = payload.phone || payload.number || payload.Telefone || "";
-      var servico = payload.service || payload.Servico || "";
-      var dataAg = cleanSheetDate(payload.date || payload.Data || payload.DataAgendamento);
-      var hora = payload.time || payload.Hora || "";
-      var status = payload.status || "Confirmado";
-      var preco = payload.price || payload.Preco || "";
-      var tipoPag = payload.paymentMethod || payload.TipoPagamento || "";
-      var obs = payload.notes || payload.Observacoes || "";
-      sheet.appendRow([id, now, cliente, telefone, servico, dataAg, hora, status, preco, tipoPag, obs]);
-      resp = { status: "success", message: "Agendamento criado", id: id };
-    }
-    // NOVA AÇÃO: REMOVER AGENDAMENTO
-    else if (action === "delete_booking") {
-      if (!payload.id) throw "ID do agendamento ausente";
-      var sheet = getOrCreateSheet(ss, "Agendamentos");
-      var data = sheet.getDataRange().getValues();
-      var deletado = false;
-      for (var i = data.length - 1; i >= 1; i--) {
-        if (data[i][0] === payload.id) {
-          sheet.deleteRow(i + 1);
-          deletado = true;
-          break;
-        }
-      }
-      resp = { status: deletado ? "success" : "error", message: deletado ? "Agendamento removido" : "ID não encontrado" };
-    }
-    else {
-      resp = { status: "error", message: "Ação desconhecida: " + action };
-    }
-  } catch (err) {
-    resp = { status: "error", message: String(err) };
-  }
-  return ContentService.createTextOutput(JSON.stringify(resp)).setMimeType(ContentService.MimeType.JSON);
-}
-
-function doGet(e) {
-  var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var action = (e.parameter && e.parameter.action) ? e.parameter.action : "get_all";
-  if (action === "get_all") {
-    // agendamentos
-    var ag = getSheetData(ss, "Agendamentos");
-    // map to expected keys for admin (normalize names)
-    var bookings = ag.map(function(r){
-      return {
-        ID: r.ID || r._ID || r.Id || r["ID"] || "",
-        DataRegistro: r["Data Registro"] || "",
-        Cliente: r["Cliente"] || "",
-        Telefone: (r["Telefone"]||"").replace(/\D/g,''),
-        Servico: r["Servico"] || r["Servico"] || "",
-        Data: r["Data"] || r["Data Agendamento"] || r["DataAgendamento"] || "",
-        Hora: r["Hora"] || "",
-        Status: r["Status"] || "",
-        Preco: r["Preco"] || r["Valor"] || "",
-        TipoPagamento: r["Tipo Pagamento"] || r["TipoPagamento"] || "",
-        Observacoes: r["Observacoes"] || ""
-      };
-    });
-
-    var finance = getSheetData(ss, "Financeiro");
-    var cursos = getSheetData(ss, "Cursos");
-    var blockedDates = getSheetData(ss, "Bloqueios").map(function(r){ return cleanSheetDate(r.DataBloqueio || r["DataBloqueio"] || r.Data); });
-    var blockedNumbers = getSheetData(ss, "NumerosBloqueados").map(function(r){ return String(r.Telefone || r["Telefone"] || "").replace(/\D/g,''); });
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Prime Club Barbearia</title>
     
-    // FETCH DAS NOVAS ABAS
-    var listaClientes = getSheetData(ss, "Lista de Cliente");
-    var unidades = getSheetData(ss, "Unidades");
-    var funcionarios = getSheetData(ss, "Funcionários");
-    var promocoes = getSheetData(ss, "Promoções");
+    <link rel="icon" type="image/png" href="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png">
+    
+    <!-- Tailwind CSS, FontAwesome & Google Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
-    var out = {
-      bookings: bookings,
-      financeiro: finance,
-      cursos: cursos,
-      blockedDates: blockedDates,
-      blockedNumbers: blockedNumbers,
-      // INCLUINDO AS NOVAS ABAS NA RESPOSTA PARA O PAINEL ADMIN
-      listaClientes: listaClientes,
-      unidades: unidades,
-      funcionarios: funcionarios,
-      promocoes: promocoes
-    };
-    return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
-  }
-  return ContentService.createTextOutput(JSON.stringify({status:"error",message:"Ação GET desconhecida"})).setMimeType(ContentService.MimeType.JSON);
-}
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { black: '#0a0a0a', gold: '#d4af37', lightGold: '#fdf6e3', darkGold: '#b45309', bg: '#ffffff', green: '#25D366' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base fluída e responsiva */
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; color: #111827; -webkit-tap-highlight-color: transparent; }
+        
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Modal Responsivo (Tela Cheia no Mobile, Caixa Centralizada no PC) */
+        #booking-modal { display: none; position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); flex-direction: column; align-items: center; justify-content: center; animation: fadeInBg 0.3s ease; }
+        #booking-modal.active { display: flex; }
+        
+        #my-bookings-modal { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); flex-direction: column; align-items: center; justify-content: center; animation: fadeInBg 0.3s ease; }
+        #my-bookings-modal.active { display: flex; }
+
+        @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+        
+        .modal-box { width: 100%; height: 100%; display: flex; flex-direction: column; background: #fafafa; position: relative; overflow: hidden; }
+        @media(min-width: 640px) {
+            .modal-box { max-width: 420px; height: 90vh; max-height: 800px; border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Telas Internas do Modal */
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; background: #ffffff; }
+        .screen.active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 40px; }
+
+        /* Elementos Visuais do Modal */
+        .pro-card.selected { border-color: #d4af37; background-color: #fdf6e3; box-shadow: 0 4px 12px rgba(212,175,55,0.15); }
+        .date-card.selected { border-color: #d4af37; background-color: #0a0a0a; color: #ffffff; transform: scale(1.05); }
+        .date-card.selected span { color: #ffffff !important; }
+        .time-btn.selected { background-color: #d4af37; color: #0a0a0a; border-color: #d4af37; font-weight: 800; transform: scale(1.05); }
+
+        .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 90px; background: rgba(10,10,10,0.95); color: #d4af37; padding: 14px 24px; border-radius: 100px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); display: none; z-index: 200; white-space: nowrap; font-weight: 600; font-size: 13px; border: 1px solid rgba(212,175,55,0.2);}
+        .toast.show { display: block; animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes popIn { 0% { transform: translate(-50%, 20px); opacity: 0; } 100% { transform: translate(-50%, 0); opacity: 1; } }
+    </style>
+</head>
+
+<body class="flex flex-col min-h-screen">
+
+    <!-- HEADER SITE -->
+    <!-- STREAMING_CHUNK:Header com botão de Meus Agendamentos... -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center overflow-hidden shadow-md border-2 border-brand-gold">
+                    <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="Logo" class="w-12 h-12 object-contain">
+                </div>
+                <div class="border-l border-gray-200 pl-4">
+                    <p class="text-[9px] text-brand-gold font-black uppercase tracking-[0.2em] mb-0.5">Bem-vindo ao clube</p>
+                    <h1 class="text-xl font-black text-gray-900 tracking-tight">Prime Club</h1>
+                </div>
+            </div>
+            <!-- Ícones (Só no Desktop, no mobile ficam embaixo) -->
+            <div class="hidden md:flex items-center gap-3">
+                <button onclick="openMyBookings()" class="text-[11px] font-bold text-gray-600 border border-gray-200 px-4 py-2.5 rounded-full hover:bg-gray-50 transition-all flex items-center gap-2 mr-2">
+                    <i data-lucide="calendar-search" class="w-4 h-4 text-brand-gold"></i> Meus Agendamentos
+                </button>
+                <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 border border-gray-200 text-gray-600 hover:text-[#E1306C] hover:border-[#E1306C] transition-all">
+                    <i class="fab fa-instagram text-lg"></i>
+                </a>
+                <a id="desk-wa-link" href="#" target="_blank" class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 border border-gray-200 text-gray-600 hover:text-[#25D366] hover:border-[#25D366] transition-all">
+                    <i class="fab fa-whatsapp text-lg"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <!-- STREAMING_CHUNK:Conteudo Principal... -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-5 py-8 md:py-12 pb-28 md:pb-12">
+        
+        <!-- INTRODUÇÃO -->
+        <div class="mb-10 md:mb-14 text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+                <h2 class="text-2xl md:text-3xl font-black text-gray-900 mb-2">Serviços Premium</h2>
+                <p class="text-sm text-gray-500 font-medium">✂️ Corte na régua | 💈 Barba alinhada</p>
+            </div>
+            <div class="hidden md:block">
+                <button onclick="document.getElementById('services-list').scrollIntoView({behavior:'smooth'});" class="bg-brand-black hover:bg-neutral-800 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-colors text-sm flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4 text-brand-gold"></i> Agendar Agora
+                </button>
+            </div>
+        </div>
+
+        <!-- LISTA DE SERVIÇOS (GRID RESPONSIVO) -->
+        <div id="services-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">
+            <!-- Injetado por JS -->
+        </div>
+
+        <!-- MAPA DE LOCALIZAÇÃO -->
+        <div class="mb-12 border-t border-gray-200 pt-12">
+            <div class="flex items-center gap-2 mb-6">
+                <div class="w-10 h-10 bg-brand-lightGold rounded-full flex items-center justify-center">
+                    <i data-lucide="map-pin" class="w-5 h-5 text-brand-darkGold"></i>
+                </div>
+                <h3 class="text-lg font-black text-gray-900 uppercase tracking-wide">Nossa Localização</h3>
+            </div>
+            <div class="w-full h-[250px] md:h-[350px] bg-gray-200 rounded-3xl overflow-hidden border border-gray-200 shadow-md relative">
+                <iframe src="https://maps.google.com/maps?q=Rua+elizeu+xavier+nunes+874,+Espírito+Santo,+Brazil&hl=pt-BR&z=15&output=embed" width="100%" height="100%" style="border:0;" loading="lazy"></iframe>
+            </div>
+            <p class="text-sm text-gray-500 mt-4 font-medium md:ml-2">
+                Rua Elizeu Xavier Nunes, 874 - Espírito Santo, ES - CEP: 29285-000
+            </p>
+        </div>
+
+    </main>
+
+    <!-- FOOTER SITE -->
+    <footer class="bg-white border-t border-gray-200 py-10 mt-auto">
+        <div class="max-w-5xl mx-auto px-5 flex flex-col items-center text-center">
+            <img src="https://alansmorais.github.io/primeclub/images/prime_club_barbearia_logo.png" alt="logo footer" class="w-12 h-12 object-cover rounded-full border border-gray-200 mb-4 grayscale opacity-40">
+            <p class="text-gray-500 text-[10px] font-bold tracking-widest uppercase mb-2">© 2026 Prime Club Barbearia. Todos os direitos reservados.</p>
+            <p class="text-gray-400 text-[10px] font-medium tracking-wider uppercase">
+                Desenvolvido por <a href="https://alansmsolutions.com" target="_blank" class="text-brand-gold hover:text-brand-darkGold transition font-bold">Alan SM Solutions</a>
+            </p>
+        </div>
+    </footer>
+
+    <!-- NAV INFERIOR MOBILE (Visível apenas em celulares) -->
+    <!-- STREAMING_CHUNK:Barra de Navegação Inferior... -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 border-t border-gray-200 flex justify-around p-3 z-30 backdrop-blur-xl pb-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+        <button onclick="openMyBookings()" class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-brand-gold transition-colors group">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full group-hover:bg-brand-lightGold transition-colors">
+                <i data-lucide="calendar-search" class="w-5 h-5 group-hover:text-brand-darkGold transition-colors"></i>
+            </div>
+            <span class="text-[9px] font-black tracking-widest">RESERVAS</span>
+        </button>
+
+        <a href="https://www.instagram.com/primeclubbarbearia01/" target="_blank" class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-[#E1306C] transition-colors group">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full group-hover:bg-[#E1306C]/10 transition-colors">
+                <i class="fab fa-instagram text-xl group-hover:text-[#E1306C] transition-colors"></i>
+            </div>
+            <span class="text-[9px] font-black tracking-widest">INSTAGRAM</span>
+        </a>
+        
+        <a id="nav-wa-link" href="#" target="_blank" class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-[#25D366] transition-colors group">
+            <div class="w-10 h-10 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full group-hover:bg-[#25D366]/10 transition-colors">
+                <i class="fab fa-whatsapp text-xl group-hover:text-[#25D366] transition-colors"></i>
+            </div>
+            <span class="text-[9px] font-black tracking-widest">WHATSAPP</span>
+        </a>
+    </nav>
+
+    <!-- ======================================================= -->
+    <!-- MODAL "MEUS AGENDAMENTOS"                               -->
+    <!-- ======================================================= -->
+    <!-- STREAMING_CHUNK:Modal de Meus Agendamentos... -->
+    <div id="my-bookings-modal">
+        <div class="modal-box shadow-2xl bg-gray-50 flex flex-col">
+            <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm relative z-10">
+                <div class="w-10"></div>
+                <div class="absolute left-1/2 -translate-x-1/2 text-center w-3/5">
+                    <p class="text-[13px] font-black text-gray-900 truncate">Meus Agendamentos</p>
+                </div>
+                <button onclick="closeMyBookings()" class="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </header>
+
+            <div class="p-5 border-b border-gray-100 bg-white shrink-0">
+                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1 block mb-1.5">Digite seu WhatsApp</label>
+                <div class="flex gap-2">
+                    <input type="tel" id="search-phone" placeholder="Ex: 27999999999" class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
+                    <button onclick="searchMyBookings()" class="bg-brand-black text-white px-5 rounded-xl font-bold text-[12px] uppercase tracking-wider hover:bg-neutral-800 transition">Buscar</button>
+                </div>
+            </div>
+
+            <div id="my-bookings-results" class="flex-1 overflow-y-auto p-5 pb-10">
+                <div class="text-center text-gray-400 text-[12px] py-10 font-bold">Digite seu número acima para buscar.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- MODAL DE AGENDAMENTO (O SISTEMA APLICATIVO)             -->
+    <!-- ======================================================= -->
+    <!-- STREAMING_CHUNK:Modal de Novo Agendamento... -->
+    <div id="booking-modal">
+        <div class="modal-box shadow-2xl">
+            
+            <!-- TELA 1: DADOS E HORÁRIOS -->
+            <section id="step-2" class="screen">
+                <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm relative z-10">
+                    <button onclick="closeBooking()" class="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+                    <div class="absolute left-1/2 -translate-x-1/2 text-center w-3/5">
+                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Etapa 1/2</p>
+                        <p id="lbl-selected-service" class="text-[13px] font-black text-gray-900 truncate"></p>
+                    </div>
+                    <div class="w-10"></div>
+                </header>
+
+                <div class="flex-1 overflow-y-auto bg-gray-50 hide-scrollbar pb-10">
+                    
+                    <!-- Barbeiro Fixo -->
+                    <div class="bg-white p-5 pb-6 border-b border-gray-100">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="scissors" class="w-4 h-4 text-brand-gold"></i> Profissional</h4>
+                        <div class="flex gap-4 overflow-x-auto hide-scrollbar px-1">
+                            <div class="pro-card selected shrink-0 w-[110px] bg-white border-2 border-transparent rounded-[20px] p-3.5 flex flex-col items-center gap-2 cursor-default shadow-sm">
+                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-lg shadow-sm border border-gray-100">🧔🏻</div>
+                                <span class="text-[11px] font-bold text-gray-900">Christiano</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data -->
+                    <div class="bg-white p-5 pb-6 border-b border-gray-100 mt-2">
+                        <div class="flex justify-between items-end mb-4">
+                            <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-brand-gold"></i> Data</h4>
+                            <h4 id="lbl-month" class="text-[9px] font-black text-brand-gold uppercase tracking-[0.2em] bg-brand-lightGold px-2.5 py-1 rounded-md"></h4>
+                        </div>
+                        <div id="dates-container" class="flex gap-2 overflow-x-auto hide-scrollbar px-1 pb-2 snap-x"></div>
+                    </div>
+
+                    <!-- Horário -->
+                    <div class="bg-white p-5 min-h-[250px] mt-2 border-b border-gray-100">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-5 flex justify-between items-center">
+                            <span class="flex items-center gap-2"><i data-lucide="clock" class="w-4 h-4 text-brand-gold"></i> Horário</span>
+                            <span id="time-loader" class="text-brand-gold text-[9px] animate-pulse hidden bg-brand-lightGold px-2.5 py-1 rounded font-bold">Buscando...</span>
+                        </h4>
+                        <div id="times-container" class="grid grid-cols-3 sm:grid-cols-4 gap-3"></div>
+                        <div id="no-times-msg" class="hidden flex-col items-center justify-center text-center p-6 bg-red-50 rounded-2xl border border-red-100 mt-2">
+                            <i data-lucide="calendar-x" class="w-8 h-8 text-red-400 mb-2"></i>
+                            <p class="text-[12px] text-red-600 font-bold">Agenda cheia neste dia.</p>
+                            <p class="text-[10px] text-red-400 mt-1">Por favor, selecione outra data.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border-t border-gray-100 p-4 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] pb-8 sm:pb-4">
+                    <button id="btn-to-step3" disabled onclick="goToStep(3)" class="w-full bg-brand-black hover:bg-neutral-800 text-white py-4 rounded-xl font-black disabled:opacity-30 transition-all text-[12px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
+                        Continuar <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- TELA 2: RESUMO E FORMULÁRIO -->
+            <section id="step-3" class="screen">
+                <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm relative z-10">
+                    <button onclick="goToStep(2)" class="w-10 h-10 flex items-center justify-center bg-gray-50 hover:bg-gray-100 rounded-full text-gray-600 transition"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                    <div class="absolute left-1/2 -translate-x-1/2 text-center w-3/5">
+                        <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Etapa 2/2</p>
+                        <p class="text-[13px] font-black text-gray-900">Finalizar</p>
+                    </div>
+                    <div class="w-10"></div>
+                </header>
+
+                <div class="flex-1 overflow-y-auto bg-gray-50 hide-scrollbar p-4 pb-10">
+                    
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden mb-4">
+                        <div class="absolute top-0 left-0 w-1.5 h-full bg-brand-gold"></div>
+                        <h3 id="sum-service" class="font-black text-[15px] text-gray-900 mb-4"></h3>
+                        <div class="space-y-3 text-[13px] text-gray-600 font-medium">
+                            <div class="flex items-center gap-3"><i data-lucide="calendar" class="w-4 h-4 text-brand-gold"></i> <span id="sum-datetime"></span></div>
+                            <div class="flex items-center gap-3"><i data-lucide="user" class="w-4 h-4 text-brand-gold"></i> <span id="sum-pro"></span></div>
+                            <div class="flex items-center gap-3 pt-3 mt-1 border-t border-gray-100"><i data-lucide="wallet" class="w-4 h-4 text-brand-green"></i> <span id="sum-price" class="font-black text-[16px] text-gray-900"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Seus Dados</h4>
+                        <form id="booking-form" class="space-y-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1 block mb-1.5">Nome Completo</label>
+                                <input type="text" id="client-name" required placeholder="Ex: João Silva" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-500 uppercase ml-1 block mb-1.5">WhatsApp (DDD)</label>
+                                <input type="tel" id="client-phone" required placeholder="Ex: 27999999999" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
+                            </div>
+                            
+                            <div id="inline-pix-warning" class="hidden flex gap-3 bg-orange-50 border border-orange-100 p-4 rounded-xl items-center mt-2">
+                                <i data-lucide="alert-circle" class="w-6 h-6 text-orange-500 shrink-0"></i>
+                                <p class="text-orange-800 text-[11px] font-bold leading-tight">Este número exige pagamento de 50% de sinal para aprovação.</p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="bg-white border-t border-gray-100 p-4 shrink-0 shadow-[0_-10px_20px_rgba(0,0,0,0.03)] pb-8 sm:pb-4">
+                    <button type="submit" form="booking-form" id="btn-submit" class="w-full bg-brand-green hover:bg-green-700 text-white font-black py-4 rounded-xl shadow-lg shadow-green-100 uppercase tracking-widest text-[13px] transition flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Concluir Reserva
+                    </button>
+                </div>
+            </section>
+
+            <!-- TELA 3: SUCESSO -->
+            <!-- STREAMING_CHUNK:Tela de Sucesso... -->
+            <section id="step-success" class="screen justify-center items-center text-center p-8 bg-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=')] opacity-50"></div>
+                <div class="relative z-10 flex flex-col items-center w-full">
+                    <div id="success-icon" class="w-20 h-20 bg-green-50 text-brand-green rounded-full flex items-center justify-center mb-6 shadow-inner border border-green-100">
+                        <i data-lucide="check" class="w-10 h-10 stroke-[3]"></i>
+                    </div>
+                    <h2 id="success-title" class="text-2xl font-black mb-3 text-gray-900 tracking-tight">Tudo Certo!</h2>
+                    <p id="success-desc" class="text-gray-500 mb-10 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada com sucesso em nossa agenda. Te esperamos lá!</p>
+                    
+                    <a id="btn-success-wa" href="#" target="_blank" class="hidden w-full bg-brand-green text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-wider transition hover:bg-green-700 items-center justify-center gap-2 mb-3 shadow-lg shadow-green-200">
+                        <i class="fab fa-whatsapp text-lg"></i> Enviar Comprovante
+                    </a>
+
+                    <button onclick="location.reload()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-4 rounded-xl text-[12px] uppercase tracking-wider transition">Voltar ao Início</button>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- POPUP PIX (BLOQUEIO 50%) -->
+    <div id="pix-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-5 backdrop-blur-sm">
+        <div class="bg-white rounded-[32px] p-6 w-full max-w-[340px] text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-orange-400"></div>
+            <div class="w-16 h-16 bg-orange-50 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-sm mt-2">
+                <i data-lucide="lock" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-black text-gray-900 mb-2 tracking-tight">Pagamento Antecipado</h3>
+            <p class="text-[13px] text-gray-500 mb-5 leading-relaxed">
+                Sua reserva ficará <strong class="text-orange-500">PENDENTE</strong>.<br>Para garantir a vaga, pague <strong>50% via PIX</strong> agora.
+            </p>
+            
+            <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 mb-6">
+                <p class="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Chave Celular</p>
+                <p class="text-2xl font-black text-gray-900 tracking-widest">12345678910</p>
+                <p class="text-[9px] text-red-500 font-bold mt-2">* Sem estorno por cancelamento.</p>
+            </div>
+            
+            <div class="flex gap-3">
+                <button type="button" onclick="closePixModal()" class="flex-1 bg-white border-2 border-gray-200 text-gray-600 font-bold py-3.5 rounded-xl text-[11px] uppercase tracking-wider transition hover:bg-gray-50">Cancelar</button>
+                <button type="button" onclick="confirmPixAndSubmit()" class="flex-1 bg-brand-gold text-black font-black py-3.5 rounded-xl text-[11px] uppercase tracking-wider transition shadow-lg shadow-yellow-100/50 hover:brightness-110">Estou ciente</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        lucide.createIcons();
+        
+        // CONFIGURAÇÕES GERAIS
+        // STREAMING_CHUNK:Configuracoes JavaScript...
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
+        const BARBEARIA_WHATSAPP = "27999999999"; 
+        
+        document.getElementById('nav-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
+        document.getElementById('desk-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
+
+        const services = [
+            { id: "c-masc", name: "Corte Masculino", duration: "30min", price: 40.00 },
+            { id: "barba", name: "Barba", duration: "20min", price: 25.00 },
+            { id: "c-barba", name: "Corte & barba", duration: "45min", price: 60.00 },
+            { id: "c-barba-sob", name: "Corte, barba & sobrancelha", duration: "45min", price: 65.00 },
+            { id: "c-b-s-l", name: "Corte, barba, sobrancelha & limpeza", duration: "1h:00min", price: 90.00 },
+            { id: "c-pig", name: "Corte & pigmentação", duration: "45min", price: 60.00 },
+            { id: "plat", name: "Platinado", duration: "30min", price: 120.00 },
+            { id: "luzes", name: "Luzes", duration: "30min", price: 100.00 },
+            { id: "alin", name: "Alinhamento capilar", duration: "20min", price: 40.00 },
+            { id: "camu", name: "Camuflagem de fios brancos", duration: "10min", price: 30.00 },
+            { id: "limp", name: "Limpeza de pele e extração", duration: "30min", price: 35.00 },
+            { id: "nariz", name: "Depilação de nariz", duration: "10min", price: 20.00 },
+            { id: "pez", name: "Pezinho de cabelo", duration: "05min", price: 10.00 }
+        ];
+
+        let state = { service: null, professional: "Christiano", dateISO: null, time: null, blockedNumbers: [], blockedDates: [], allBookings: [] };
+        let pendingPayload = null, currentName = "", currentPhone = "", currentPrice = 0, isRestricted = false;
+
+        const els = {
+            name: document.getElementById('client-name'),
+            phone: document.getElementById('client-phone'),
+            dates: document.getElementById('dates-container'),
+            times: document.getElementById('times-container')
+        };
+
+        function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+
+        window.onload = () => { 
+            renderServices(); 
+            fetchAvailability(); 
+            els.phone.addEventListener('input', (e) => { 
+                e.target.value = e.target.value.replace(/\D/g,''); 
+                updateSummary(); 
+            });
+            document.getElementById('search-phone').addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/\D/g,'');
+            });
+            document.getElementById('booking-form').addEventListener('submit', handleFormSubmit);
+        };
+
+        // STREAMING_CHUNK:Logica de Minhas Reservas...
+        function openMyBookings() {
+            document.getElementById('my-bookings-modal').classList.remove('hidden');
+            document.getElementById('my-bookings-modal').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            document.getElementById('search-phone').value = '';
+            document.getElementById('my-bookings-results').innerHTML = '<div class="text-center text-gray-400 text-[12px] py-10 font-bold">Digite seu número acima para buscar.</div>';
+        }
+
+        function closeMyBookings() {
+            document.getElementById('my-bookings-modal').classList.add('hidden');
+            document.getElementById('my-bookings-modal').classList.remove('flex');
+            document.body.style.overflow = '';
+        }
+
+        async function searchMyBookings() {
+            let phone = document.getElementById('search-phone').value.replace(/\D/g, '');
+            if(phone.length < 10) { showToast('Digite um número de WhatsApp válido.'); return; }
+            
+            const resultsContainer = document.getElementById('my-bookings-results');
+            resultsContainer.innerHTML = '<div class="text-center py-10"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto text-brand-gold mb-2"></i><p class="text-[11px] text-gray-500 font-bold">Buscando na agenda...</p></div>';
+            lucide.createIcons();
+
+            try {
+                // Fetch fresh data em tempo real
+                const response = await fetch(WEB_APP_URL + '?action=get_all');
+                const data = await response.json();
+                state.allBookings = data.bookings || [];
+                
+                // Filtra pelo telefone e exclui os cancelados
+                let results = state.allBookings.filter(b => b.Telefone === phone && b.Status !== 'Cancelado');
+                
+                // Ordena da mais recente/futura para a mais antiga
+                results.sort((a,b) => new Date(b.Data) - new Date(a.Data)); 
+                
+                if(results.length === 0) {
+                    resultsContainer.innerHTML = '<div class="text-center text-gray-500 text-[12px] py-10 font-bold">Nenhuma reserva encontrada para este número.</div>';
+                } else {
+                    let html = '';
+                    results.forEach(b => {
+                        let d = b.Data; if(d.includes('T')) d = d.split('T')[0];
+                        let displayDate = d.split('-').reverse().join('/');
+                        let statusColor = b.Status === 'Pendente' ? 'text-orange-600 bg-orange-50 border-orange-200' : 'text-green-700 bg-green-50 border-green-200';
+                        
+                        html += `
+                        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm mb-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-black text-[14px] text-gray-900">${b.Servico}</h4>
+                                <span class="px-2.5 py-1 rounded-md border text-[9px] font-bold uppercase tracking-widest ${statusColor}">${b.Status}</span>
+                            </div>
+                            <div class="flex items-center gap-4 text-[12px] text-gray-500 font-medium mt-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4 text-brand-gold"></i> ${displayDate}</span>
+                                <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-brand-gold"></i> ${b.Hora.substring(0,5)}</span>
+                            </div>
+                        </div>`;
+                    });
+                    resultsContainer.innerHTML = html;
+                    lucide.createIcons();
+                }
+            } catch(e) {
+                resultsContainer.innerHTML = '<div class="text-center text-red-500 text-[12px] py-10 font-bold">Erro de conexão. Tente novamente.</div>';
+            }
+        }
+
+        // STREAMING_CHUNK:Logica do Fluxo Principal de Agendamento...
+        function renderServices() {
+            const grid = document.getElementById('services-list'); 
+            grid.innerHTML = '';
+            services.forEach((s, index) => {
+                const card = document.createElement('div'); 
+                card.className = 'flex items-center justify-between p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:border-brand-gold hover:shadow-md transition cursor-pointer group';
+                card.onclick = () => chooseService(index);
+                card.innerHTML = `
+                    <div class="flex-1 pr-4">
+                        <h4 class="font-bold text-[14px] text-gray-900 mb-2 group-hover:text-brand-darkGold transition-colors">${s.name}</h4>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-bold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded uppercase tracking-wider flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> ${s.duration}</span>
+                            <span class="text-[12px] font-black text-brand-darkGold bg-brand-lightGold px-2 py-0.5 rounded">R$ ${s.price.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <button class="bg-brand-black text-white text-[10px] font-bold px-4 py-2.5 rounded-full uppercase tracking-widest shrink-0 shadow-sm group-hover:bg-brand-gold transition-colors">Agendar</button>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function fetchAvailability() {
+            document.getElementById('time-loader').classList.remove('hidden');
+            fetch(WEB_APP_URL + '?action=get_all').then(r => r.json()).then(data => { 
+                state.allBookings = data.bookings || []; state.blockedDates = data.blockedDates || []; state.blockedNumbers = data.blockedNumbers || [];
+                document.getElementById('time-loader').classList.add('hidden');
+                if(document.getElementById('booking-modal').classList.contains('active')){ renderCalendar(); }
+            }).catch(err => console.error(err));
+        }
+
+        function openBooking() { 
+            document.getElementById('booking-modal').classList.add('active'); 
+            document.body.style.overflow = 'hidden';
+        }
+        function closeBooking() { 
+            document.getElementById('booking-modal').classList.remove('active'); 
+            document.body.style.overflow = '';
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${step}`).classList.add('active');
+            if(step === 2) renderCalendar();
+            if(step === 3) updateSummary();
+        }
+
+        function chooseService(index) {
+            state.service = services[index];
+            document.getElementById('lbl-selected-service').textContent = state.service.name;
+            state.dateISO = null; state.time = null;
+            document.getElementById('btn-to-step3').disabled = true;
+            els.times.innerHTML = '';
+            fetchAvailability(); openBooking(); goToStep(2);
+        }
+
+        function renderCalendar() {
+            els.dates.innerHTML = ''; 
+            const days = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"]; const today = new Date();
+            const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+            document.getElementById('lbl-month').textContent = `${months[today.getMonth()]} ${today.getFullYear()}`;
+
+            let count = 0;
+            for (let i = 0; i < 30; i++) {
+                let d = new Date(today); d.setDate(today.getDate() + i);
+                let iso = d.toISOString().split('T')[0];
+                if(state.blockedDates.includes(iso)) continue;
+                
+                let btn = document.createElement('div'); 
+                if (!state.dateISO) state.dateISO = iso; 
+                
+                if (state.dateISO === iso) {
+                    btn.className = 'snap-start shrink-0 w-[65px] h-[80px] bg-brand-black border-2 border-brand-gold rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all shadow-md';
+                    btn.innerHTML = `<span class="text-[9px] font-black text-gray-300 uppercase mb-1.5">${days[d.getDay()]}</span><span class="text-[20px] font-black text-white leading-none">${d.getDate()}</span>`;
+                } else {
+                    btn.className = 'snap-start shrink-0 w-[65px] h-[80px] bg-white border border-gray-200 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all hover:border-brand-gold';
+                    btn.innerHTML = `<span class="text-[9px] font-bold text-gray-400 uppercase mb-1.5">${days[d.getDay()]}</span><span class="text-[20px] font-black text-gray-800 leading-none">${d.getDate()}</span>`;
+                }
+                
+                btn.onclick = () => selectDate(iso);
+                els.dates.appendChild(btn); 
+                count++; if(count >= 14) break;
+            }
+            if(state.dateISO) renderTimes();
+        }
+
+        function selectDate(iso) {
+            state.dateISO = iso; state.time = null;
+            renderCalendar(); document.getElementById('btn-to-step3').disabled = true; renderTimes();
+        }
+
+        function renderTimes() {
+            if(!state.dateISO) return;
+            els.times.innerHTML = ''; 
+            const horarios = ["09:00", "09:30", "10:00", "10:30", "11:00", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"];
+            
+            const booked = state.allBookings.filter(b => {
+                let bDate = b.Data || b['Data Agendamento'] || ''; if(bDate.includes('T')) bDate = bDate.split('T')[0];
+                let isSamePro = b.Servico && b.Servico.includes(state.professional);
+                return bDate === state.dateISO && isSamePro && b.Status !== 'Cancelado';
+            }).map(b => b.Hora ? b.Hora.substring(0,5) : '');
+
+            let count = 0;
+            horarios.forEach(h => {
+                if(!booked.includes(h)) {
+                    let btn = document.createElement('button'); 
+                    btn.textContent = h;
+                    
+                    if(state.time === h) {
+                        btn.className = 'py-3.5 rounded-xl text-[13px] font-black transition-all shadow-sm bg-brand-gold text-brand-black border-brand-gold border-2 transform scale-105';
+                    } else {
+                        btn.className = 'py-3.5 rounded-xl text-[13px] font-black transition-all bg-white border-2 border-gray-100 text-gray-600 hover:border-brand-gold hover:text-brand-darkGold';
+                    }
+
+                    btn.onclick = () => selectTime(h, btn);
+                    els.times.appendChild(btn); count++;
+                }
+            });
+            
+            document.getElementById('no-times-msg').style.display = count === 0 ? 'flex' : 'none';
+            els.times.style.display = count === 0 ? 'none' : 'grid';
+        }
+
+        function selectTime(t, el) {
+            state.time = t;
+            document.getElementById('btn-to-step3').disabled = false;
+            renderTimes();
+        }
+
+        function updateSummary() {
+            if(!state.service) return;
+            document.getElementById('sum-service').textContent = state.service.name;
+            document.getElementById('sum-pro').textContent = `Com ${state.professional}`;
+            
+            if(state.dateISO && state.time) {
+                document.getElementById('sum-datetime').textContent = `${state.dateISO.split('-').reverse().join('/')} às ${state.time}`;
+            }
+            
+            let price = state.service.price;
+            currentPhone = els.phone.value;
+            isRestricted = state.blockedNumbers.includes(currentPhone);
+            
+            const inlineWarning = document.getElementById('inline-pix-warning');
+            const priceEl = document.getElementById('sum-price');
+            
+            if(isRestricted && currentPhone.length >= 10) {
+                inlineWarning.classList.remove('hidden'); inlineWarning.classList.add('flex'); price = price / 2;
+                priceEl.innerHTML = `<span class="line-through text-gray-400 text-[12px] mr-2">R$${state.service.price.toFixed(2)}</span> <span class="text-orange-600">R$${price.toFixed(2)}</span>`;
+            } else {
+                inlineWarning.classList.add('hidden'); inlineWarning.classList.remove('flex');
+                priceEl.textContent = `R$ ${price.toFixed(2)}`;
+            }
+            currentPrice = price;
+        }
+
+        // STREAMING_CHUNK:Finalizacao do Pix e Confirmacoes...
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            currentName = els.name.value.trim(); currentPhone = els.phone.value;
+            if(!currentName || currentPhone.length < 10 || !state.dateISO || !state.time){ showToast('Preencha os dados corretamente.'); return; }
+
+            isRestricted = state.blockedNumbers.includes(currentPhone);
+            currentPrice = isRestricted ? (state.service.price/2) : state.service.price;
+            
+            pendingPayload = { 
+                type: 'booking', client: currentName, phone: currentPhone, 
+                service: `${state.service.name} (Com ${state.professional})`, 
+                date: state.dateISO, time: state.time, price: currentPrice.toString(), 
+                status: isRestricted ? 'Pendente' : 'Confirmado', paymentMethod: isRestricted ? 'PIX' : 'Balcão', notes: isRestricted ? 'AGUARDANDO PIX (50%)' : 'Site Prime Club' 
+            };
+
+            if(isRestricted) { document.getElementById('pix-modal').classList.remove('hidden'); document.getElementById('pix-modal').classList.add('flex'); }
+            else executeBooking();
+        }
+
+        function closePixModal() { document.getElementById('pix-modal').classList.add('hidden'); document.getElementById('pix-modal').classList.remove('flex');}
+        function confirmPixAndSubmit() { closePixModal(); executeBooking(); }
+
+        async function executeBooking() {
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true; btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processando...'; lucide.createIcons();
+
+            try {
+                await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(pendingPayload) });
+                
+                const btnWa = document.getElementById('btn-success-wa');
+                if(isRestricted) {
+                    document.getElementById('success-title').textContent = "Quase lá!";
+                    document.getElementById('success-desc').innerHTML = "Sua reserva está <strong class='text-orange-600'>PENDENTE</strong>. Envie o comprovante do PIX no botão abaixo para garantir sua vaga.";
+                    btnWa.classList.remove('hidden'); btnWa.classList.add('flex');
+                    let msgPix = `Olá Prime Club!\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n\n*Estou ciente do sinal e envio abaixo o comprovante do PIX (R$${currentPrice.toFixed(2)}) para confirmar.*`;
+                    btnWa.href = `https://wa.me/55${BARBEARIA_WHATSAPP}?text=${encodeURIComponent(msgPix)}`;
+                    btnWa.innerHTML = '<i class="fab fa-whatsapp text-xl"></i> Enviar Comprovante';
+                } else {
+                    document.getElementById('success-title').textContent = "Tudo Certo!";
+                    document.getElementById('success-desc').textContent = "Sua reserva foi confirmada com sucesso em nossa agenda. Te esperamos lá!";
+                    btnWa.classList.remove('flex'); btnWa.classList.add('hidden');
+                }
+
+                document.getElementById('step-success').classList.add('active'); document.getElementById('step-3').classList.remove('active');
+            } catch(err) { showToast('Erro na conexão.'); btn.disabled = false; btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> Concluir Reserva'; lucide.createIcons(); }
+        }
+    </script>
+</body>
+</html>
+```eof

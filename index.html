@@ -69,7 +69,6 @@
 <body class="flex flex-col min-h-screen">
 
     <!-- HEADER SITE -->
-    <!-- STREAMING_CHUNK:Header com botão de Meus Agendamentos... -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
@@ -97,7 +96,6 @@
     </header>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <!-- STREAMING_CHUNK:Conteudo Principal... -->
     <main class="flex-1 w-full max-w-5xl mx-auto px-5 py-8 md:py-12 pb-28 md:pb-12">
         
         <!-- INTRODUÇÃO -->
@@ -148,7 +146,6 @@
     </footer>
 
     <!-- NAV INFERIOR MOBILE (Visível apenas em celulares) -->
-    <!-- STREAMING_CHUNK:Barra de Navegação Inferior... -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 border-t border-gray-200 flex justify-around p-3 z-30 backdrop-blur-xl pb-6 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
         <button onclick="openMyBookings()" class="flex flex-col items-center gap-1.5 text-gray-500 hover:text-brand-gold transition-colors group">
             <div class="w-10 h-10 flex items-center justify-center bg-gray-50 border border-gray-100 rounded-full group-hover:bg-brand-lightGold transition-colors">
@@ -175,7 +172,6 @@
     <!-- ======================================================= -->
     <!-- MODAL "MEUS AGENDAMENTOS"                               -->
     <!-- ======================================================= -->
-    <!-- STREAMING_CHUNK:Modal de Meus Agendamentos... -->
     <div id="my-bookings-modal">
         <div class="modal-box shadow-2xl bg-gray-50 flex flex-col">
             <header class="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between shrink-0 shadow-sm relative z-10">
@@ -203,7 +199,6 @@
     <!-- ======================================================= -->
     <!-- MODAL DE AGENDAMENTO (O SISTEMA APLICATIVO)             -->
     <!-- ======================================================= -->
-    <!-- STREAMING_CHUNK:Modal de Novo Agendamento... -->
     <div id="booking-modal">
         <div class="modal-box shadow-2xl">
             
@@ -313,7 +308,6 @@
             </section>
 
             <!-- TELA 3: SUCESSO -->
-            <!-- STREAMING_CHUNK:Tela de Sucesso... -->
             <section id="step-success" class="screen justify-center items-center text-center p-8 bg-white relative overflow-hidden">
                 <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmM2Y0ZjYiLz48L3N2Zz4=')] opacity-50"></div>
                 <div class="relative z-10 flex flex-col items-center w-full">
@@ -365,7 +359,6 @@
         lucide.createIcons();
         
         // CONFIGURAÇÕES GERAIS
-        // STREAMING_CHUNK:Configuracoes JavaScript...
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
         const BARBEARIA_WHATSAPP = "27999999999"; 
         
@@ -413,18 +406,15 @@
             document.getElementById('booking-form').addEventListener('submit', handleFormSubmit);
         };
 
-        // STREAMING_CHUNK:Logica de Minhas Reservas...
         function openMyBookings() {
-            document.getElementById('my-bookings-modal').classList.remove('hidden');
-            document.getElementById('my-bookings-modal').classList.add('flex');
+            document.getElementById('my-bookings-modal').classList.add('active');
             document.body.style.overflow = 'hidden';
             document.getElementById('search-phone').value = '';
             document.getElementById('my-bookings-results').innerHTML = '<div class="text-center text-gray-400 text-[12px] py-10 font-bold">Digite seu número acima para buscar.</div>';
         }
 
         function closeMyBookings() {
-            document.getElementById('my-bookings-modal').classList.add('hidden');
-            document.getElementById('my-bookings-modal').classList.remove('flex');
+            document.getElementById('my-bookings-modal').classList.remove('active');
             document.body.style.overflow = '';
         }
 
@@ -477,7 +467,6 @@
             }
         }
 
-        // STREAMING_CHUNK:Logica do Fluxo Principal de Agendamento...
         function renderServices() {
             const grid = document.getElementById('services-list'); 
             grid.innerHTML = '';
@@ -633,7 +622,6 @@
             currentPrice = price;
         }
 
-        // STREAMING_CHUNK:Finalizacao do Pix e Confirmacoes...
         function handleFormSubmit(e) {
             e.preventDefault();
             currentName = els.name.value.trim(); currentPhone = els.phone.value;

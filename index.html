@@ -230,9 +230,25 @@
                     <div class="bg-white p-5 pb-6 border-b border-gray-100 mt-2">
                         <div class="flex justify-between items-end mb-4">
                             <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4 text-brand-gold"></i> Data</h4>
-                            <h4 id="lbl-month" class="text-[9px] font-black text-brand-gold uppercase tracking-[0.2em] bg-brand-lightGold px-2.5 py-1 rounded-md"></h4>
+                            <div class="flex items-center gap-2">
+                                <h4 id="lbl-month" class="text-[9px] font-black text-brand-gold uppercase tracking-[0.2em] bg-brand-lightGold px-2.5 py-1 rounded-md"></h4>
+                                <div class="relative w-7 h-7" title="Abrir Calendário Completo">
+                                    <input type="date" id="native-date-picker" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleDatePicker(this)">
+                                    <div class="absolute inset-0 bg-gray-50 border border-gray-200 rounded-full flex items-center justify-center text-gray-600 hover:text-brand-gold hover:border-brand-gold transition-colors">
+                                        <i data-lucide="calendar-search" class="w-3.5 h-3.5"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div id="dates-container" class="flex gap-2 overflow-x-auto hide-scrollbar px-1 pb-2 snap-x"></div>
+                        <div class="relative group">
+                            <!-- Seta Esquerda (Apenas Computador) -->
+                            <button type="button" onclick="document.getElementById('dates-container').scrollBy({left: -150, behavior: 'smooth'})" class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 -ml-2 w-7 h-7 bg-white border border-gray-200 rounded-full items-center justify-center shadow-md z-10 text-gray-500 hover:text-brand-gold hover:border-brand-gold transition-all opacity-0 group-hover:opacity-100"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                            
+                            <div id="dates-container" class="flex gap-2 overflow-x-auto hide-scrollbar px-1 pb-2 snap-x scroll-smooth"></div>
+                            
+                            <!-- Seta Direita (Apenas Computador) -->
+                            <button type="button" onclick="document.getElementById('dates-container').scrollBy({left: 150, behavior: 'smooth'})" class="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 -mr-2 w-7 h-7 bg-white border border-gray-200 rounded-full items-center justify-center shadow-md z-10 text-gray-500 hover:text-brand-gold hover:border-brand-gold transition-all opacity-0 group-hover:opacity-100"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                        </div>
                     </div>
 
                     <!-- Horário -->
@@ -360,7 +376,7 @@
         
         // CONFIGURAÇÕES GERAIS
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
-        const BARBEARIA_WHATSAPP = "+55 21 98000-0942"; 
+        const BARBEARIA_WHATSAPP = "27999999999"; 
         
         document.getElementById('nav-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
         document.getElementById('desk-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
@@ -527,15 +543,15 @@
             els.dates.innerHTML = ''; 
             const days = ["DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"]; const today = new Date();
             const months = ["JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
-            document.getElementById('lbl-month').textContent = `${months[today.getMonth()]} ${today.getFullYear()}`;
 
             let count = 0;
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 90; i++) { // Renderiza até 90 dias à frente para permitir seleções distantes
                 let d = new Date(today); d.setDate(today.getDate() + i);
                 let iso = d.toISOString().split('T')[0];
                 if(state.blockedDates.includes(iso)) continue;
                 
                 let btn = document.createElement('div'); 
+                btn.id = 'date-' + iso; // ID único para podermos dar scroll até ele
                 if (!state.dateISO) state.dateISO = iso; 
                 
                 if (state.dateISO === iso) {
@@ -548,9 +564,46 @@
                 
                 btn.onclick = () => selectDate(iso);
                 els.dates.appendChild(btn); 
-                count++; if(count >= 14) break;
+                count++; if(count >= 60) break; // Exibe os próximos 60 dias úteis no scroll
             }
-            if(state.dateISO) renderTimes();
+            
+            // Atualiza o rótulo do mês com base na data selecionada ou no dia de hoje
+            let displayDate = state.dateISO ? new Date(state.dateISO + 'T00:00:00') : today;
+            document.getElementById('lbl-month').textContent = `${months[displayDate.getMonth()]} ${displayDate.getFullYear()}`;
+            
+            if(state.dateISO) {
+                renderTimes();
+                // Faz a lista rolar suavemente até a data que foi selecionada no calendário nativo
+                setTimeout(() => {
+                    let selectedEl = document.getElementById('date-' + state.dateISO);
+                    if(selectedEl) selectedEl.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'center'});
+                }, 50);
+            }
+            
+            lucide.createIcons();
+        }
+
+        function handleDatePicker(el) {
+            let selectedIso = el.value;
+            if(!selectedIso) return;
+            
+            let selectedDateObj = new Date(selectedIso + 'T00:00:00');
+            let today = new Date();
+            today.setHours(0,0,0,0);
+            
+            if(selectedDateObj < today) {
+                showToast("Por favor, selecione uma data futura.");
+                return;
+            }
+            if(state.blockedDates.includes(selectedIso)) {
+                showToast("Esta data não tem expediente ou está bloqueada.");
+                return;
+            }
+            
+            state.dateISO = selectedIso;
+            state.time = null;
+            document.getElementById('btn-to-step3').disabled = true;
+            renderCalendar();
         }
 
         function selectDate(iso) {

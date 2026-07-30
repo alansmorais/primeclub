@@ -88,6 +88,7 @@
             <button id="tab-dashboard" class="tab-btn text-[#D4AF37] border-[#D4AF37]" onclick="switchTab('dashboard')"><i class="fas fa-calendar-check mr-1"></i> Agenda & Bloqueios</button>
             <button id="tab-financeiro" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('financeiro')"><i class="fas fa-chart-line mr-1"></i> Financeiro</button>
             <button id="tab-clientes" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('clientes')"><i class="fas fa-users mr-1"></i> Lista de Clientes</button>
+            <button id="tab-servicos" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('servicos')"><i class="fas fa-cut mr-1"></i> Serviços</button>
             <button id="tab-cursos" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('cursos')"><i class="fas fa-graduation-cap mr-1"></i> Cursos</button>
             <button id="tab-unidades" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('unidades')"><i class="fas fa-store mr-1"></i> Unidades</button>
             <button id="tab-funcionarios" class="tab-btn text-gray-500 border-transparent" onclick="switchTab('funcionarios')"><i class="fas fa-id-badge mr-1"></i> Funcionários</button>
@@ -273,6 +274,35 @@
             </div>
         </div>
 
+        <!-- ================= SEÇÃO 5: SERVIÇOS ================= -->
+        <div id="sec-servicos" class="tab-content hidden space-y-6">
+            <div class="glass-card overflow-hidden !p-0">
+                <div class="p-6 border-b border-[#1f1f1f] bg-[#0a0a0a] flex justify-between items-center">
+                    <div>
+                        <h2 class="text-lg font-bold text-white"><i class="fas fa-cut text-[#D4AF37] mr-2"></i> Gestão de Serviços</h2>
+                        <p class="text-xs text-gray-500 mt-1">Adicione, edite preços ou exclua os serviços que aparecem no aplicativo dos clientes.</p>
+                    </div>
+                    <button onclick="openServiceModal()" class="btn-gold !py-2 !px-4 !text-[10px]"><i class="fas fa-plus"></i> Novo Serviço</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Nome do Serviço</th>
+                                <th>Duração</th>
+                                <th>Preço (R$)</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servicos-table-body">
+                            <!-- JS Inject -->
+                        </tbody>
+                    </table>
+                    <div id="no-servicos" class="hidden text-center py-10 text-gray-500 text-sm font-bold uppercase tracking-widest">Nenhum serviço cadastrado.</div>
+                </div>
+            </div>
+        </div>
+
         <!-- ================= SEÇÕES EM BREVE (FUNCIONÁRIOS E PROMOÇÕES) ================= -->
         <div id="sec-funcionarios" class="tab-content hidden h-[400px]">
             <div class="glass-card h-full flex flex-col items-center justify-center text-center">
@@ -331,6 +361,34 @@
         </div>
     </div>
 
+    <!-- MODAL NOVO/EDITAR SERVIÇO -->
+    <div id="admin-service-modal" class="hidden fixed inset-0 bg-black/80 z-[200] flex items-center justify-center p-5 backdrop-blur-sm">
+        <div class="bg-[#111] border border-[#1f1f1f] rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+            <div class="flex justify-between items-center mb-4 border-b border-[#1f1f1f] pb-3">
+                <h3 class="text-lg font-black text-[#D4AF37]" id="service-modal-title"><i class="fas fa-cut mr-2"></i> Novo Serviço</h3>
+                <button onclick="closeServiceModal()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="admin-service-form" class="space-y-4">
+                <input type="hidden" id="sv-id">
+                <div>
+                    <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Nome do Serviço</label>
+                    <input type="text" id="sv-nome" placeholder="Ex: Corte Degradê Especial" required class="admin-input">
+                </div>
+                <div class="flex gap-3">
+                    <div class="flex-1">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Duração (Texto)</label>
+                        <input type="text" id="sv-duracao" placeholder="Ex: 45min" required class="admin-input">
+                    </div>
+                    <div class="flex-1">
+                        <label class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1 block ml-1">Preço (R$)</label>
+                        <input type="number" id="sv-preco" placeholder="Ex: 45.00" step="0.01" required class="admin-input">
+                    </div>
+                </div>
+                <button type="submit" class="btn-gold w-full mt-2"><i class="fas fa-save"></i> Salvar Serviço</button>
+            </form>
+        </div>
+    </div>
+
     <div id="toast" class="toast"></div>
 
     <!-- ÁUDIO DE NOTIFICAÇÃO (Ficará oculto) -->
@@ -340,7 +398,7 @@
         // ================= CONFIGURAÇÃO =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
         
-        let state = { bookings: [], blockedDates: [], blockedNumbers: [], financeiro: [], cursos: [] };
+        let state = { bookings: [], blockedDates: [], blockedNumbers: [], financeiro: [], cursos: [], servicos: [] };
         let lastBookingCount = -1; // Variável para rastrear novos agendamentos
 
         function showToast(msg, isError = false) {
@@ -394,6 +452,7 @@
                 state.blockedNumbers = data.blockedNumbers || [];
                 state.financeiro = data.financeiro || [];
                 state.cursos = data.cursos || [];
+                state.servicos = data.servicos || [];
 
                 // Lógica para detectar e tocar a notificação de novo agendamento
                 if (lastBookingCount !== -1 && state.bookings.length > lastBookingCount) {
@@ -417,6 +476,30 @@
             renderFinanceiro();
             renderCursos();
             renderClientes();
+            renderServicos();
+        }
+
+        function renderServicos() {
+            const tbody = document.getElementById('servicos-table-body'); tbody.innerHTML = '';
+            if(!state.servicos || state.servicos.length === 0) {
+                document.getElementById('no-servicos').classList.remove('hidden');
+            } else {
+                document.getElementById('no-servicos').classList.add('hidden');
+                state.servicos.forEach(s => {
+                    let val = parseFloat(s['Preco'] || 0).toFixed(2);
+                    tbody.innerHTML += `<tr>
+                        <td class="font-bold text-white">${s['Nome']}</td>
+                        <td class="text-xs text-gray-400"><i class="far fa-clock mr-1"></i> ${s['Duracao']}</td>
+                        <td class="font-black text-[#D4AF37]">R$ ${val}</td>
+                        <td>
+                            <div class="flex gap-2">
+                                <button onclick="editService('${s.ID}', '${s.Nome}', '${s.Duracao}', '${s.Preco}')" class="bg-blue-500/20 text-blue-500 hover:bg-blue-500 hover:text-white border border-blue-500/30 p-2 rounded-lg transition" title="Editar"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteService('${s.ID}')" class="btn-danger !p-2" title="Excluir"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+            }
         }
 
         function renderAgenda() {
@@ -577,6 +660,42 @@
         function openAdminBooking() { document.getElementById('admin-booking-modal').classList.remove('hidden'); }
         function closeAdminBooking() { document.getElementById('admin-booking-modal').classList.add('hidden'); }
         
+        function openServiceModal() { 
+            document.getElementById('sv-id').value = ''; 
+            document.getElementById('admin-service-form').reset();
+            document.getElementById('service-modal-title').innerHTML = '<i class="fas fa-cut mr-2"></i> Novo Serviço';
+            document.getElementById('admin-service-modal').classList.remove('hidden'); 
+        }
+        function editService(id, nome, duracao, preco) {
+            document.getElementById('sv-id').value = id;
+            document.getElementById('sv-nome').value = nome;
+            document.getElementById('sv-duracao').value = duracao;
+            document.getElementById('sv-preco').value = preco;
+            document.getElementById('service-modal-title').innerHTML = '<i class="fas fa-edit mr-2"></i> Editar Serviço';
+            document.getElementById('admin-service-modal').classList.remove('hidden'); 
+        }
+        function closeServiceModal() { document.getElementById('admin-service-modal').classList.add('hidden'); }
+
+        document.getElementById('admin-service-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('sv-id').value;
+            const payload = {
+                action: id ? 'edit_service' : 'add_service',
+                id: id,
+                nome: document.getElementById('sv-nome').value,
+                duracao: document.getElementById('sv-duracao').value,
+                preco: document.getElementById('sv-preco').value
+            };
+            apiPost(payload, id ? 'Serviço atualizado!' : 'Serviço criado!');
+            closeServiceModal();
+        });
+
+        function deleteService(id) {
+            if(confirm('Excluir serviço? Ele será removido imediatamente do App dos clientes.')) {
+                apiPost({ action: 'delete_service', id: id }, 'Serviço excluído!');
+            }
+        }
+
         document.getElementById('admin-booking-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const payload = {

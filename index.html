@@ -185,7 +185,7 @@
             <div class="p-5 border-b border-gray-100 bg-white shrink-0">
                 <label class="text-[10px] font-bold text-gray-500 uppercase ml-1 block mb-1.5">Digite seu WhatsApp</label>
                 <div class="flex gap-2">
-                    <input type="tel" id="search-phone" placeholder="Ex: 27999999999" class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
+                    <input type="tel" id="search-phone" placeholder="Ex: 21980000942" class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
                     <button onclick="searchMyBookings()" class="bg-brand-black text-white px-5 rounded-xl font-bold text-[12px] uppercase tracking-wider hover:bg-neutral-800 transition">Buscar</button>
                 </div>
             </div>
@@ -305,7 +305,7 @@
                             </div>
                             <div>
                                 <label class="text-[10px] font-bold text-gray-500 uppercase ml-1 block mb-1.5">WhatsApp (DDD)</label>
-                                <input type="tel" id="client-phone" required placeholder="Ex: 27999999999" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
+                                <input type="tel" id="client-phone" required placeholder="Ex: 21980000942" class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-brand-gold transition text-[14px]">
                             </div>
                             
                             <div id="inline-pix-warning" class="hidden flex gap-3 bg-orange-50 border border-orange-100 p-4 rounded-xl items-center mt-2">
@@ -333,7 +333,7 @@
                     <h2 id="success-title" class="text-2xl font-black mb-3 text-gray-900 tracking-tight">Tudo Certo!</h2>
                     <p id="success-desc" class="text-gray-500 mb-10 leading-relaxed text-[13px] max-w-[260px]">Sua reserva foi confirmada com sucesso em nossa agenda. Te esperamos lá!</p>
                     
-                    <a id="btn-success-wa" href="#" target="_blank" class="hidden w-full bg-brand-green text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-wider transition hover:bg-green-700 items-center justify-center gap-2 mb-3 shadow-lg shadow-green-200">
+                    <a id="btn-success-wa" href="#" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" class="hidden w-full bg-brand-green text-white font-black py-4 rounded-xl text-[12px] uppercase tracking-wider transition hover:bg-green-700 items-center justify-center gap-2 mb-3 shadow-lg shadow-green-200">
                         <i class="fab fa-whatsapp text-lg"></i> Enviar Comprovante
                     </a>
 
@@ -376,26 +376,12 @@
         
         // CONFIGURAÇÕES GERAIS
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec";
-        const BARBEARIA_WHATSAPP = "27999999999"; 
+        const BARBEARIA_WHATSAPP = "21980000942"; 
         
-        document.getElementById('nav-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
-        document.getElementById('desk-wa-link').href = `https://wa.me/55${BARBEARIA_WHATSAPP}`;
+        document.getElementById('nav-wa-link').href = `https://api.whatsapp.com/send?phone=55${BARBEARIA_WHATSAPP}`;
+        document.getElementById('desk-wa-link').href = `https://api.whatsapp.com/send?phone=55${BARBEARIA_WHATSAPP}`;
 
-        const services = [
-            { id: "c-masc", name: "Corte Masculino", duration: "30min", price: 40.00 },
-            { id: "barba", name: "Barba", duration: "20min", price: 25.00 },
-            { id: "c-barba", name: "Corte & barba", duration: "45min", price: 60.00 },
-            { id: "c-barba-sob", name: "Corte, barba & sobrancelha", duration: "45min", price: 65.00 },
-            { id: "c-b-s-l", name: "Corte, barba, sobrancelha & limpeza", duration: "1h:00min", price: 90.00 },
-            { id: "c-pig", name: "Corte & pigmentação", duration: "45min", price: 60.00 },
-            { id: "plat", name: "Platinado", duration: "30min", price: 120.00 },
-            { id: "luzes", name: "Luzes", duration: "30min", price: 100.00 },
-            { id: "alin", name: "Alinhamento capilar", duration: "20min", price: 40.00 },
-            { id: "camu", name: "Camuflagem de fios brancos", duration: "10min", price: 30.00 },
-            { id: "limp", name: "Limpeza de pele e extração", duration: "30min", price: 35.00 },
-            { id: "nariz", name: "Depilação de nariz", duration: "10min", price: 20.00 },
-            { id: "pez", name: "Pezinho de cabelo", duration: "05min", price: 10.00 }
-        ];
+        let services = [];
 
         let state = { service: null, professional: "Christiano", dateISO: null, time: null, blockedNumbers: [], blockedDates: [], allBookings: [] };
         let pendingPayload = null, currentName = "", currentPhone = "", currentPrice = 0, isRestricted = false;
@@ -410,8 +396,7 @@
         function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
 
         window.onload = () => { 
-            renderServices(); 
-            fetchAvailability(); 
+            fetchAvailabilityAndServices(); 
             els.phone.addEventListener('input', (e) => { 
                 e.target.value = e.target.value.replace(/\D/g,''); 
                 updateSummary(); 
@@ -486,6 +471,10 @@
         function renderServices() {
             const grid = document.getElementById('services-list'); 
             grid.innerHTML = '';
+            if(services.length === 0) {
+                grid.innerHTML = '<p class="text-gray-500 text-sm col-span-full">Nenhum serviço disponível no momento.</p>';
+                return;
+            }
             services.forEach((s, index) => {
                 const card = document.createElement('div'); 
                 card.className = 'flex items-center justify-between p-5 border border-gray-200 bg-white rounded-2xl shadow-sm hover:border-brand-gold hover:shadow-md transition cursor-pointer group';
@@ -505,13 +494,48 @@
             lucide.createIcons();
         }
 
-        function fetchAvailability() {
-            document.getElementById('time-loader').classList.remove('hidden');
+        function fetchAvailabilityAndServices() {
+            document.getElementById('services-list').innerHTML = '<div class="col-span-full text-center py-10"><i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto text-brand-gold mb-2"></i><p class="text-[11px] text-gray-500 font-bold">Carregando serviços...</p></div>';
+            lucide.createIcons();
+
             fetch(WEB_APP_URL + '?action=get_all').then(r => r.json()).then(data => { 
-                state.allBookings = data.bookings || []; state.blockedDates = data.blockedDates || []; state.blockedNumbers = data.blockedNumbers || [];
-                document.getElementById('time-loader').classList.add('hidden');
+                state.allBookings = data.bookings || []; 
+                state.blockedDates = data.blockedDates || []; 
+                state.blockedNumbers = data.blockedNumbers || [];
+                
+                // CARREGA OS SERVIÇOS DINAMICAMENTE DO PAINEL ADMIN
+                if(data.servicos && data.servicos.length > 0) {
+                    services = data.servicos.map(s => ({
+                        id: s.ID,
+                        name: s.Nome,
+                        duration: s.Duracao,
+                        price: parseFloat(s.Preco) || 0
+                    }));
+                } else {
+                    // Fallback caso a aba "Serviços" esteja vazia
+                    services = [
+                        { id: "c-masc", name: "Corte Masculino", duration: "30min", price: 40.00 },
+                        { id: "barba", name: "Barba", duration: "20min", price: 25.00 },
+                        { id: "c-barba", name: "Corte & barba", duration: "45min", price: 60.00 },
+                        { id: "c-barba-sob", name: "Corte, barba & sobrancelha", duration: "45min", price: 65.00 },
+                        { id: "c-b-s-l", name: "Corte, barba, sobrancelha & limpeza", duration: "1h:00min", price: 90.00 },
+                        { id: "c-pig", name: "Corte & pigmentação", duration: "45min", price: 60.00 },
+                        { id: "plat", name: "Platinado", duration: "30min", price: 120.00 },
+                        { id: "luzes", name: "Luzes", duration: "30min", price: 100.00 },
+                        { id: "alin", name: "Alinhamento capilar", duration: "20min", price: 40.00 },
+                        { id: "camu", name: "Camuflagem de fios brancos", duration: "10min", price: 30.00 },
+                        { id: "limp", name: "Limpeza de pele e extração", duration: "30min", price: 35.00 },
+                        { id: "nariz", name: "Depilação de nariz", duration: "10min", price: 20.00 },
+                        { id: "pez", name: "Pezinho de cabelo", duration: "05min", price: 10.00 }
+                    ];
+                }
+                
+                renderServices();
                 if(document.getElementById('booking-modal').classList.contains('active')){ renderCalendar(); }
-            }).catch(err => console.error(err));
+            }).catch(err => {
+                console.error(err);
+                document.getElementById('services-list').innerHTML = '<p class="text-red-500 text-sm col-span-full text-center">Erro ao carregar dados.</p>';
+            });
         }
 
         function openBooking() { 
@@ -536,7 +560,16 @@
             state.dateISO = null; state.time = null;
             document.getElementById('btn-to-step3').disabled = true;
             els.times.innerHTML = '';
-            fetchAvailability(); openBooking(); goToStep(2);
+            
+            // Re-checa disponibilidade apenas (serviços já carregados)
+            document.getElementById('time-loader').classList.remove('hidden');
+            fetch(WEB_APP_URL + '?action=get_all').then(r => r.json()).then(data => { 
+                state.allBookings = data.bookings || []; state.blockedDates = data.blockedDates || []; state.blockedNumbers = data.blockedNumbers || [];
+                document.getElementById('time-loader').classList.add('hidden');
+                if(document.getElementById('booking-modal').classList.contains('active')){ renderCalendar(); }
+            });
+
+            openBooking(); goToStep(2);
         }
 
         function renderCalendar() {
@@ -705,20 +738,37 @@
                 await fetch(WEB_APP_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, mode: 'no-cors', body: JSON.stringify(pendingPayload) });
                 
                 const btnWa = document.getElementById('btn-success-wa');
+                let waUrl = '';
+
                 if(isRestricted) {
                     document.getElementById('success-title').textContent = "Quase lá!";
                     document.getElementById('success-desc').innerHTML = "Sua reserva está <strong class='text-orange-600'>PENDENTE</strong>. Envie o comprovante do PIX no botão abaixo para garantir sua vaga.";
                     btnWa.classList.remove('hidden'); btnWa.classList.add('flex');
+                    
                     let msgPix = `Olá Prime Club!\n📍 Serviço: ${state.service.name}\n💈 Barbeiro: ${state.professional}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n\n*Estou ciente do sinal e envio abaixo o comprovante do PIX (R$${currentPrice.toFixed(2)}) para confirmar.*`;
-                    btnWa.href = `https://wa.me/55${BARBEARIA_WHATSAPP}?text=${encodeURIComponent(msgPix)}`;
+                    waUrl = `https://api.whatsapp.com/send?phone=55${BARBEARIA_WHATSAPP}&text=${encodeURIComponent(msgPix)}`;
+                    
+                    btnWa.href = waUrl;
                     btnWa.innerHTML = '<i class="fab fa-whatsapp text-xl"></i> Enviar Comprovante';
                 } else {
-                    document.getElementById('success-title').textContent = "Tudo Certo!";
-                    document.getElementById('success-desc').textContent = "Sua reserva foi confirmada com sucesso em nossa agenda. Te esperamos lá!";
-                    btnWa.classList.remove('flex'); btnWa.classList.add('hidden');
+                    document.getElementById('success-title').textContent = "Agendado com Sucesso!";
+                    document.getElementById('success-desc').textContent = "Sua reserva foi salva. Estamos abrindo seu WhatsApp para você enviar a confirmação...";
+                    btnWa.classList.remove('hidden'); btnWa.classList.add('flex');
+                    
+                    let msg = `Olá Prime Club! Fiz meu agendamento pelo site e estou confirmando:\n\n📍 Serviço: ${state.service.name}\n💈 Profissional: ${state.professional}\n📅 Data: ${state.dateISO.split('-').reverse().join('/')} às ${state.time}\n👤 Nome: ${currentName}`;
+                    waUrl = `https://api.whatsapp.com/send?phone=55${BARBEARIA_WHATSAPP}&text=${encodeURIComponent(msg)}`;
+                    
+                    btnWa.href = waUrl;
+                    btnWa.innerHTML = '<i class="fab fa-whatsapp text-xl"></i> Confirmar no WhatsApp Manualmente';
                 }
 
                 document.getElementById('step-success').classList.add('active'); document.getElementById('step-3').classList.remove('active');
+                
+                // AUTO ABRIR O WHATSAPP APÓS 1 SEGUNDO
+                setTimeout(() => {
+                    window.location.href = waUrl;
+                }, 1000);
+
             } catch(err) { showToast('Erro na conexão.'); btn.disabled = false; btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> Concluir Reserva'; lucide.createIcons(); }
         }
     </script>

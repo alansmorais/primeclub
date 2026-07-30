@@ -333,11 +333,15 @@
 
     <div id="toast" class="toast"></div>
 
+    <!-- ÁUDIO DE NOTIFICAÇÃO (Ficará oculto) -->
+    <audio id="alert-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
     <script>
         // ================= CONFIGURAÇÃO =================
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNsMs3bW1ocQ9qsWAS_PfF1KC_ghvvYPws0LkS7zvDuoR9FsWow65Rh9bTYLhBhl5fZA/exec';
         
         let state = { bookings: [], blockedDates: [], blockedNumbers: [], financeiro: [], cursos: [] };
+        let lastBookingCount = -1; // Variável para rastrear novos agendamentos
 
         function showToast(msg, isError = false) {
             const t = document.getElementById('toast');
@@ -346,6 +350,25 @@
         }
 
         function setLoader(active) { document.getElementById('global-loader').style.display = active ? 'flex' : 'none'; }
+
+        // ================= DESBLOQUEIO DE ÁUDIO =================
+        // Navegadores bloqueiam áudio automático. Isso libera o som no primeiro clique na tela.
+        document.body.addEventListener('click', function unlockAudio() {
+            const audio = document.getElementById('alert-sound');
+            audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+            document.body.removeEventListener('click', unlockAudio);
+        });
+
+        function playNotificationSound() {
+            const audio = document.getElementById('alert-sound');
+            audio.play().catch(e => console.log('Áudio bloqueado pelo navegador. Clique na tela antes.'));
+            
+            // Pausa o som exatos 3 segundos após começar a tocar
+            setTimeout(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }, 3000);
+        }
 
         // Troca de Abas
         function switchTab(tabId) {
@@ -371,6 +394,13 @@
                 state.blockedNumbers = data.blockedNumbers || [];
                 state.financeiro = data.financeiro || [];
                 state.cursos = data.cursos || [];
+
+                // Lógica para detectar e tocar a notificação de novo agendamento
+                if (lastBookingCount !== -1 && state.bookings.length > lastBookingCount) {
+                    playNotificationSound();
+                    showToast('🔔 NOVO AGENDAMENTO RECEBIDO!', false);
+                }
+                lastBookingCount = state.bookings.length;
 
                 updateDashboard();
             } catch (err) {
